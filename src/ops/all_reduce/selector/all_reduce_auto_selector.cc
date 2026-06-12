@@ -165,6 +165,9 @@ SelectorStatus AllReduceAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
 
     if (topoInfo->topoLevelNums > 1) {
         if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
+            CHK_PRT_RET(IsInputOutputOverlap(opParam) == true,
+                HCCL_WARNING("[Algo][AllReduceAutoSelector] ccu_sched does not support inplace allreduce."),
+                SelectorStatus::NOT_MATCH);
             // Level1Nhr 已在 CalcTopoShape 中设置（GCD==1 时为 true）
             if (topoInfo->Level1Nhr) {
                 selectAlgName = "CcuAllReduceNHR1D";

@@ -49,7 +49,7 @@ SelectorStatus AllGatherAutoSelector::SelectMeshAlgo(const TopoInfoWithNetLayerD
     u64 dataSize = opParam.DataDes.count * perDataSize;
     if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
         CHK_PRT_RET(IsInputOutputOverlap(opParam) == true,
-            HCCL_WARNING("[Algo][AllGatherAutoSelector] ccu_ms does not support inplace allreduce."),
+            HCCL_WARNING("[Algo][AllGatherAutoSelector] ccu_ms does not support inplace allgather."),
             SelectorStatus::NOT_MATCH);
         if (topoInfo->level0MeshType == Level0MeshType::TWO_DIE_REGULAR) {
             selectAlgName = "CcuAllGatherMesh2Die";
