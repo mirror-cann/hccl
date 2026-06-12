@@ -35,9 +35,11 @@
     MS模式为与多个远端通信时，使用CCU片上Memory Slice作为中转，用于节省内存读写带宽，Memory Slice的特点是大小较小，但速度较快。
 
     当CCU资源不足时，系统会自动切换为AI_CPU模式。
-    - 该配置项仅支持Broadcast、Reduce、AllReduce、ReduceScatter、Scatter、AllGather、AlltoAll、AlltoAllV算子，当前仅支持单机场景。
- 	    - 针对Broadcast、AllGather算子，数据类型支持int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、bfp16。
- 	    - 针对Reduce、AllReduce、ReduceScatter算子，数据类型支持int16、int32、float16、float32、bfp16。
+
+    该配置项仅支持Broadcast、Reduce、AllReduce、ReduceScatter、AllGather、AllGatherV、ReduceScatterV算子，当前仅支持单机场景。
+    - 针对Broadcast、AllGather、AllGatherV算子，数据类型支持int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、bfp16。
+    - 针对Reduce、AllReduce、ReduceScatter、ReduceScatterV算子，数据类型支持int16、int32、float16、float32、bfp16。    
+
   - **CCU_SCHED（默认值）**：代表通信算子在CCU展开，使用调度模式。
 
     调度模式指使用CCU作为调度器，向UB引擎调度UB WQE任务。调度模式下不使用CCU的片上MS，直接在两个rank间进行HBM到HBM的数据传输。
