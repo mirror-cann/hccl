@@ -190,6 +190,8 @@ HcclResult CheckHostDPUOnly(const HcclComm comm, const TopoInfoWithNetLayerDetai
 
 HcclResult SetExecTimeout(OpParam &param);
 bool IsHostDpu(HcclComm comm);
+
+bool IsBarrierHostDpu(HcclComm comm);
 }  // namespace ops_hccl
 
 #endif
