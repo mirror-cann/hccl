@@ -911,13 +911,13 @@ HcclResult CalAllLevelEndpointAttrBwCoeff(
             uint32_t endPointNums = 0;
             CHK_RET(HcclRankGraphGetEndpointNum(
                 comm, netLayerId, topoInstId, &endPointNums)); // 获取endPointNums，计算同层有多少节点
-            EndpointDesc *endPointDescs = nullptr;
+            auto endPointDescs = std::make_unique<EndpointDesc[]>(endPointNums);
             CHK_RET(HcclRankGraphGetEndpointDesc(comm, netLayerId, topoInstId, &endPointNums,
-                endPointDescs)); // 根据Layer和topoInstId，拿到所有的Endpoint信息；返回vector(获取EndpointDesc)
+                endPointDescs.get())); // 根据Layer和topoInstId，拿到所有的Endpoint信息；返回vector(获取EndpointDesc)
             uint32_t infoLen = sizeof(EndpointAttrBwCoeff);
             EndpointAttrBwCoeff bwCoeff{};
             CHK_RET(HcclRankGraphGetEndpointInfo(
-                comm, rankId, endPointDescs, ENDPOINT_ATTR_BW_COEFF, infoLen, &bwCoeff)); // 获取该维度的带宽
+                comm, rankId, endPointDescs.get(), ENDPOINT_ATTR_BW_COEFF, infoLen, &bwCoeff)); // 获取该维度的带宽
             endpointAttrBw.emplace_back(bwCoeff);
         }
     }
