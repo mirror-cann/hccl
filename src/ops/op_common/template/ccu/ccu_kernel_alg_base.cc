@@ -700,7 +700,7 @@ static void SetupLoopAddress(GroupCopyVar& var, ccu::LocalAddr& src, ccu::LocalA
 
 CcuResult GroupCopy(CcuKernelCtxBase &ctx, ccu::LocalAddr dst, ccu::LocalAddr src, GroupOpSizeVars goSize)
 {
-    GroupCopyVar var;
+    GroupCopyVar &var = ctx.GetGcVar();
     CCU_CHK_RET(CreateMultiOpCopy(ctx, var));
     auto &loops = ctx.loopMap["localcopy"];
 

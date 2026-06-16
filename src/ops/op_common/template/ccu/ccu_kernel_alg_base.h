@@ -93,6 +93,15 @@ struct CcuKernelCtxBase {
     std::map<std::string, CcuLoopEntity> loopMap;
     CcuLoopExecutors enginePool;
 
+    // GroupCopyVar 延迟分配：仅使用 GroupCopy 的 kernel 才会创建，避免资源浪费
+    std::unique_ptr<GroupCopyVar> gcVarPtr;
+    GroupCopyVar& GetGcVar() {
+        if (!gcVarPtr) {
+            gcVarPtr.reset(new GroupCopyVar());
+        }
+        return *gcVarPtr;
+    }
+
     void CreateLoopEntity(std::string loopStr) {
         loopMap.emplace(loopStr, CcuLoopEntity());
     }
