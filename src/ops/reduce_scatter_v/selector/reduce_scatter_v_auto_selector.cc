@@ -13,6 +13,8 @@
 
 namespace ops_hccl {
 
+constexpr u32 TOPO_LEVEL_1 = 1;
+constexpr u32 TOPO_LEVEL_3 = 3;
 constexpr u64 RSV_CCU_8P_MIN_DATA_SIZE = 32 * 1024 * 1024;
 
 SelectorStatus ReduceScatterVAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails *topoInfo, const OpParam &opParam,
@@ -194,7 +196,7 @@ SelectorStatus ReduceScatterVAutoSelector::SelectAicpuAlgo(const TopoInfoWithNet
         return SelectorStatus::NOT_MATCH;
     }
 
-    if (topoInfo->topoLevelNums >= 1 && topoInfo->topoLevelNums <= 3) {
+    if (topoInfo->topoLevelNums >= TOPO_LEVEL_1 && topoInfo->topoLevelNums <= TOPO_LEVEL_3) {
         selectAlgName = "InsReduceScatterVMesh1D";
     } else {
         return SelectorStatus::NOT_MATCH;

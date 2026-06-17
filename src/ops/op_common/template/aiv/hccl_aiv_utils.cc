@@ -875,10 +875,8 @@ HcclResult ExecuteKernelLaunchInner(const AivOpArgs &opArgs, void* args, u32 arg
 
     HCCL_INFO("[ExecuteKernelLaunchInner] sendbuff [%p] recvbuff [%p] rank [%u] sendRecvRemoteRank [%u] rankSize [%u] count [%llu] "
         "dataType [%d] reduceOp [%d] root [%u] tag [%u] isOpBase [%d] "
-        "extraArgsPtr [%p] argsSize [%u]", opArgs.input,
-        opArgs.output, opArgs.rank, opArgs.sendRecvRemoteRank, opArgs.rankSize, opArgs.count,
-        opArgs.dataType, opArgs.op, opArgs.root,
-        opArgs.sliceId, opArgs.isOpBase, args, argsSize);
+        "extraArgsPtr [%p] argsSize [%u]", opArgs.input, opArgs.output, opArgs.rank, opArgs.sendRecvRemoteRank, opArgs.rankSize, opArgs.count,
+        opArgs.dataType, opArgs.op, opArgs.root, opArgs.sliceId, opArgs.isOpBase, args, argsSize);
 
     aclrtLaunchKernelCfg cfg;
     aclrtLaunchKernelAttr attr[AIV_ATTRNUM_THREE];
@@ -908,13 +906,11 @@ HcclResult ExecuteKernelLaunchInner(const AivOpArgs &opArgs, void* args, u32 arg
         &cfg, args, argsSize, nullptr, 0);
     if (aclRet == ACL_ERROR_RT_INVALID_HANDLE) {
         HCCL_WARNING("[ExecuteKernelLaunchInner] handle invalid, retry to get function");
-        aclRet = aclrtBinaryGetFunction(kernelLookupResult.entry.binHandle,
-            kernelLookupResult.entry.kernelName.c_str(), &funcHandle);
+        aclRet = aclrtBinaryGetFunction(kernelLookupResult.entry.binHandle, kernelLookupResult.entry.kernelName.c_str(), &funcHandle);
         CHK_PRT_RET(aclRet != ACL_SUCCESS, HCCL_ERROR("[ExecuteKernelLaunchInner] retry get function failed, error[%d]", aclRet), HCCL_E_RUNTIME);
         ret = UpdateKernelFunc(kernelLookupResult.deviceId, funcKey, funcHandle);
         CHK_PRT_RET(ret != HCCL_SUCCESS, HCCL_ERROR("[ExecuteKernelLaunchInner] update function handle failed, ret[%d]", ret), HCCL_E_RUNTIME);
-        aclRet = aclrtLaunchKernelWithHostArgs(funcHandle, opArgs.numBlocks, opArgs.stream,
-            &cfg, args, argsSize, nullptr, 0);
+        aclRet = aclrtLaunchKernelWithHostArgs(funcHandle, opArgs.numBlocks, opArgs.stream, &cfg, args, argsSize, nullptr, 0);
     }
     CHK_PRT_RET(aclRet != ACL_SUCCESS, HCCL_ERROR("[ExecuteKernelLaunchInner]errNo[0x%016llx] aclrtLaunchKernelWithHostArgs error[%d].",
         HCCL_ERROR_CODE(HCCL_E_RUNTIME), aclRet), HCCL_E_RUNTIME);

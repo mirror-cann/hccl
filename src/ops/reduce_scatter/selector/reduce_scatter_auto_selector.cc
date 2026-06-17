@@ -27,6 +27,8 @@ constexpr u64 RS_CCU_64P_MIN_DATA_SIZE = 128 * 1024 * 1024;
 constexpr u64 RS_CCU_8P_MIN_DATA_SIZE = 64 * 1024 * 1024;
 constexpr u64 RS_AICPU_SEQUENCE_SIZE_THRESHOLD = 4ULL * 1024 * 1024 * 1024;
 constexpr u64 OMNI_PCIE_RS_DATA_SIZE = 4 * 1024 * 1024;
+constexpr u32 TOPO_LEVEL_NUM_3 = 3;
+constexpr u32 DEVICE_NUM_PER_MODULE_8 = 8;
 
 SelectorStatus ReduceScatterAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                                     const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap,
@@ -302,8 +304,8 @@ SelectorStatus ReduceScatterAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetL
     }
 
     if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->topoLevelNums == 3) {
-            if (topoInfo->deviceNumPerModule == 8) {
+        if (topoInfo->topoLevelNums == TOPO_LEVEL_NUM_3) {
+            if (topoInfo->deviceNumPerModule == DEVICE_NUM_PER_MODULE_8) {
                 selectAlgName = "InsV2ReduceScatterOmniPipeUboe";
             } else if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[1] == 1) {
                 selectAlgName = "InsReduceScatterNHR";

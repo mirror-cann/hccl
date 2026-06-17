@@ -72,7 +72,7 @@ static CcuResult InitResource(ReduceScatterMesh1DMem2MemContext &ctx)
         }
     }
 
-    ctx.moConfig.loopCount = 16;
+    ctx.moConfig.loopCount = REDUCE_SCATTER_LOOP_COUNT;
     ctx.moConfig.msInterleave = REDUCE_MS_CNT;
     ctx.moConfig.memSlice = CCU_MS_SIZE;
 
@@ -223,8 +223,9 @@ static CcuResult DoRepeatReduceScatter(ReduceScatterMesh1DMem2MemContext &ctx)
     
     // 初始化scratchOffset、myInput、remoteInput、scratchMem - 只在最开始执行一次
     ccu::Variable scratchOffset;
-    scratchOffset = 0;
     ccu::Variable sliceSize;
+    ccu::Variable repeatNumAdd;
+    scratchOffset = 0;
     sliceSize = (arg->rankId == (arg->rankSize - 1)) ? ctx.lastSliceSize : ctx.normalSliceSize;
     
     for (uint32_t rankIdx = 0; rankIdx < arg->rankSize; rankIdx++) {
@@ -243,8 +244,7 @@ static CcuResult DoRepeatReduceScatter(ReduceScatterMesh1DMem2MemContext &ctx)
         scratchOffset += sliceSize;
         ctx.scratchMem[rankIdx].token = ctx.token[arg->rankId];
     }
-    
-    ccu::Variable repeatNumAdd;
+
     repeatNumAdd  = 1;
     ctx.flag = 0;
     
@@ -270,7 +270,8 @@ static CcuResult DoRepeatReduceScatter(ReduceScatterMesh1DMem2MemContext &ctx)
 
 static CcuResult CreateReduceLoop(ReduceScatterMesh1DMem2MemContext &ctx)
 {
-    AllocGoResource(ctx.moConfig, ctx.moRes, ctx.resourceAllocated, 16);
+    constexpr uint32_t LOOP_NUM_16 = 16;
+    AllocGoResource(ctx.moConfig, ctx.moRes, ctx.resourceAllocated, LOOP_NUM_16);
 
     if (ctx.IsLoopEntityRegistered("reduceScatterLocalReduce")) {
         return CCU_SUCCESS;
@@ -282,8 +283,8 @@ static CcuResult CreateReduceLoop(ReduceScatterMesh1DMem2MemContext &ctx)
     uint32_t size = arg->rankSize;
     uint32_t expansionNum = GetReduceExpansionNum(arg->reduceOp, ctx.dataType, ctx.outputDataType);
     uint32_t usedBufNum   = size > expansionNum ? size : expansionNum;
-
-    for (int32_t index = 0; index < 2; index++) {
+    constexpr uint32_t LOOP_NUM_2 = 2;
+    for (int32_t index = 0; index < LOOP_NUM_2; index++) {
         ctx.loopScratch[index].resize(size);
         
         uint32_t bufBase = index * ctx.moConfig.msInterleave;
@@ -348,9 +349,14 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1DMem2MemContext &ctx, ccu::Lo
 
     uint32_t expansionNum = GetReduceExpansionNum(arg->reduceOp, ctx.dataType, ctx.outputDataType);
     ccu::Variable sliceSizeExpansion;
+    ccu::Variable loopCfg0;
+    ccu::Variable loopCfg1;
+    ccu::Variable tmp;
+    ccu::Variable loopParam;
+    ccu::Variable paraCfg;
+    ccu::Variable offsetCfg;
 
     if (expansionNum != 1) {
-        ccu::Variable tmp;
         tmp = GetExpansionParam(expansionNum);
         dst.token = dst.token + tmp;
     }
@@ -358,7 +364,6 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1DMem2MemContext &ctx, ccu::Lo
     // 第一个loopgroup，处理m部分数据
     CCU_IF(ctx.goSize.loopParam != 0)
     {
-        ccu::Variable loopParam;
         loopParam = GetLoopParam(0, ctx.moConfig.memSlice * ctx.moConfig.loopCount, 0);
         loopParam = loopParam + ctx.goSize.loopParam;
 
@@ -377,11 +382,7 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1DMem2MemContext &ctx, ccu::Lo
         ctx.loopDst[0].token = dst.token;
         ctx.loopLen[0]       = sliceSize;
         ctx.loopLenExp[0]    = sliceSizeExpansion;
-
-        ccu::Variable paraCfg;
         paraCfg = GetParallelParam(ctx.moConfig.loopCount - 1, 0, 1);
-
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopParam;
@@ -440,14 +441,8 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1DMem2MemContext &ctx, ccu::Lo
         ctx.loopDst[1].token = dst.token;
         ctx.loopLen[1]    = sliceSize;
         ctx.loopLenExp[1] = sliceSizeExpansion;
-
-        ccu::Variable loopCfg0;
         loopCfg0 = GetLoopParam(0, 0, 1);
-
-        ccu::Variable loopCfg1;
         loopCfg1 = GetLoopParam(0, 0, 1);
-
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopCfg0;

@@ -114,8 +114,8 @@ static CcuResult PostSync(ReduceScatterNhrMem2Mem1DMultiJettyContext &ctx)
 static CcuResult DoRepeatSendRecvSlices(ReduceScatterNhrMem2Mem1DMultiJettyContext &ctx, const uint32_t &toRank, 
     ccu::LocalAddr &src, ccu::RemoteAddr &dst)
 {
-    const auto *arg = ctx.arg;
     ccu::Variable repeatNumAdd;
+    const auto *arg = ctx.arg;
     repeatNumAdd = 1;
     ctx.flag = 0;
     ctx.repeatNumVarTemp = ctx.repeatNumVar;
@@ -207,9 +207,8 @@ static CcuResult DoRepeatReduceScatterNHRSingleStep(ReduceScatterNhrMem2Mem1DMul
 static CcuResult DoRepeatReduceScatter(ReduceScatterNhrMem2Mem1DMultiJettyContext &ctx)
 {
     ccu::Variable tmpSliceOffset;
-    tmpSliceOffset = 0;
-    
     std::vector<ccu::Variable> inputSliceOffset;
+    tmpSliceOffset = 0;
     inputSliceOffset.resize(ctx.dimSize);
     for (uint64_t i = 0; i < ctx.dimSize; i++) {
         inputSliceOffset[i] = tmpSliceOffset;
@@ -220,13 +219,12 @@ static CcuResult DoRepeatReduceScatter(ReduceScatterNhrMem2Mem1DMultiJettyContex
         CCU_CHK_RET(DoRepeatReduceScatterNHRSingleStep(ctx, nhrStepInfo, inputSliceOffset));
     }
     
+    ccu::Variable repeatNumAdd2;
     ctx.localDst.addr = ctx.output;
     ctx.localDst.token = ctx.token[ctx.myRankIdx];
     ctx.localSrc.addr = ctx.input[ctx.myRankIdx];
     ctx.localSrc.addr += inputSliceOffset[ctx.rankId];
     ctx.localSrc.token = ctx.token[ctx.myRankIdx];
-
-    ccu::Variable repeatNumAdd2;
     repeatNumAdd2 = 1;
     CCU_WHILE(ctx.repeatNumVar != UINT64_MAX) {
         ctx.repeatNumVar += repeatNumAdd2;

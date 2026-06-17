@@ -326,8 +326,8 @@ static CcuResult DoLocalCopySlice(AllReduceNHR1DContext &ctx, ccu::LocalAddr &sr
 
 static CcuResult LocalCopySlices(AllReduceNHR1DContext &ctx)
 {
-    u32              nonTxSliceIdx    = 0;
     ccu::Variable tmpSliceOffset;
+    u32              nonTxSliceIdx    = 0;
     tmpSliceOffset                    = 0;
 
     for (u64 i = 0; i < ctx.rankSize; i++) {

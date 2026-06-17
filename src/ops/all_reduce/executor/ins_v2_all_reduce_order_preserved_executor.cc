@@ -283,8 +283,6 @@ HcclResult InsV2AllReduceOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplateRS, 
     return HCCL_SUCCESS;
 }
 
-
-
 template <typename AlgTopoMatch, typename InsAlgTemplateRS, typename InsAlgTemplateAG>
 HcclResult InsV2AllReduceOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplateRS, InsAlgTemplateAG>::RunReduceScatter(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx,
@@ -309,7 +307,6 @@ HcclResult InsV2AllReduceOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplateRS, 
     rsTempAlgParams.buffInfo.outBuffBaseOff = outCclBuffOffset_;
     // 临时缓冲区基址偏移：使用inCclBuff部分作为临时缓冲区
     rsTempAlgParams.buffInfo.hcclBuffBaseOff = inCclBuffOffset_;
-
 
     // ReduceScatter: INPUT -> HCCL_BUFFER(outCclBuff)
     // memBlockInfo中的offset是相对于整个hcclBuff.addr的绝对偏移
@@ -387,7 +384,6 @@ HcclResult InsV2AllReduceOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplateRS, 
     agTempAlgParams.buffInfo.outBuffBaseOff = processedDataCount * dataTypeSize_;
     // 临时缓冲区基址偏移：使用inCclBuff部分，避免与outCclBuff冲突
     agTempAlgParams.buffInfo.hcclBuffBaseOff = inCclBuffOffset_;
-
 
     u64 agSliceSize = currDataCount / rankSize_ * dataTypeSize_;
     u64 agTailSize = (currDataCount / rankSize_ + currDataCount % rankSize_) * dataTypeSize_;

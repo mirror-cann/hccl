@@ -22,10 +22,10 @@ static CcuResult PreSync(AllToAllVMesh1DMultiJettyContext &ctx)
     const auto *arg = ctx.arg;
     uint32_t channelIdx = 0;
     for (uint32_t id = 0; id < arg->rankSize; id++) {
+        ccu::Variable tempDst;
         if (id == arg->rankId) {
             continue;
         }
-        ccu::Variable tempDst;
         tempDst = ctx.output[arg->rankId];
         tempDst += ctx.sendRecvInfo[id].recvOffset;
         CCU_CHK_RET(ccu::WriteVariableWithNotify(arg->channels[channelIdx], tempDst, OUTPUT_XN_ID, CKE_IDX_0, 1 << OUTPUT_XN_ID));

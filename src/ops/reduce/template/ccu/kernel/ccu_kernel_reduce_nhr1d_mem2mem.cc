@@ -361,8 +361,8 @@ static CcuResult LocalCopySlices(ReduceNHR1DMem2MemContext &ctx)
 {
     const auto *arg = ctx.arg;
 
-    u32 nonTxSliceIdx = 0;
     ccu::Variable tmpSliceOffset;
+    u32 nonTxSliceIdx = 0;
     tmpSliceOffset = 0;
 
     ctx.sliceOffset.resize(arg->rankSize);

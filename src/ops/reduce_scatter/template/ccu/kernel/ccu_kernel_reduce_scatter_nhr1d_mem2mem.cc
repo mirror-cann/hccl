@@ -116,8 +116,8 @@ static void PostSync(ReduceScatterNHR1DMem2MemContext &ctx)
 static CcuResult DoRepeatWriteReduceSlices(ReduceScatterNHR1DMem2MemContext &ctx, const u32 &toRank, 
     ccu::LocalAddr &src, ccu::RemoteAddr &dst, const bool islastSlice)
 {
-    const auto *arg = ctx.arg;
     ccu::Variable repeatNumAdd;
+    const auto *arg = ctx.arg;
     repeatNumAdd  = 1;
     ctx.isRepeatIter = 0;
     
@@ -214,8 +214,8 @@ static CcuResult DoRepeatReduceScatterNHRSingleStep(ReduceScatterNHR1DMem2MemCon
 
 static CcuResult DoRepeatReduceScatterNHR(ReduceScatterNHR1DMem2MemContext &ctx)
 {
-    const auto *arg = ctx.arg;
     ccu::Variable tmpSliceOffset;
+    const auto *arg = ctx.arg;
     tmpSliceOffset = 0;
     // 用来记录每个rank要读取的rank的sliceIdx的偏移
     // 后面会用inputAddr来加上这个偏移获取sliceIdx的地址
@@ -237,8 +237,8 @@ static CcuResult DoRepeatReduceScatterNHR(ReduceScatterNHR1DMem2MemContext &ctx)
     ctx.localDst.addr += ctx.currentRankSliceOutputOffset;
     ctx.localDst.token = ctx.token[ctx.myRankIdx];
 
-    bool islastSlice = (ctx.mySubCommRankId + 1 == arg->dimSize);
     ccu::Variable repeatNumAdd2;
+    bool islastSlice = (ctx.mySubCommRankId + 1 == arg->dimSize);
     repeatNumAdd2  = 1;
     CCU_WHILE(ctx.repeatNumVar != UINT64_MAX) {
         ctx.repeatNumVar += repeatNumAdd2;

@@ -15,6 +15,9 @@
 #include "ins_temp_reduce_scatter_omnipipe_nhr.h"
 #include "topo_match_pcie_mix.h"
 namespace ops_hccl {
+constexpr uint32_t HIERARCHY_SIZE_3 = 3;
+constexpr uint64_t RANK_SIZE_LEVEL_2 = 2;
+constexpr uint64_t RANK_SIZE_LEVEL_4 = 4;
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1, typename InsAlgTemplate2>
 InsV2ReduceScatterOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1,
                                    InsAlgTemplate2>::InsV2ReduceScatterOmniPipeExecutor()
@@ -232,7 +235,7 @@ InsV2ReduceScatterOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate
     reduceOp_ = param.reduceType;
     threads_ = resCtx.threads;
     
-    if (algHierarchyInfo_.infos.size() == 3 &&
+    if (algHierarchyInfo_.infos.size() == HIERARCHY_SIZE_3 &&
         !algHierarchyInfo_.infos[2].empty() && !algHierarchyInfo_.infos[2][0].empty()) {
         topoType_ = TopoType::THREE_LEVEL;
     } else {
@@ -341,10 +344,10 @@ InsV2ReduceScatterOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate
     double bw_rs_l2=BW_OMNI_DEFAULT;
 
     if (resCtx.topoInfo.level0PcieMix) {
-        if (rankSizeLevel1_==2) {
+        if (rankSizeLevel1_==RANK_SIZE_LEVEL_2) {
             bw_ag_l1=BW_OMNI_PCIE_EIGHT_AG_CLOS;
             bw_rs_l1=BW_OMNI_PCIE_EIGHT_RS_CLOS;
-        } else if (rankSizeLevel1_==4) {
+        } else if (rankSizeLevel1_==RANK_SIZE_LEVEL_4) {
             bw_ag_l1=BW_OMNI_PCIE_SIXTEEN_AG_CLOS;
             bw_rs_l1=BW_OMNI_PCIE_SIXTEEN_RS_CLOS;
         }

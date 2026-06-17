@@ -22,6 +22,9 @@
 #include "topo_match_3_level.h"
 
 namespace ops_hccl {
+constexpr u32 ALG_HIERARCHY_NUM3 = 3;
+constexpr u32 RANK_LEVEL_2 = 2;
+constexpr u32 RANK_LEVEL_4 = 4;
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1, typename InsAlgTemplate2>
 InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1,
                                InsAlgTemplate2>::InsV2AllGatherOmniPipeExecutor()
@@ -57,7 +60,6 @@ HcclResult InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
     std::map<u32, std::shared_ptr<InsAlgTemplateBase>>& tempMap,
     const TopoInfoWithNetLayerDetails* topoInfo)
 {
-
     if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS && !topoInfo->level0PcieMix) {
         std::vector<u32> closRanks;
         if (!algHierarchyInfo_.infos[0].empty() && !algHierarchyInfo_.infos[0][0].empty()) {
@@ -134,7 +136,7 @@ HcclResult InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
 { 
     // 初始化一些基本成员变量
     InitCommInfo(param, topoInfo, algHierarchyInfo);
-     if (algHierarchyInfo_.infos.size() == 3 &&
+     if (algHierarchyInfo_.infos.size() == ALG_HIERARCHY_NUM3 &&
  	        !algHierarchyInfo_.infos[2].empty() && !algHierarchyInfo_.infos[2][0].empty()) {
  	        topoType_ = TopoType::THREE_LEVEL;
  	    } else {
@@ -200,7 +202,6 @@ HcclResult InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
         levelThreads_[OMNIPIPE_LEVEL1].assign(threads_.begin() + 1 + levelThreads_[OMNIPIPE_LEVEL0].size(),
                                               threads_.begin() + 1 + levelThreads_[0].size() + levelThreadNum);
         tempMainThreadsXY_.push_back(levelThreads_[OMNIPIPE_LEVEL1].at(0));
-
     } else if (level == OMNIPIPE_LEVEL2) {
         levelThreads_[OMNIPIPE_LEVEL2].assign(
             threads_.begin() + 1 + levelThreads_[OMNIPIPE_LEVEL0].size() + levelThreads_[OMNIPIPE_LEVEL1].size(),
@@ -233,7 +234,7 @@ HcclResult InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
     dataType_ = param.DataDes.dataType;
     reduceOp_ = param.reduceType;
     algHierarchyInfo_ = resCtx.algHierarchyInfo;
-    if (algHierarchyInfo_.infos.size() == 3 &&
+    if (algHierarchyInfo_.infos.size() == ALG_HIERARCHY_NUM3 &&
         !algHierarchyInfo_.infos[2].empty() && !algHierarchyInfo_.infos[2][0].empty()) {
             topoType_ = TopoType::THREE_LEVEL;
  	    } else {
@@ -317,10 +318,10 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
     double bw_rs_l2=BW_OMNI_DEFAULT;
 
     if (resCtx.topoInfo.level0PcieMix) {
-        if (rankSizeLevel_[OMNIPIPE_LEVEL1]==2) {
+        if (rankSizeLevel_[OMNIPIPE_LEVEL1] == RANK_LEVEL_2) {
             bw_ag_l1=BW_OMNI_PCIE_EIGHT_AG_CLOS;
             bw_rs_l1=BW_OMNI_PCIE_EIGHT_RS_CLOS;
-        } else if (rankSizeLevel_[OMNIPIPE_LEVEL1]==4) {
+        } else if (rankSizeLevel_[OMNIPIPE_LEVEL1] == RANK_LEVEL_4) {
             bw_ag_l1=BW_OMNI_PCIE_SIXTEEN_AG_CLOS;
             bw_rs_l1=BW_OMNI_PCIE_SIXTEEN_RS_CLOS;
         }
@@ -425,7 +426,6 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
                                                           omniPipeSliceInfo.dataSliceLevel0[i * level0StepCount + j]));
                     CHK_RET(tempMap[OMNIPIPE_LEVEL0]->KernelRun(param, tempAlgParamMap[OMNIPIPE_LEVEL0],
                                                                  tempResMap[OMNIPIPE_LEVEL0]));
-
                 }
                 if (rankSizeLevel_[OMNIPIPE_LEVEL1] > 1) {
                     CHK_RET(GenTemplateAlgParamsByDimData(tempAlgParamMap[OMNIPIPE_LEVEL1],
@@ -448,7 +448,6 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
             CHK_RET(LocalCopy(controlThread_, src, dst));
         }
         processedDataCount += currDataCount;
-
     }
     return HCCL_SUCCESS;
 }

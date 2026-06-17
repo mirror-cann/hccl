@@ -173,7 +173,6 @@ HcclResult InsV2ReduceScatterOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplate
             memBlockInfo.outputOffsets.push_back(offset);
         }
 
-        // tempAlgParams.allRankSliceSize = currGroupSize;
         tempAlgParams.sliceSize = currSizePerBlock;
         tempAlgParams.tailSize = tempAlgParams.sliceSize;
         tempAlgParams.inputSliceStride = dataSize_;
@@ -218,8 +217,6 @@ u64 InsV2ReduceScatterOrderPreservedExecutor<AlgTopoMatch, InsAlgTemplate>::Roun
     }
     return ((value + (divisor - 1)) / divisor) * divisor;
 }
-
-
 
 // 注册保序ReduceScatter执行器
 REGISTER_EXEC_V2(HcclCMDType::HCCL_CMD_REDUCE_SCATTER, ReduceScatterOrderPreserved,

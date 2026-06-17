@@ -126,7 +126,7 @@ HcclResult CcuTempReduceScatterMeshMem2Mem1D2Die::KernelRun(const OpParam& param
 
     LoopGroupConfig config{};
     config.msInterleave = REDUCE_MS_CNT;
-    config.loopCount = 16;
+    config.loopCount = REDUCE_SCATTER_LOOP_COUNT;
     config.memSlice = CCU_MS_SIZE;
     auto goSize = CalGoSize(normalSliceSize, config);
 

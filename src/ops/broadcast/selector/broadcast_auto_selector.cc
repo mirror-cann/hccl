@@ -13,6 +13,9 @@
 #include "hccl_aiv_utils.h"
 
 namespace ops_hccl {
+
+constexpr u32 TOPO_LEVEL_NUM_3 = 3;
+
 SelectorStatus BroadcastAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                                     const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap,
                                                     std::string &selectAlgName) const
@@ -122,7 +125,7 @@ SelectorStatus BroadcastAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayer
     (void)configAlgMap;
     HCCL_DEBUG("[BroadcastAutoSelector][%s] start, topoInfo levelNum[%u]", __func__, topoInfo->topoLevelNums);
     if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->topoLevelNums == 3) {
+        if (topoInfo->topoLevelNums == TOPO_LEVEL_NUM_3) {
             if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[1] == 1) {
                 selectAlgName = "InsBroadcastNHR";
             } else {

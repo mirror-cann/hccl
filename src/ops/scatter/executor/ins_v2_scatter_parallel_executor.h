@@ -87,7 +87,6 @@ protected:
     std::vector<ThreadHandle> threads_;
     std::vector<std::vector<u32>> temp0HierarchyInfo_;
     std::vector<std::vector<u32>> temp1HierarchyInfo_;
-
 };
 }  // namespace ops_hccl
 

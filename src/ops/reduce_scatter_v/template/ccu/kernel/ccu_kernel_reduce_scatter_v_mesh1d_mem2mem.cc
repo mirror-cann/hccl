@@ -59,7 +59,7 @@ static CcuResult InitResource(ReduceScatterVMesh1DMem2MemContext &ctx)
             channelIdx++;
         }
     }
-    ctx.moConfig.loopCount = 8;
+    ctx.moConfig.loopCount = CCU_MS_LOCAL_COPY_LOOP_COUNT;
     ctx.moConfig.msInterleave = CCU_MS_INTERLEAVE;
     ctx.moConfig.memSlice = CCU_MS_SIZE;
     ctx.resourceAllocated = false;
@@ -135,8 +135,8 @@ static void CollectAllRanksSlice(std::vector<ccu::RemoteAddr>& tmpSrc,
 static void PrepareReduceScatterVData(std::vector<ccu::RemoteAddr>& reduceScatterVSrc,
     std::vector<ccu::LocalAddr>& reduceScatterVDst, ReduceScatterVMesh1DMem2MemContext &ctx)
 {
-    const auto *arg = ctx.arg;
     ccu::Variable scratchOffset;
+    const auto *arg = ctx.arg;
     scratchOffset = 0;
     for (uint32_t rankIdx = 0; rankIdx < arg->rankSize; rankIdx++) {
         if (rankIdx == arg->rankId) {

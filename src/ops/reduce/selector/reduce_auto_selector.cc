@@ -13,6 +13,7 @@
 
 namespace ops_hccl {
 constexpr u64 REDUCE_AICPU_1D_MAX_DATA_SIZE = 8 * 1024 * 1024;
+constexpr int TOPO_LEVEL_3 = 3;
 
 SelectorStatus ReduceAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails *topoInfo, const OpParam &opParam,
     const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap, std::string &selectAlgName) const
@@ -200,7 +201,7 @@ SelectorStatus ReduceAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayerDet
         SelectorStatus::NOT_MATCH);
     (void)configAlgMap;
     if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->topoLevelNums == 3) {
+        if (topoInfo->topoLevelNums == TOPO_LEVEL_3) {
             if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[1] == 1) {
                 selectAlgName = "ReduceAicpuReduceNHR";
             } else {

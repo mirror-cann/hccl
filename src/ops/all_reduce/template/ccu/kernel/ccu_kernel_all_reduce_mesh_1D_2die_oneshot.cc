@@ -211,6 +211,13 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
     }
 
     LocalReduceVar var;
+    ccu::Variable tmp;
+    ccu::Variable loopParam;
+    ccu::Variable sliceSize;
+    ccu::Variable paraCfg;
+    ccu::Variable offsetCfg;
+    ccu::Variable loopCfg0;
+    ccu::Variable loopCfg1;
     CCU_CHK_RET(CreateReduceLoop(ctx, var, size, dataType, outputDataType, opType));
 
     const std::string loopType = "allreduce_mesh_1d_2die_oneshot_local_reduce";
@@ -220,17 +227,13 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
     ccu::Variable sliceSizeExpansion;
 
     if (expansionNum != 1) {
-        ccu::Variable tmp;
         tmp = GetExpansionParam(expansionNum);
         dst.token = dst.token + tmp;
     }
 
     CCU_IF(goSize.loopParam != 0) {
-        ccu::Variable loopParam;
         loopParam = GetLoopParam(0, ctx.moConfig.memSlice * ctx.moConfig.loopCount, 0);
         loopParam = loopParam + goSize.loopParam;
-
-        ccu::Variable sliceSize;
         sliceSize = ctx.moConfig.memSlice;
         sliceSizeExpansion = ctx.moConfig.memSlice * expansionNum;
 
@@ -242,10 +245,7 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
         var.loopDst[0].token = dst.token;
         var.loopLen[0] = sliceSize;
         var.loopLenExp[0] = sliceSizeExpansion;
-
-        ccu::Variable paraCfg;
         paraCfg = GetParallelParam(ctx.moConfig.loopCount - 1, 0, 1);
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopParam;
@@ -282,7 +282,6 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
             dst.addr = dst.addr + goSize.residual;
         }
 
-        ccu::Variable sliceSize;
         sliceSize = ctx.moConfig.memSlice;
         sliceSizeExpansion = ctx.moConfig.memSlice * expansionNum;
 
@@ -294,12 +293,8 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
         var.loopDst[1].token = dst.token;
         var.loopLen[1] = sliceSize;
         var.loopLenExp[1] = sliceSizeExpansion;
-
-        ccu::Variable loopCfg0;
         loopCfg0 = GetLoopParam(0, 0, 1);
-        ccu::Variable loopCfg1;
         loopCfg1 = GetLoopParam(0, 0, 1);
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopCfg0;

@@ -156,7 +156,6 @@ HcclResult CcuTempReduceScatterNHR1DMem2Mem::FastLaunch(const OpParam& param, co
     }
     HCCL_DEBUG("[CcuTempReduceScatterNHR1DMem2Mem::FastLaunch] start");
     u32 kernelNum = tempFastLaunchCtx.ccuKernelSubmitInfos.size();
-    
     // 前流同步
     if (kernelNum > 1) {
         std::vector<ThreadHandle> subThreads(tempFastLaunchCtx.threads.begin() + 1, tempFastLaunchCtx.threads.end());

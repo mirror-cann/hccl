@@ -23,8 +23,6 @@ using namespace ge;
 
 namespace ops {
 
-
-
 static ge::graphStatus HcomBroadcastInferShapeV2(gert::InferShapeContext *context)
 {
     OP_INFER_SHAPE_START;

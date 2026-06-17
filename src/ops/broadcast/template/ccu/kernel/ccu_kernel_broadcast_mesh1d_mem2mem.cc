@@ -268,8 +268,8 @@ CcuResult CcuBroadcastMesh1DMem2MemKernel(CcuKernelArg arg)
     CCU_CHK_RET(PreSync(ctx));
 
     ccu::Variable repeatNumAdd;
-    repeatNumAdd = 1;
     ctx.flag = 0;
+    repeatNumAdd = 1;
     CCU_WHILE(ctx.repeatNumVar != UINT64_MAX)
     {
         // 循环repeatNum次

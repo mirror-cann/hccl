@@ -21,22 +21,22 @@ public:
     explicit InsAlgTemplateBase(const OpParam& param, const u32 rankId, // 传通信域的rankId，userRank
                                 const std::vector<std::vector<u32>> &subCommRanks);
 
-    virtual ~InsAlgTemplateBase();
+    ~InsAlgTemplateBase();
 
-    virtual std::string Describe() const override = 0;
+    std::string Describe() const override = 0;
 
     // 将原来的 InsQuePtr替换为ThreadHandle, 将tempLinks换位channels
-    virtual HcclResult KernelRun(const OpParam& param,
+    HcclResult KernelRun(const OpParam& param,
                                  const TemplateDataParams& tempAlgParams,
                                  TemplateResource& templateResource) override;
-    virtual HcclResult FastLaunch(const OpParam& param, const TemplateFastLaunchCtx& tempFastLaunchCtx) override;
+    HcclResult FastLaunch(const OpParam& param, const TemplateFastLaunchCtx& tempFastLaunchCtx) override;
 
-    virtual HcclResult CalcRes(HcclComm comm, const OpParam& param, const TopoInfoWithNetLayerDetails* topoInfo,
+    HcclResult CalcRes(HcclComm comm, const OpParam& param, const TopoInfoWithNetLayerDetails* topoInfo,
                                AlgResourceRequest& resourceRequest) override;
-    virtual HcclResult GetRes(AlgResourceRequest& resourceRequest) const override;
-    virtual u64 CalcScratchMultiple(BufferType inBuffType, BufferType outBuffType) override;
+    HcclResult GetRes(AlgResourceRequest& resourceRequest) const override;
+    u64 CalcScratchMultiple(BufferType inBuffType, BufferType outBuffType) override;
 
-    virtual u64 GetThreadNum() const override;
+    u64 GetThreadNum() const override;
 
     virtual HcclResult DPUKernelRun(const TemplateDataParams& tempAlgParam,
         const std::map<u32, std::vector<ChannelInfo>>& channels, const u32 myRank,

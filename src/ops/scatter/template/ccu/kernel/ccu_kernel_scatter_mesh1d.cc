@@ -140,7 +140,6 @@ static CcuResult DoScatterOnce(ScatterMesh1DContext &ctx)
 static CcuResult DoRepeatScatter(ScatterMesh1DContext &ctx)
 {
     ccu::Variable repeatNumAdd;
-    repeatNumAdd = 1;
 
     // 初始化每张卡 input/output 逻辑地址
     for (uint64_t curId = 0; curId < ctx.rankSize; curId++) {
@@ -154,7 +153,7 @@ static CcuResult DoRepeatScatter(ScatterMesh1DContext &ctx)
             ctx.outputMem[curId].addr += ctx.outputSliceStride;
         }
     }
-
+    repeatNumAdd = 1;
     if (ctx.rankId != ctx.rootId) {
         return CCU_SUCCESS;
     }
