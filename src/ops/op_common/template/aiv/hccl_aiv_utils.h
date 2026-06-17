@@ -19,7 +19,8 @@
 #include "alg_param.h"
 
 namespace ops_hccl {
-constexpr u32 MAX_RANK_SIZE = 128; // 注意要和device侧的一致
+constexpr u32 MAX_RANK_SIZE = 512; // 注意要和device侧的一致
+constexpr u32 MAX_RANK_SIZE_V = 64; // 注意要和device侧的一致
  
 constexpr s32 TOPO_LEN = MAX_RANK_SIZE; // 当前一级拓扑，暂时和MAX_RANK_SIZE保持一致
 
@@ -61,10 +62,10 @@ using AivKernelInfo = struct AivKernelInfoDef {
 
 // 非均匀算子AlltoAllV/AlltoAllVC/AllGatherV/ReduceScatterV需要的额外参数信息，A3场景
 struct ExtraArgs {
-    u64 sendCounts[MAX_RANK_SIZE] = {};
-    u64 sendDispls[MAX_RANK_SIZE] = {};
-    u64 recvCounts[MAX_RANK_SIZE] = {};
-    u64 recvDispls[MAX_RANK_SIZE] = {};
+    u64 sendCounts[MAX_RANK_SIZE_V] = {};
+    u64 sendDispls[MAX_RANK_SIZE_V] = {};
+    u64 recvCounts[MAX_RANK_SIZE_V] = {};
+    u64 recvDispls[MAX_RANK_SIZE_V] = {};
 };
 
 // 算子计数信息
