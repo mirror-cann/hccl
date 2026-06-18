@@ -120,7 +120,7 @@ __global__ __aicpu__ uint32_t HcclLaunchCustomAllGatherAicpuKernelAsc(void *args
         return 1;
     }
 
-    if (HcommThreadNotifyRecordOnThread(resCtxDevice.threads[0], resCtxDevice.cpuThreadOnAicpu, 0) != HCCL_SUCCESS) {
+    if (HcommThreadNotifyRecordOnThread(resCtxDevice.threads[0], param->cpuThreadOnAicpu, 0) != HCCL_SUCCESS) {
         HCCL_ERROR("failed to record host main stream");
         return 1;
     }

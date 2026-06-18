@@ -45,7 +45,7 @@ extern "C" unsigned int HcclLaunchCustomAllGatherAicpuKernel(OpParam *param)
     }
 
     // 主thread通知Host stream
-    if (HcommThreadNotifyRecordOnThread(resCtxDevice.threads[0], resCtxDevice.cpuThreadOnAicpu, 0) != HCCL_SUCCESS) {
+    if (HcommThreadNotifyRecordOnThread(resCtxDevice.threads[0], param->cpuThreadOnAicpu, 0) != HCCL_SUCCESS) {
         HCCL_ERROR("failed to record host main stream");
         return 1;
     }

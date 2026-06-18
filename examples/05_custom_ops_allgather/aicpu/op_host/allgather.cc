@@ -20,6 +20,60 @@
 
 using namespace ops_hccl_allgather;
 
+namespace {
+// aicpu主线程handle及其notify数量，缓存于COMM_ENGINE_CPU_TS(通信域host内存)context，供复用
+struct AicpuMainThreadCache {
+    ThreadHandle thread;
+    uint32_t notifyNum;
+};
+
+HcclResult InitAicpuResource(HcclComm comm, OpParam &param)
+{
+    CommEngine engine = CommEngine::COMM_ENGINE_AICPU_TS;
+
+    void *ctx = nullptr;
+    uint64_t size = 0;
+    if (HcclEngineCtxGet(comm, param.tag, engine, &ctx, &size) == HCCL_SUCCESS) {
+        // device资源已经存在，复用
+        HCCL_INFO("[HcclAllGatherCustom] Engine context already exists");
+        param.resCtxDevice = ctx;
+        param.ctxSize = size;
+        // aicpu主thread为comm级资源(非stream绑定)可复用；从通信域host内存context取回其句柄，重新导出到cpu引擎
+        void *hostCtx = nullptr;
+        uint64_t hostCtxSize = sizeof(AicpuMainThreadCache);
+        CHK_RET(HcclEngineCtxGet(comm, param.tag, COMM_ENGINE_CPU_TS, &hostCtx, &hostCtxSize));
+        auto *mainThreadCache = static_cast<AicpuMainThreadCache *>(hostCtx);
+        CHK_RET(HcclThreadExportToCommEngine(comm, 1, &mainThreadCache->thread, COMM_ENGINE_CPU_TS,
+            &param.aicpuThreadOnCpu));
+        param.aicpuRecordCpuIdx = mainThreadCache->notifyNum;
+    } else {
+        // 不存在，新创建Context
+        HCCL_INFO("[HcclAllGatherCustom] Creating engine context");
+        AlgResourceCtx resCtxHost;
+
+        // 申请资源Thread和Channel (comm级资源，可随context复用)
+        CHK_RET(HcclAllocAlgResourceAICPU(comm, param, resCtxHost));
+
+        // 使用threads[0]作为主AICPU thread，同时负责算法执行和host/device同步
+        // 将aicpu主thread导出到cpu引擎，供host侧通知device使用
+        CHK_RET(HcclThreadExportToCommEngine(comm, 1, &resCtxHost.threads[0], COMM_ENGINE_CPU_TS,
+            &param.aicpuThreadOnCpu));
+        param.aicpuRecordCpuIdx = resCtxHost.notifyNumOnMainThread;
+
+        // 序列化并拷贝到device context
+        CHK_RET(HcclMemcpyCtxHostToDevice(comm, param, resCtxHost, &param.resCtxDevice, &param.ctxSize));
+        // 将aicpu主线程句柄缓存到通信域host内存context(COMM_ENGINE_CPU_TS)，供后续复用
+        void *hostCtx = nullptr;
+        uint64_t hostCtxSize = sizeof(AicpuMainThreadCache);
+        CHK_RET(HcclEngineCtxCreate(comm, param.tag, COMM_ENGINE_CPU_TS, hostCtxSize, &hostCtx));
+        auto *mainThreadCache = static_cast<AicpuMainThreadCache *>(hostCtx);
+        mainThreadCache->thread = resCtxHost.threads[0];
+        mainThreadCache->notifyNum = resCtxHost.notifyNumOnMainThread;
+    }
+    return HCCL_SUCCESS;
+}
+}
+
 HcclResult HcclAllGatherCustom(
     void *sendBuf, void *recvBuf, uint64_t sendCount, HcclDataType dataType, HcclComm comm, aclrtStream stream)
 {
@@ -55,45 +109,19 @@ HcclResult HcclAllGatherCustom(
     CHK_RET(HcclGetRankSize(comm, &param.rankSize));
 
     // ==============================================
-    // STEP 2: 创建资源
+    // STEP 2: 申请host同步thread (从stream转换)
+    // 该thread与stream绑定，每次调用都必须重新申请，不能随context复用
     // ==============================================
-    CommEngine engine = CommEngine::COMM_ENGINE_AICPU;
+    CHK_RET(HcclThreadAcquireWithStream(comm, COMM_ENGINE_CPU_TS, stream, 1, &param.cpuThread));
+    // 将host cpu thread导出到aicpu引擎，供device侧通知host使用(每次调用刷新)
+    CHK_RET(HcclThreadExportToCommEngine(comm, 1, &param.cpuThread, COMM_ENGINE_AICPU_TS, &param.cpuThreadOnAicpu));
 
-    void * ctx = nullptr;
-    uint64_t size = sizeof(AlgResourceCtx);
-    if (HcclEngineCtxGet(comm, param.tag, engine, &ctx, &size) == HCCL_SUCCESS) {
-        // device资源已经存在
-        HCCL_INFO("[HcclAllGatherCustom] Engine context already exists");
-        param.resCtxDevice = static_cast<AlgResourceCtx *>(ctx);
-    } else {
-        // 不存在，新创建Context
-        HCCL_INFO("[HcclAllGatherCustom] Creating engine context");
-        CHK_RET(HcclEngineCtxCreate(comm, param.tag, engine, size, &ctx));
-        param.resCtxDevice = static_cast<AlgResourceCtx *>(ctx);
-        AlgResourceCtx resCtxHost;
-
-        // ==============================================
-        // STEP 2.1: 申请host同步thread (从stream转换)
-        // ==============================================
-        CHK_RET(HcclThreadAcquireWithStream(comm, COMM_ENGINE_CPU_TS, stream, 1, &param.cpuThread));
-
-        // ==============================================
-        // STEP 2.2: 申请资源Thread和Channel
-        // ==============================================
-        CHK_RET(HcclAllocAlgResourceAICPU(comm, param, resCtxHost));
-
-        // ==============================================
-        // STEP 2.3: 设置host/device同步所需thread,将hostcpu thread放到aicpu，aicpu thread放到hostcpu.
-        // 使用threads[0]作为主AICPU thread，同时负责算法执行和host/device同步
-        // ==============================================
-        CHK_RET(HcclThreadExportToCommEngine(comm, 1, &resCtxHost.threads[0], COMM_ENGINE_CPU_TS, &param.aicpuThreadOnCpu));
-        CHK_RET(HcclThreadExportToCommEngine(comm, 1, &param.cpuThread, COMM_ENGINE_AICPU_TS, &resCtxHost.cpuThreadOnAicpu));
-        param.aicpuRecordCpuIdx = resCtxHost.notifyNumOnMainThread;
-
-        CHK_RET(HcclMemcpyCtxHostToDevice(comm, param, resCtxHost, &param.resCtxDevice, &param.ctxSize));
-    }
     // ==============================================
-    // STEP 3: 下发 AICPU Kernel
+    // STEP 3: 创建/复用资源
+    // ==============================================
+    CHK_RET(InitAicpuResource(comm, param));
+    // ==============================================
+    // STEP 4: 下发 AICPU Kernel
     // ==============================================
     CHK_RET(LaunchKernel(param, stream));
 
