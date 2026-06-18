@@ -230,7 +230,7 @@ HcclResult InsTempAllGatherNHR::RunLastStepWriteThenRead(const std::vector<Threa
     const std::vector<DataSlice> emptySlices;
     TxRxSlicesList writeSlicesList({txSrcSlices, txDstSlices}, {emptySlices, emptySlices});
     SendRecvInfo writeInfo(sendRecvChannels, writeSlicesList);
-    CHK_PRT_RET(SendRecvWrite(writeInfo, threads[channelIdx]),
+    CHK_PRT_RET(SendRecvBatchWrite(writeInfo, threads[channelIdx]),
         HCCL_ERROR("[InsTempAllGatherNHR] last step write failed (step=%u)", step),
         HcclResult::HCCL_E_INTERNAL);
 
@@ -250,7 +250,7 @@ HcclResult InsTempAllGatherNHR::RunLastStepWriteThenRead(const std::vector<Threa
 
     TxRxSlicesList readSlicesList({emptySlices, emptySlices}, {rxSrcSlices, rxDstSlices});
     SendRecvInfo readInfo(sendRecvChannels, readSlicesList);
-    CHK_PRT_RET(SendRecvRead(readInfo, threads[channelIdx]),
+    CHK_PRT_RET(SendRecvBatchRead(readInfo, threads[channelIdx]),
         HCCL_ERROR("[InsTempAllGatherNHR] last step read failed (step=%u)", step),
         HcclResult::HCCL_E_INTERNAL);
 
@@ -297,7 +297,7 @@ HcclResult InsTempAllGatherNHR::RunStepNHR(const std::vector<ThreadHandle> &thre
     SendRecvInfo sendRecvInfo(sendRecvChannels, sendRecvSlicesList, dataType_);
 
     if (isDmaRead_) {
-        CHK_PRT_RET(SendRecvBatchRead(sendRecvInfo, threads[channelIdx]),
+        CHK_PRT_RET(SendRecvRead(sendRecvInfo, threads[channelIdx]),
             HCCL_ERROR("[InsTempAllGatherNHR] sendrecv batch failed (step=%u)", step),
             HcclResult::HCCL_E_INTERNAL);
     } else {
