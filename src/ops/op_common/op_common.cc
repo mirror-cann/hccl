@@ -1862,7 +1862,7 @@ HcclResult CheckReduceOp(const HcclDataType dataType, const HcclReduceOp op)
     const std::vector<std::string> infoTitle({"ccl_op", "value", "parameter", "expect"});
     if (op == HcclReduceOp::HCCL_REDUCE_PROD) {
         if (std::find(prodSupportList.begin(), prodSupportList.end(), dataType) == prodSupportList.end()) {
-            RPT_INPUT_ERR(true, "EI0003", infoTitle, std::vector<std::string>({"CheckReduceOp", GetReduceOpEnumStr(op), "ReduceOp",
+            RPT_INPUT_ERR(true, "EI0003", infoTitle, std::vector<std::string>({"CheckReduceDataType", GetDataTypeEnumStr(dataType), "dataType",
                 GetReduceProdSupportDataType()}));
             HCCL_ERROR("[Check][ReduceOp][DataType]errNo[0x%016llx] reduceop is [%s] data type[%s] not supported, support range=[%s]",
                         HCCL_ERROR_CODE(HCCL_E_NOT_SUPPORT), GetReduceOpEnumStr(op).c_str(), GetDataTypeEnumStr(dataType).c_str(),
