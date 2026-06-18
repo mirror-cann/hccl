@@ -1,10 +1,10 @@
-# RFC 文档目录
+# RFC文档目录
 
 本目录存放HCCL仓的技术方案设计文档（RFC - Request for Comments）。
 
-## RFC 生命周期
+## RFC生命周期
 
-1. **编写**：开发者根据 [RFC模板](./0000-template.md) 编写RFC文档
+1. **编写**：开发者根据 [RFC模板](./0000-template.md)编写RFC文档
 2. **提交PR**：将RFC作为PR提交到本仓库
 3. **评审**：由Maintainer进行评审，可能多轮迭代
 4. **决策**：

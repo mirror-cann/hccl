@@ -34,7 +34,7 @@ HcclResult HcclSend(void* sendBuf, uint64_t count, HcclDataType dataType, uint32
 | --- | --- | --- |
 | sendBuf | 输入 | 源数据buffer地址。 |
 | count | 输入 | 发送数据的个数。 |
-| dataType | 输入 | 发送数据的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[数据类型说明](#数据类型说明)。|
+| dataType | 输入 | 发送数据的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[数据类型说明](#数据类型说明)。|
 | destRank | 输入 | 通信域内数据接收端的rank编号。 |
 | comm | 输入 | 集合通信操作所在的通信域。 |
 | stream | 输入 | 本rank所使用的stream。 |
@@ -48,7 +48,7 @@ HcclResult HcclSend(void* sendBuf, uint64_t count, HcclDataType dataType, uint32
 
 ## 返回值
 
-[HcclResult](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
+[HcclResult](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
 
 ## 约束说明
 
@@ -73,19 +73,19 @@ HcclCommInitRootInfo(rankSize, &rootInfo, deviceId, &hcclComm);
 aclrtStream stream;
 aclrtCreateStream(&stream);
 
-// 执行 Send/Recv 操作，0/2/4/6卡发送数据，1/3/5/7接收数据
-// HcclSend 与 HcclRecv 接口采用同步调用方式，且必须配对使用
+// 执行Send/Recv操作，0/2/4/6卡发送数据，1/3/5/7接收数据
+// HcclSend与HcclRecv接口采用同步调用方式，且必须配对使用
 if (deviceId % 2 == 0) {
-    // 申请 Device 内存用于存放输入数据
+    // 申请Device内存用于存放输入数据
     aclrtMalloc(&sendBuf, mallocSize, ACL_MEM_MALLOC_HUGE_ONLY);
     // 初始化输入数据
     aclrtMemcpy(sendBuf, mallocSize, hostBuf, mallocSize, ACL_MEMCPY_HOST_TO_DEVICE);
-    // 执行 Send 操作
+    // 执行Send操作
     HcclSend(sendBuf, count, HCCL_DATA_TYPE_FP32, deviceId + 1, hcclComm, stream);
 } else {
-    // 申请 Device 内存用于接收数据
+    // 申请Device内存用于接收数据
     aclrtMalloc(&recvBuf, mallocSize, ACL_MEM_MALLOC_HUGE_ONLY);
-    // 执行 Recv 操作
+    // 执行Recv操作
     HcclRecv(recvBuf, count, HCCL_DATA_TYPE_FP32, deviceId - 1, hcclComm, stream);
 }
 
@@ -93,8 +93,8 @@ if (deviceId % 2 == 0) {
 aclrtSynchronizeStream(stream);
 
 // 释放资源
-aclrtFree(sendBuf);          // 释放 Device 侧内存
-aclrtFree(recvBuf);          // 释放 Device 侧内存
+aclrtFree(sendBuf);          // 释放Device侧内存
+aclrtFree(recvBuf);          // 释放Device侧内存
 aclrtDestroyStream(stream);  // 销毁任务流
 HcclCommDestroy(hcclComm);   // 销毁通信域
 ```

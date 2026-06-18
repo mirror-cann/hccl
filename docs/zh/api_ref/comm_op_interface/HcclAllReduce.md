@@ -37,7 +37,7 @@ HcclResult HcclAllReduce(void *sendBuf, void *recvBuf, uint64_t count, HcclDataT
 | sendBuf | 输入 | 源数据buffer地址。 |
 | recvBuf | 输出 | 目的数据buffer地址，集合通信结果输出至此buffer中。 |
 | count | 输入 | 参与allreduce操作的数据个数，比如只有一个int32数据参与，则count=1。 |
-| dataType | 输入 | allreduce操作的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[dataType说明](#datatype说明)。|
+| dataType | 输入 | allreduce操作的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[dataType说明](#datatype说明)。|
 | op | 输入 | reduce的操作类型。<br>不同的型号支持的操作类型不同，详细请参见[op说明](#op说明)。|
 | comm | 输入 | 集合通信操作所在的通信域。 |
 | stream | 输入 | 本rank所使用的stream。 |
@@ -60,7 +60,7 @@ HcclResult HcclAllReduce(void *sendBuf, void *recvBuf, uint64_t count, HcclDataT
 
 ## 返回值
 
-[HcclResult](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
+[HcclResult](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
 
 ## 约束说明
 
@@ -75,7 +75,7 @@ HcclResult HcclAllReduce(void *sendBuf, void *recvBuf, uint64_t count, HcclDataT
 ## 调用示例
 
 ```c
-// 申请集合通信操作的 Device 内存
+// 申请集合通信操作的Device内存
 void *sendBuf = nullptr;
 void *recvBuf = nullptr;
 uint64_t count = 8;
@@ -92,14 +92,14 @@ HcclCommInitRootInfo(rankSize, &rootInfo, deviceId, &hcclComm);
 aclrtStream stream;
 aclrtCreateStream(&stream);
 
-// 执行 AllReduce，将通信域内所有节点的输入数据进行相加后，再把结果发送到所有节点的输出buffer
+// 执行AllReduce，将通信域内所有节点的输入数据进行相加后，再把结果发送到所有节点的输出buffer
 HcclAllReduce(sendBuf, recvBuf, count, HCCL_DATA_TYPE_FP32, HCCL_REDUCE_SUM, hcclComm, stream);
 // 阻塞等待任务流中的集合通信任务执行完成
 aclrtSynchronizeStream(stream);
 
 // 释放资源
-aclrtFree(sendBuf);          // 释放 Device 侧内存
-aclrtFree(recvBuf);          // 释放 Device 侧内存
+aclrtFree(sendBuf);          // 释放Device侧内存
+aclrtFree(recvBuf);          // 释放Device侧内存
 aclrtDestroyStream(stream);  // 销毁任务流
 HcclCommDestroy(hcclComm);   // 销毁通信域
 ```

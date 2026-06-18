@@ -36,7 +36,7 @@ HcclResult HcclBroadcast(void *buf, uint64_t count, HcclDataType dataType, uint3
 | --- | --- | --- |
 | buf | 输入/输出 | 数据buffer地址，对于root节点，是源数据buffer地址；对于非root节点，是数据接收buffer地址。 |
 | count | 输入 | 参与broadcast操作的数据个数，比如只有一个int32数据参与，则count=1。 |
-| dataType | 输入 | Broadcast操作的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[数据类型说明](#数据类型说明)。|
+| dataType | 输入 | Broadcast操作的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[数据类型说明](#数据类型说明)。|
 | root | 输入 | 作为broadcast root的rank id。 |
 | comm | 输入 | 集合通信操作所在的通信域。 |
 | stream | 输入 | 本rank所使用的stream。 |
@@ -50,7 +50,7 @@ HcclResult HcclBroadcast(void *buf, uint64_t count, HcclDataType dataType, uint3
 
 ## 返回值
 
-[HcclResult](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
+[HcclResult](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclResult.md)：接口成功返回HCCL_SUCCESS，其他失败。
 
 ## 约束说明
 
@@ -60,13 +60,13 @@ HcclResult HcclBroadcast(void *buf, uint64_t count, HcclDataType dataType, uint3
 ## 调用示例
 
 ```c
-// 申请集合通信操作的 Device 内存
+// 申请集合通信操作的Device内存
 void *buf = nullptr;    // 对于root节点，是数据源；对于非root节点，是数据接收buffer
 uint64_t count = 8;     // 参与broadcast操作的数据个数
 size_t mallocSize = count * sizeof(float);
 aclrtMalloc(&buf, mallocSize, ACL_MEM_MALLOC_HUGE_ONLY);
 
-// 在 root 节点构造输入数据
+// 在root节点构造输入数据
 if (deviceId == rootRank) {    
     aclrtMemcpy(buf, mallocSize, hostBuf, mallocSize, ACL_MEMCPY_HOST_TO_DEVICE);
 }
@@ -80,13 +80,13 @@ HcclCommInitRootInfo(rankSize, &rootInfo, deviceId, &hcclComm);
 aclrtStream stream;
 aclrtCreateStream(&stream);
 
-// 执行广播操作，将通信域内 root 节点的数据广播至其他 rank
+// 执行广播操作，将通信域内root节点的数据广播至其他rank
 HcclBroadcast(buf, count, HCCL_DATA_TYPE_FP32, rootRank, hcclComm, stream);
 // 阻塞等待任务流中的集合通信任务执行完成
 aclrtSynchronizeStream(stream);
 
 // 释放资源
-aclrtFree(buf);              // 释放 Device 侧内存
+aclrtFree(buf);              // 释放Device侧内存
 aclrtDestroyStream(stream);  // 销毁任务流
 HcclCommDestroy(hcclComm);   // 销毁通信域
 ```
