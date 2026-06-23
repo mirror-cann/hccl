@@ -711,8 +711,7 @@ HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vect
         HCCL_INFO("[CalcChannelRequestWithPriorTopo] netLayer=%u, linkListSize=%u", netLayer, listSize);
 
         if (listSize == 0) {
-            HCCL_WARNING("[CalcChannelRequestWithPriorTopo]There is no link between rank[%u] and rank[%u].", myRank,
-                         rank);
+            HCCL_WARNING("[CalcChannelRequestWithPriorTopo]There is no link between rank[%u] and rank[%u].", myRank, rank);
             break;
         }
 
@@ -722,8 +721,7 @@ HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vect
             CHK_RET(GetTopoTypeByLink(comm, netLayer, linkList[idx], topoType));
             if (topoType == priorityTopo) {
                 priorityLink = idx;
-                HCCL_INFO("[CalcChannelRequestWithPriorTopo] Found link[%u] with priority topotype[%u].", idx,
-                          topoType);
+                HCCL_INFO("[CalcChannelRequestWithPriorTopo] Found link[%u] with priority topotype[%u].", idx, topoType);
                 break;
             }
         }

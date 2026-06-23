@@ -27,6 +27,11 @@
 
 namespace ops_hccl {
 
+constexpr int INT_0 = 0;
+constexpr int INT_1 = 1;
+constexpr int INT_2 = 2;
+constexpr int INT_3 = 3;
+
 template <typename AlgTopoMatch, typename AlgTemplate0, typename AlgTemplate1, typename AlgTemplate2,
     typename AlgTemplate3>
 ReduceParallelExecutor<AlgTopoMatch, AlgTemplate0, AlgTemplate1, AlgTemplate2, AlgTemplate3>::ReduceParallelExecutor()
@@ -348,15 +353,15 @@ HcclResult ReduceParallelExecutor<AlgTopoMatch, AlgTemplate0, AlgTemplate1, AlgT
                                                resCtx_.ccuKernels.begin() + resCtx_.ccuKernelNum[0] + resCtx_.ccuKernelNum[1] + resCtx_.ccuKernelNum[2] + resCtx_.ccuKernelNum[3]);
         }
     } else {
-        tempAlgResArr_.at(stage * 2).channels = intraLinks_;
-        tempAlgResArr_.at(stage * 2 + 1).channels = interLinks_;
+        tempAlgResArr_.at(stage * INT_2).channels = intraLinks_;
+        tempAlgResArr_.at(stage * INT_2 + INT_1).channels = interLinks_;
     }
 
-    tempAlgResArr_.at(stage * 2).threads = intraThreads_;
-    tempAlgResArr_.at(stage * 2).aivCommInfoPtr = resCtx_.aivCommInfoPtr;
+    tempAlgResArr_.at(stage * INT_2).threads = intraThreads_;
+    tempAlgResArr_.at(stage * INT_2).aivCommInfoPtr = resCtx_.aivCommInfoPtr;
 
-    tempAlgResArr_.at(stage * 2 + 1).threads = interThreads_;
-    tempAlgResArr_.at(stage * 2 + 1).aivCommInfoPtr = resCtx_.aivCommInfoPtr;
+    tempAlgResArr_.at(stage * INT_2 + INT_1).threads = interThreads_;
+    tempAlgResArr_.at(stage * INT_2 + INT_1).aivCommInfoPtr = resCtx_.aivCommInfoPtr;
 
     return HCCL_SUCCESS;
 }
@@ -504,17 +509,17 @@ HcclResult
 #ifndef AICPU_COMPILE
                 if (loopTimes == 1 && param_.engine == CommEngine::COMM_ENGINE_CCU) {
                     if (stageIdx == 0 && stepIdx == 0) {
-                        ccuKernelLaunchNumRSIntra0_ = tempAlgResArr_.at(0).submitInfos.size();
-                        ccuKernelLaunchNumRSInter1_ = tempAlgResArr_.at(1).submitInfos.size();
+                        ccuKernelLaunchNumRSIntra0_ = tempAlgResArr_.at(INT_0).submitInfos.size();
+                        ccuKernelLaunchNumRSInter1_ = tempAlgResArr_.at(INT_1).submitInfos.size();
                     } else if (stageIdx == 0 && stepIdx == 1) {
-						ccuKernelLaunchNumRSIntra1_ = tempAlgResArr_.at(0).submitInfos.size() - ccuKernelLaunchNumRSIntra0_;
-                        ccuKernelLaunchNumRSInter0_ = tempAlgResArr_.at(1).submitInfos.size() - ccuKernelLaunchNumRSInter1_;
+						ccuKernelLaunchNumRSIntra1_ = tempAlgResArr_.at(INT_0).submitInfos.size() - ccuKernelLaunchNumRSIntra0_;
+                        ccuKernelLaunchNumRSInter0_ = tempAlgResArr_.at(INT_1).submitInfos.size() - ccuKernelLaunchNumRSInter1_;
                     } else if (stageIdx == 1 && stepIdx == 0) {
-						ccuKernelLaunchNumAGIntra1_ = tempAlgResArr_.at(2).submitInfos.size();
-                        ccuKernelLaunchNumAGInter0_ = tempAlgResArr_.at(3).submitInfos.size();
+						ccuKernelLaunchNumAGIntra1_ = tempAlgResArr_.at(INT_2).submitInfos.size();
+                        ccuKernelLaunchNumAGInter0_ = tempAlgResArr_.at(INT_3).submitInfos.size();
                     } else if (stageIdx == 1 && stepIdx == 1 && param_.opMode != OpMode::OFFLOAD) {
-						ccuKernelLaunchNumAGIntra0_ = tempAlgResArr_.at(2).submitInfos.size() - ccuKernelLaunchNumAGIntra1_;
-    					ccuKernelLaunchNumAGInter1_ = tempAlgResArr_.at(3).submitInfos.size() - ccuKernelLaunchNumAGInter0_;
+						ccuKernelLaunchNumAGIntra0_ = tempAlgResArr_.at(INT_2).submitInfos.size() - ccuKernelLaunchNumAGIntra1_;
+    					ccuKernelLaunchNumAGInter1_ = tempAlgResArr_.at(INT_3).submitInfos.size() - ccuKernelLaunchNumAGInter0_;
                         CHK_RET(FastLaunchSaveCtx());
                     }
                 }

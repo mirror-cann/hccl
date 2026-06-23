@@ -76,7 +76,7 @@ static CcuResult InitResource(ReduceScatterMesh1D2DieMem2MemContext &ctx)
     ctx.remoteInput.resize(ctx.rankSize);
     ctx.scratchMem.resize(ctx.rankSize);
 
-    ctx.moConfig.loopCount = 16;
+    ctx.moConfig.loopCount = REDUCE_SCATTER_LOOP_COUNT;
     ctx.moConfig.msInterleave = REDUCE_MS_CNT;
     ctx.moConfig.memSlice = CCU_MS_SIZE;
 
@@ -139,7 +139,7 @@ static std::string GetLoopBlockTag(std::string loopType, int32_t index)
 
 static CcuResult CreateReduceLoop(ReduceScatterMesh1D2DieMem2MemContext &ctx, uint32_t size)
 {
-    AllocGoResource(ctx.moConfig, ctx.moRes, ctx.resourceAllocated, 16);
+    AllocGoResource(ctx.moConfig, ctx.moRes, ctx.resourceAllocated, REDUCE_SCATTER_LOOP_COUNT);
 
     std::string loopType = ops_hccl::GetReduceTypeStr(ctx.dataType, ctx.reduceOp);
     if (ctx.IsLoopEntityRegistered(loopType)) {
@@ -151,7 +151,7 @@ static CcuResult CreateReduceLoop(ReduceScatterMesh1D2DieMem2MemContext &ctx, ui
     uint32_t expansionNum = GetReduceExpansionNum(ctx.reduceOp, ctx.dataType, ctx.outputDataType);
     uint32_t usedBufNum   = size > expansionNum ? size : expansionNum;
 
-    for (int32_t index = 0; index < 2; index++) {
+    for (int32_t index = 0; index < LOOP_NUM; index++) {
         ctx.loopScratch[index].resize(size);
 
         uint32_t bufBase = index * ctx.moConfig.msInterleave;
@@ -202,9 +202,8 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
 
     uint32_t expansionNum = GetReduceExpansionNum(ctx.reduceOp, ctx.dataType, ctx.outputDataType);
     ccu::Variable sliceSizeExpansion;
-
+    ccu::Variable tmp;
     if (expansionNum != 1) {
-        ccu::Variable tmp;
         tmp = GetExpansionParam(expansionNum);
         dst.token = dst.token + tmp;
     }
@@ -213,10 +212,9 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
     CCU_IF(ctx.sliceGoSize.loopParam != 0)
     {
         ccu::Variable loopParam;
+        ccu::Variable sliceSize;
         loopParam = GetLoopParam(0, ctx.moConfig.memSlice * ctx.moConfig.loopCount, 0);
         loopParam = loopParam + ctx.sliceGoSize.loopParam;
-
-        ccu::Variable sliceSize;
         sliceSize          = ctx.moConfig.memSlice;
         sliceSizeExpansion = ctx.moConfig.memSlice * expansionNum;
 
@@ -233,8 +231,8 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
         ctx.loopLenExp[0]    = sliceSizeExpansion;
 
         ccu::Variable paraCfg;
-        paraCfg = GetParallelParam(ctx.moConfig.loopCount - 1, 0, 1);
         ccu::Variable offsetCfg;
+        paraCfg = GetParallelParam(ctx.moConfig.loopCount - 1, 0, 1);
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopParam;
@@ -269,6 +267,7 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
         ctx.loopLen[0]    = ctx.sliceGoSize.residual;
         ctx.loopLenExp[0] = sliceSizeExpansion;
 
+        ccu::Variable sliceSize;
         // n部分，再加p的偏移
         for (uint32_t i = 0; i < size; i++) {
             scratch[i].addr += ctx.sliceGoSize.residual;
@@ -276,8 +275,6 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
         for (uint32_t i = 0; i < expansionNum; i++) {
             dst.addr += ctx.sliceGoSize.residual;
         }
-
-        ccu::Variable sliceSize;
         sliceSize          = ctx.moConfig.memSlice;
         sliceSizeExpansion = ctx.moConfig.memSlice * expansionNum;
 
@@ -294,10 +291,10 @@ static CcuResult ReduceLoopGroup(ReduceScatterMesh1D2DieMem2MemContext &ctx, ccu
         ctx.loopLenExp[1] = sliceSizeExpansion;
 
         ccu::Variable loopCfg0;
-        loopCfg0 = GetLoopParam(0, 0, 1);
         ccu::Variable loopCfg1;
-        loopCfg1 = GetLoopParam(0, 0, 1);
         ccu::Variable offsetCfg;
+        loopCfg0 = GetLoopParam(0, 0, 1);
+        loopCfg1 = GetLoopParam(0, 0, 1);
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
         loops.loopParam[0] = loopCfg0;
@@ -349,8 +346,8 @@ static CcuResult DoReduceScatter(ReduceScatterMesh1D2DieMem2MemContext &ctx)
 static CcuResult RmtReduce(ReduceScatterMesh1D2DieMem2MemContext &ctx)
 {
     ccu::Variable scratchOffset;
-    scratchOffset = 0;
     std::vector<ccu::Variable> scratchOffsetVec;
+    scratchOffset = 0;
 
     for (uint32_t gRankIdx = 0; gRankIdx < ctx.gRankSize; gRankIdx++) {
         ccu::Variable scratchOffTmp;
@@ -383,8 +380,8 @@ static CcuResult RmtReduce(ReduceScatterMesh1D2DieMem2MemContext &ctx)
     }
 
     ccu::Variable repeatNumAdd;
-    repeatNumAdd  = 1;
     ctx.flag = 0;
+    repeatNumAdd  = 1;
     CCU_WHILE(ctx.repeatNum != UINT64_MAX) {
         ctx.repeatNum += repeatNumAdd;
         CCU_IF(ctx.flag == 1) {

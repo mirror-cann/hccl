@@ -15,7 +15,6 @@ using namespace AscendC;
 // todo 简化参数
  
 class AivBroadcastMesh1D : public AivCommBase {
-
 public:
     __aicore__ inline AivBroadcastMesh1D() {}
 

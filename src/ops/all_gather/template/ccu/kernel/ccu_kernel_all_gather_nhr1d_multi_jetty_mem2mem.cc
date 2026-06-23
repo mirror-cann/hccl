@@ -208,12 +208,10 @@ static CcuResult DoRepeatAllGatherNHRSingleStep(AllGatherNHR1DMultiJettyMem2MemC
 
 static CcuResult DoRepeatAllGatherNHR(AllGatherNHR1DMultiJettyMem2MemContext &ctx)
 {
-    const auto *arg = ctx.arg;
-
     ccu::Variable tmpSliceOffset;
-    tmpSliceOffset = 0;
-
     ccu::Variable myrankInputSliceOffset;
+    const auto *arg = ctx.arg;
+    tmpSliceOffset = 0;
     myrankInputSliceOffset = 0;
 
     for (u64 i = 0; i < arg->rankId; i++) {

@@ -120,7 +120,6 @@ HcclResult InsTempAllGatherOmniPipeNHRDPU::RunNHR(
             const u32 txIdx = stepInfo.txSliceIdxs[i];
             const u32 rxIdx = stepInfo.rxSliceIdxs[i];
             for (uint32_t rpt = 0; rpt < tempAlgParams.stepSliceInfo.inputOmniPipeSliceStride[myAlgRank].size(); ++rpt) {
-
                 uint64_t txScratchBase = tempAlgParams.buffInfo.inBuffBaseOff +
                                          tempAlgParams.stepSliceInfo.inputOmniPipeSliceStride[txIdx][rpt];
                 uint64_t rxScratchBase = tempAlgParams.buffInfo.outBuffBaseOff +

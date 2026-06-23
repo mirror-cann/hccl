@@ -59,15 +59,15 @@ static CcuResult InitResource(ReduceScatterMesh1DContext &ctx)
 static CcuResult LoadArgs(ReduceScatterMesh1DContext &ctx)
 {
     const auto *arg = ctx.arg;
-
-    CCU_CHK_RET(ccu::LoadArg(ctx.input[arg->rankId], 0));
-    CCU_CHK_RET(ccu::LoadArg(ctx.output, 1));
-    CCU_CHK_RET(ccu::LoadArg(ctx.token[arg->rankId], 2));
-    CCU_CHK_RET(ccu::LoadArg(ctx.offset, 3));
-    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.addrOffset, 4));
-    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.loopParam, 5));
-    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.parallelParam, 6));
-    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.residual, 7));
+    uint32_t cnt = 0;
+    CCU_CHK_RET(ccu::LoadArg(ctx.input[arg->rankId], cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.output, cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.token[arg->rankId], cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.offset, cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.addrOffset, cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.loopParam, cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.parallelParam, cnt++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.residual, cnt++));
 
     return CCU_SUCCESS;
 }
@@ -150,12 +150,8 @@ CcuResult CcuReduceScatterMesh1DKernel(CcuKernelArg arg)
     CCU_CHK_RET(ParseKernelArg(ctx, kernelArg));
     CCU_CHK_RET(InitResource(ctx));
     CCU_CHK_RET(LoadArgs(ctx));
-
     PreSync(ctx);
-
     CCU_CHK_RET(DoReduceScatter(ctx));
-
-
     PostSync(ctx);
     HCCL_INFO("[CcuKernelReduceScatterMesh1D] ReduceScatterMesh1D end");
 

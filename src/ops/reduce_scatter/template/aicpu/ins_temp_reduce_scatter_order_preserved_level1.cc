@@ -317,8 +317,6 @@ HcclResult InsTempReduceScatterOrderPreservedLevel1::RunLocalReduce(
     u64 sliceSize = memBlockInfo.size[myAlgRank];
     u64 count = sliceSize / DATATYPE_SIZE_TABLE[dataType_];
 
-
-
     // ========== 树形Reduce主循环 ==========
     // remainingBlocks: 当前待处理的数据块数量
     u32 remainingBlocks = templateRankSize_;

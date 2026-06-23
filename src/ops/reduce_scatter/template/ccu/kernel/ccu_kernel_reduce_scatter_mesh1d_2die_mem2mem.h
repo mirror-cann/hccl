@@ -20,7 +20,8 @@ namespace ops_hccl {
 
 constexpr uint64_t REDUCE_MS_CNT = 8;
 constexpr uint16_t REDUCE_SCATTER_2DIE_GROUP_REDUCE_MAX_PIECE_CNT = 8;
-
+constexpr uint32_t REDUCE_SCATTER_LOOP_COUNT = 16;
+constexpr uint32_t LOOP_NUM = 2;
 constexpr int INPUT_XN_ID        = 0;
 constexpr int SCRATCH_XN_ID      = 1;
 constexpr int TOKEN_XN_ID        = 2;

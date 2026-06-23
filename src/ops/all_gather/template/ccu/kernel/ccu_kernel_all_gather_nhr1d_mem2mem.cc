@@ -121,8 +121,8 @@ static CcuResult DoRepeatSendRecvSlices(AllGatherNHR1DMem2MemContext &ctx, const
     ccu::LocalAddr &src, ccu::RemoteAddr &dst, u32 signalIndex, bool islastSlice)
 {
     const auto *arg = ctx.arg;
-    ChannelHandle sendChannel = arg->channels[arg->rank2ChannelIdx.at(toRank)];
     ccu::Variable tmpRepeatNum;
+    ChannelHandle sendChannel = arg->channels[arg->rank2ChannelIdx.at(toRank)];
     tmpRepeatNum = ctx.repeatNum;
     ctx.repeatTimeflag = 0;
 
@@ -196,8 +196,9 @@ static CcuResult DoRepeatAllGatherNHRSingleStep(AllGatherNHR1DMem2MemContext &ct
 static CcuResult DoRepeatAllGatherNHR(AllGatherNHR1DMem2MemContext &ctx)
 {
     const auto *arg = ctx.arg;
-    ccu::Variable localSliceSize;
     ccu::Variable tmpSliceOffset;
+    ccu::Variable localSliceSize;
+    ccu::Variable tmpCopyRepeatNum;
     tmpSliceOffset = 0;
 
     for (u64 i = 0; i < arg->mySubCommRankId; i++) {
@@ -218,8 +219,6 @@ static CcuResult DoRepeatAllGatherNHR(AllGatherNHR1DMem2MemContext &ctx)
     ctx.localDst.addr = ctx.output[ctx.myRankIdx];
     ctx.localDst.addr += ctx.outputSliceOffset[arg->mySubCommRankId];
     ctx.localDst.token = ctx.token[ctx.myRankIdx];
-
-    ccu::Variable tmpCopyRepeatNum;
     tmpCopyRepeatNum = ctx.repeatNum;
 
     bool islastSlice = (arg->mySubCommRankId + 1 == arg->dimSize);

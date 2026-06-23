@@ -178,8 +178,8 @@ CcuResult CcuReduceMesh1DKernel(CcuKernelArg arg)
 
     if (kernelArg->rankId == kernelArg->rootId) {
         ccu::Variable repeatNumAdd;
-        repeatNumAdd  = 1;
         ctx.flag = 0;
+        repeatNumAdd  = 1;
         CCU_WHILE(ctx.repeatNumVar != UINT64_MAX) { // 循环repeatNum_次
             CCU_CHK_RET(DoRepeatReduce(ctx));
             ctx.repeatNumVar += repeatNumAdd;

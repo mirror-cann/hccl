@@ -67,10 +67,12 @@ static CcuResult LocalCopyByLoopGroup(ReduceMesh1DMem2MemContext &ctx, ccu::Loca
     CCU_IF(ctx.localGoSize.addrOffset != 0)
     {
         ccu::Variable loopParam;
+        ccu::Variable sliceSize;
+        ccu::Variable paraCfg;
+        ccu::Variable offsetCfg;
         loopParam = GetLoopParam(0, ctx.moConfig.memSlice * ctx.moConfig.loopCount, 0);
         loopParam = loopParam + ctx.localGoSize.loopParam;
 
-        ccu::Variable sliceSize;
         sliceSize = ctx.moConfig.memSlice;
 
         var.src[0].addr = src.addr;
@@ -79,9 +81,7 @@ static CcuResult LocalCopyByLoopGroup(ReduceMesh1DMem2MemContext &ctx, ccu::Loca
         var.dst[0].token = dst.token;
         var.len[0] = sliceSize;
 
-        ccu::Variable paraCfg;
         paraCfg = GetParallelParam(ctx.moConfig.loopCount - 1, 0, 1);
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
 		loops.loopParam[0] = loopParam;
@@ -91,6 +91,10 @@ static CcuResult LocalCopyByLoopGroup(ReduceMesh1DMem2MemContext &ctx, ccu::Loca
 
     CCU_IF(ctx.localGoSize.parallelParam != 0)
     {
+        ccu::Variable sliceSize;
+        ccu::Variable loopCfg0;
+        ccu::Variable loopCfg1;
+        ccu::Variable offsetCfg;
         src.addr += ctx.localGoSize.addrOffset;
         dst.addr += ctx.localGoSize.addrOffset;
 
@@ -102,7 +106,6 @@ static CcuResult LocalCopyByLoopGroup(ReduceMesh1DMem2MemContext &ctx, ccu::Loca
 
         src.addr += ctx.localGoSize.residual;
         dst.addr += ctx.localGoSize.residual;
-        ccu::Variable sliceSize;
         sliceSize                  = ctx.moConfig.memSlice;
 
         var.src[1].addr = src.addr;
@@ -111,11 +114,8 @@ static CcuResult LocalCopyByLoopGroup(ReduceMesh1DMem2MemContext &ctx, ccu::Loca
         var.dst[1].token = dst.token;
         var.len[1] = sliceSize;
 
-        ccu::Variable loopCfg0;
         loopCfg0 = GetLoopParam(0, 0, 1);
-        ccu::Variable loopCfg1;
         loopCfg1 = GetLoopParam(0, 0, 1);
-        ccu::Variable offsetCfg;
         offsetCfg = GetOffsetParam(ctx.moConfig.memSlice, ctx.moConfig.msInterleave, 1);
 
 		loops.loopParam[0] = loopCfg0;
@@ -323,8 +323,8 @@ CcuResult CcuReduceMesh1DMem2MemKernel(CcuKernelArg arg)
     {
         if (kernelArg->rankId == kernelArg->rootId) {
             ccu::Variable repeatNumAdd;
-            repeatNumAdd  = 1;
             ctx.flag = 0;
+            repeatNumAdd  = 1;
             CCU_WHILE(ctx.repeatNumVar != UINT64_MAX) { // 循环repeatNum_次
                 // root要去读每个rank每个chunk的数据
                 DoRepeatReduce(ctx, ctx.input, ctx.output[kernelArg->rankId]);
