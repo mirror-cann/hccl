@@ -25,7 +25,7 @@ SelectorStatus BarrierAutoSelector::SelectDPUAlgo(
     (void)configAlgMap;
     HCCL_DEBUG("[BarrierAutoSelector][%s] start, topoLevelNums[%u]", __func__, topoInfo->topoLevelNums);
     selectAlgName = "InsBarrierMeshNhrDPU";
-    HCCL_DEBUG("[BarrierAutoSelector][%s] Algo match[%s]", __func__, selectAlgName.c_str());
+    HCCL_INFO("[BarrierAutoSelector][%s] Algo match[%s]", __func__, selectAlgName.c_str());
     return SelectorStatus::MATCH;
 }
 
