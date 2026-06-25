@@ -958,6 +958,8 @@ HcclResult FillOpExchangeInfo(HcclComm comm, const OpParam &param, OpExchangeInf
         if (ret == HCCL_SUCCESS && aivParam != nullptr) {
             exchangeInfo.aivCoreLimit = aivParam->aivCoreLimit;
         }
+    } else {
+        ACLCHECK(aclrtGetResInCurrentThread(ACL_RT_DEV_RES_VECTOR_CORE, &exchangeInfo.aivCoreLimit));
     }
     CHK_RET(HcclGetCommName(comm, exchangeInfo.group));
     exchangeInfo.group[MAX_LENGTH - 1] = '\0';
