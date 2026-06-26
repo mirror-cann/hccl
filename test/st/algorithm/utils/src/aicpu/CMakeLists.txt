@@ -136,7 +136,6 @@ list(APPEND INCLUDE_LIST
     # runtime头文件
     ${ASCEND_HOME_PATH}/include/
     ${ASCEND_HOME_PATH}/include/base/
-    ${ASCEND_HOME_PATH}/include/driver/
     ${ASCEND_HOME_PATH}/include/dump/
     ${ASCEND_HOME_PATH}/include/external/
     ${ASCEND_HOME_PATH}/include/platform/

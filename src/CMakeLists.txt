@@ -220,16 +220,9 @@ if(BUILD_OPEN_PROJECT)
         # runtime头文件
         ${ASCEND_CANN_PACKAGE_PATH}/include/
         ${ASCEND_CANN_PACKAGE_PATH}/include/base/
-        ${ASCEND_CANN_PACKAGE_PATH}/include/driver/
         ${ASCEND_CANN_PACKAGE_PATH}/include/dump/
         ${ASCEND_CANN_PACKAGE_PATH}/include/external/
         ${ASCEND_CANN_PACKAGE_PATH}/include/platform/
-
-        # driver头文件
-        ${ASCEND_CANN_PACKAGE_PATH}/include/driver/
-
-        # driver头文件
-        ${ASCEND_CANN_PACKAGE_PATH}/include/driver/
 
         # 包间接口
         ${ASCEND_CANN_PACKAGE_PATH}/pkg_inc/
