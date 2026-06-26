@@ -58,7 +58,7 @@ flowchart TD
     A10 -->|接纳| A12[添加accepted标签]
     A12 --> A13[设计系统方案]
     A13 --> A14[编写/修改RFC]
-    A14 --> A15[提交包含RFC的PR]
+    A14 --> A15[提交RFC文档PR]
     A15 --> A16{Maintainer评审}
     A16 -->|提出意见| A14
     A16 -->|通过| A17[合入RFC]
@@ -95,28 +95,33 @@ flowchart TD
    - 详细描述：使用场景、业务价值、大致技术方案；
    - 在社区发起讨论，SIG组决策是否接纳该需求；如果接纳，添加`accepted`标签。
 
-2. 系统方案设计
+2. 提交取号 PR
 
-   - 需求被接纳后，设计详细的系统方案；
-   - 在 `docs/rfcs` 目录下创建markdown格式的RFC文件，并按[RFC模板](./docs/zh/rfcs/0000-template.md)撰写系统方案；
-   - 提交PR。
+   - 需求被接纳后，在 [RFC 编号登记表](./docs/zh/rfcs/INDEX.md) 中按"最小未使用编号"规则追加一行登记占位（状态=reserved）；
+   - 提交**取号 PR**（仅含 INDEX.md 的一行更新），取号 PR 合入表示该编号可使用。
 
-3. 系统方案评审
+3. 系统方案设计
 
-   - 详细设计方案通过包含RFC的PR进行评审；
+   - 在 `docs/zh/rfcs` 目录下创建 markdown 格式的 RFC 文档（文件名以登记的编号开头），并按 [RFC 模板](./docs/zh/rfcs/0000-template.md) 撰写系统方案；
+   - 提交**RFC 文档 PR**。
+
+4. 系统方案评审
+
+   - 详细设计方案通过 RFC 文档 PR 进行评审；
    - 过程中请针对评审意见进行方案修改；
 
-4. RFC合入
+5. RFC合入
 
    - 所有Maintainer对方案均无异议后，由Maintainer添加`/lgtm`和`/approve`标签合入；
-   - 合入的RFC方案作为后续代码实施的合约，代码实现需要遵循RFC方案。
+   - 合入的RFC方案作为后续代码实施的合约，代码实现需要遵循RFC方案；
+   - RFC 文档 PR 合入后，需同步将 [RFC 编号登记表](./docs/zh/rfcs/INDEX.md) 中对应行状态从 `reserved` 改为 `accepted`。
 
-5. 软件实现
+6. 软件实现
 
    - 按照RFC方案实现代码，并提交PR；
    - 必须包含对应的测试代码（包含单元测试与系统测试）。
 
-6. 代码评审与合入
+7. 代码评审与合入
 
    - 负责对应模块或组件的Committer检视代码并反馈检视意见，请根据意见修改；没有问题后，添加`/lgtm`和`/approve`标签并合入。
 
