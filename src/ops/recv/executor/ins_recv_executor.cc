@@ -76,7 +76,9 @@ namespace ops_hccl {
 
         std::vector<HcclChannelDesc> level0Channels;
         bool isGroupEnabled = false;
-        CHK_RET(HcclGroupStatusGet(&isGroupEnabled));
+        if (HcommIsSupportHcclGroupStatusGet()) {
+            CHK_RET(HcclGroupStatusGet(&isGroupEnabled));
+        }
         if (isGroupEnabled) {
             CHK_RET(CreateChannelRequestByRankId(comm, param, myRank_, remoteRank_, level0Channels, 2));
         } else {

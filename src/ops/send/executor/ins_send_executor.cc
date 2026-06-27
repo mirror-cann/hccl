@@ -73,7 +73,7 @@ namespace ops_hccl {
 
         std::vector<HcclChannelDesc> level0Channels;
         bool isGroupEnabled = false;
-        if (HcommIsSupportHcclGroupStatusGet) {
+        if (HcommIsSupportHcclGroupStatusGet()) {
             CHK_RET(HcclGroupStatusGet(&isGroupEnabled));
         }
         if (isGroupEnabled) {

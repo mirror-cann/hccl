@@ -198,7 +198,7 @@ namespace ops_hccl {
         HCCL_DEBUG("[SendExec][%s][%s] Start.", tag.c_str(), opMode == OpMode::OPBASE ? "OPBASE" : "OFFLOAD");
 
         bool isGroupEnabled = false;
-        if (HcommIsSupportHcclGroupStatusGet) {
+        if (HcommIsSupportHcclGroupStatusGet()) {
             CHK_RET(HcclGroupStatusGet(&isGroupEnabled));
         }
         std::string tagTemp = tag;
