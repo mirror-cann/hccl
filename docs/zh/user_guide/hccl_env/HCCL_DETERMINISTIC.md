@@ -8,10 +8,19 @@
 
 HCCL_DETERMINISTIC支持的取值如下：
 
-- false：默认值，关闭确定性计算。
+- false（默认值）：关闭确定性计算。
+  - 针对Atlas A2 训练/推理系列产品：所有归约类算子默认关闭确定性计算。
+  - 针对Atlas A3 训练/推理系列产品：
+    - 若通信算子展开模式为AI CPU：所有归约类算子强制为确定性计算，不受此配置影响。
+    - 若通信算子展开模式为Vector Core：仅AllReduce和ReduceScatter涉及非确定性计算，默认关闭。
+  - Ascend 950PR/950DT：所有通信算子强制为确定性计算，不受此配置影响。
+
 - true：开启归约类通信算子的确定性计算。
-  - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持通信算子AllReduce、ReduceScatter、ReduceScatterV、Reduce。
-  - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，若通信算子的展开模式为AI CPU，所有归约类算子都为确定性计算，且不受此环境变量影响；若通信算子的展开模式为Vector Core，仅通信算子AllReduce和ReduceScatter涉及非确定性计算，配置为“true”后支持切换为确定性计算。
+  - 针对Atlas A2 训练/推理系列产品：支持AllReduce、ReduceScatter、ReduceScatterV、Reduce算子。
+  - 针对Atlas A3 训练/推理系列产品：
+    - 若通信算子展开模式为AI CPU：所有归约类算子强制为确定性计算，不受此配置影响。
+    - 仅在通信算子展开模式为Vector Core时，对AllReduce和ReduceScatter生效。
+  - 针对Ascend 950PR/950DT：所有归约类算子强制为确定性计算，且不受此配置影响。
 
 - strict：开启归约类通信算子的严格确定性计算，即保序功能（在确定性的基础上保证所有bit位的归约顺序均一致），配置为该参数时需满足以下条件：
   - 仅支持多机对称分布场景，不支持非对称分布（即卡数非对称）的场景。
@@ -22,6 +31,10 @@ HCCL_DETERMINISTIC支持的取值如下：
     - 支持通信算子AllReduce、ReduceScatter，支持数据类型float16、float32、bfp16，归约操作仅支持sum。
     - 通信规模要求rank size ≥ 3。
     - 若超节点内存在多个AI Server，仅支持AI Server间使用HCCS链路进行SDMA通信的场景，不支持使用RoCE进行RDMA通信的场景，即不支持设置环境变量[HCCL_INTER_HCCS_DISABLE](HCCL_INTER_HCCS_DISABLE.md)为“TRUE”。
+  - 针对Ascend 950PR/Ascend 950DT，
+    - 支持通信算子AllReduce、ReduceScatter。归约操作为sum时，支持数据类型float16、float32、bfp16、float64。归约操作为prod时，仅支持float64。
+    - 通信规模要求rank size ≥ 3且rank size ≤ 32。
+    - 仅支持通信算子展开模式为AI CPU，保序模式下CCU_MS、CCU_SCHED、AIV均不生效，需回退到AI CPU执行。
 
 一般情况下无需开启归约算子的确定性计算，当模型多次执行结果不同或者精度调优时，可通过此环境变量开启确定性计算进行辅助调试调优，但开启后，算子执行时间会变慢，导致性能下降。
 
@@ -42,3 +55,5 @@ export HCCL_DETERMINISTIC=true
 Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 Atlas A3 训练系列产品/Atlas A3 推理系列产品
+
+Ascend 950PR/Ascend 950DT
