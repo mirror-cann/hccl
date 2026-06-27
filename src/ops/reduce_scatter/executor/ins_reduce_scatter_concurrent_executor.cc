@@ -95,9 +95,7 @@ HcclResult InsReduceScatterConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, Ins
     std::vector<HcclChannelDesc> channelDescs1;
     std::vector<HcclChannelDesc> channelDescsTemp1;
 
-    CHK_RET(CalcChannelRequestNHRWithPriorityTopo(comm, param, topoInfo, temp1HierarchyInfo, channelDescsTemp1,
-                                               CommTopo::COMM_TOPO_CLOS));
-
+    CHK_RET(CalcChannelRequestNhrMultiJetty(comm, param, topoInfo, temp1HierarchyInfo, channelDescsTemp1)); 
     for (auto channel : channelDescsTemp1) {
         if (channel.channelProtocol == COMM_PROTOCOL_UBC_CTP) {
             channelDescs1.push_back(channel);

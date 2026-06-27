@@ -134,7 +134,7 @@ HcclResult CcuTempScatterNHR1DMem2Mem::CalcChannelDescs(HcclComm comm, const OpP
 {
     std::vector<HcclChannelDesc> myChannelDescs;
     if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS && !topoInfo->level0PcieMix) {
-        CHK_RET(CalcChannelRequestNHRWithPriorityTopo(comm, param, topoInfo, subCommRanks_, myChannelDescs, CommTopo::COMM_TOPO_CLOS));
+        CHK_RET(CalcChannelRequestNhrMultiJetty(comm, param, topoInfo, subCommRanks_, myChannelDescs)); 
         for (auto channel : myChannelDescs) {
             if (channel.channelProtocol == COMM_PROTOCOL_UBC_CTP) {
                 channelDescs.push_back(channel);

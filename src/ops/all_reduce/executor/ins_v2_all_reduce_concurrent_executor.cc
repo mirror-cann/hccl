@@ -67,7 +67,7 @@ HcclResult InsV2AllReduceConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAl
     if (topo == CommTopo::COMM_TOPO_1DMESH) {
         CHK_RET(CalcChannelRequestMesh1DWithPriorityTopo(comm, param, topoInfo, subCommRanks, channelDescsTemp, topo));
     } else if (topo == CommTopo::COMM_TOPO_CLOS) {
-        CHK_RET(CalcChannelRequestNHRWithPriorityTopo(comm, param, topoInfo, subCommRanks, channelDescsTemp, topo));
+        CHK_RET(CalcChannelRequestNhrMultiJetty(comm, param, topoInfo, subCommRanks, channelDescsTemp)); 
     }
 
     channelDescs.clear();

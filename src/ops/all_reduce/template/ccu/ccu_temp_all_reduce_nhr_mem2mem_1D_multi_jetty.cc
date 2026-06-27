@@ -56,8 +56,7 @@ HcclResult CcuTempAllReduceNhrMem2Mem1DMultiJetty::CalcRes(HcclComm comm, const 
     CHK_RET(ProcessNHRStepInfo(algStepInfoList));
 
     std::vector<HcclChannelDesc> channelDescs, channelDescsTemp;
-    CHK_RET(CalcChannelRequestNHRWithPriorityTopo(comm, param, topoInfo, subCommRanks_, channelDescsTemp,
-                                                  CommTopo::COMM_TOPO_CLOS));
+    CHK_RET(CalcChannelRequestNhrMultiJetty(comm, param, topoInfo, subCommRanks_, channelDescsTemp)); 
 
     std::copy_if(channelDescsTemp.begin(), channelDescsTemp.end(), std::back_inserter(channelDescs), 
         [](const HcclChannelDesc &c) { return c.channelProtocol == COMM_PROTOCOL_UBC_CTP; });

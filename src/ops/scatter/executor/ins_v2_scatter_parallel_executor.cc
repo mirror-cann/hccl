@@ -165,6 +165,8 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         resCtx.cclMem.size);
     if (param.engine != CommEngine::COMM_ENGINE_AIV && param.engine != CommEngine::COMM_ENGINE_CCU) {
         CHK_RET(RestoreChannelMap(resCtx, remoteRankToChannelInfo_));
+        intraChannelInfo_ = remoteRankToChannelInfo_[0];
+ 	    interChannelInfo_ = remoteRankToChannelInfo_[1];
     }
     dataCount_ = param.DataDes.count;
     dataType_ = param.DataDes.dataType;
@@ -232,7 +234,9 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         param, resCtx.topoInfo.userRank, temp0HierarchyInfo_);  // server内算法，比如mesh
     InsAlgTemplate1 tempAlgInter(
         param, resCtx.topoInfo.userRank, temp1HierarchyInfo_);  // server间算法，比如nhr
-    // 计算算法模板所需资源
+    if (param.engine == CommEngine::COMM_ENGINE_AICPU_TS) {
+ 	    tempAlgInter.SetchannelsPerRank(interChannelInfo_);
+ 	}    // 计算算法模板所需资源
     CHK_RET(PrepareResForTemplate(tempAlgIntra));
 
     CHK_RET(GenInsQuesHost(param, resCtx, tempAlgIntra, tempAlgInter));

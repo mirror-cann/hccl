@@ -51,7 +51,7 @@ HcclResult CcuTempReduceScatterNhrMultiJettyMem2Mem1D::CalcRes(HcclComm comm, co
     kernelInfo.kernelFunc = reinterpret_cast<void *>(CcuReduceScatterNhrMem2Mem1DMultiJettyKernel);
     
     std::vector<HcclChannelDesc> channelDescs;
-    CHK_RET(CalcChannelRequestNHRWithPriorityTopo(comm, param, topoInfo, subCommRanks_, channelDescs, CommTopo::COMM_TOPO_CLOS));
+    CHK_RET(CalcChannelRequestNhrMultiJetty(comm, param, topoInfo, subCommRanks_, channelDescs)); 
     std::vector<HcclChannelDesc> myChannelDescs;
     for(auto channel : channelDescs) {
         if(channel.channelProtocol == COMM_PROTOCOL_UBC_CTP) {
