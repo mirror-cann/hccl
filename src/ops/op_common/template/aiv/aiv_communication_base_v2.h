@@ -119,10 +119,6 @@ hiddenInput, input, output
 #define SUPERKERNEL_CLASS_INIT \
 hiddenInput, input, output
 
-constexpr uint64_t AIV_FLAG_BUFFER_SIZE = 3 * 1024 * 1024; // aiv算子的flag区域大小
-constexpr uint64_t SYNC_BUFFER_OFFSET = 2 * 1024 * 1024; // 用于sync的aiv buffer的偏移
-constexpr uint64_t BUFFER_AREA = 1024 * 1024; // aiv算子的单独功能flag区域大小
-
 constexpr uint64_t AIV_PING_PONG_FACTOR_TWO = 2;
 constexpr uint32_t NUM_BLOCKS_FOUR_PER_RANK_A3 = 4;
 constexpr uint32_t MAX_NUM_BLOCKS = 48;
@@ -263,11 +259,11 @@ public:
         pipe.InitBuffer(inQueueY, 1, chunkSize);
         pipe.InitBuffer(outQueueZ, 1, chunkSize);
 
+        GetTag(args->buffersIn);
+        InitBuffArray(args->buffersIn, pingpong);
         if (args->clearEnable == 1) {
             ClearSyncBuf();
         }
-        GetTag(args->buffersIn);
-        InitBuffArray(args->buffersIn, pingpong);
     }
 
     __aicore__ inline void InitBuffArray(GM_ADDR buffIn, bool pingpong = false)
@@ -491,7 +487,7 @@ __aicore__ inline void AivCommBase::ClearFlag()
     __gm__ int32_t *ctrlFlagsGM = (__gm__ int32_t *)(GM_OUT[rank_]);
     __gm__ int32_t *emtpyGM = (__gm__ int32_t *)(GM_OUT[rank_] + AIV_FLAG_EMPTY_OFFSET - gmOutOffset);
     if (blockIdx_ == 0) {
-        CpGM2GM(ctrlFlagsGM, emtpyGM, BUFFER_AREA / sizeof(int32_t));
+        CpGM2GM(ctrlFlagsGM, emtpyGM, (BASE_FLAG_OFFSET - FLAG1_OFFSET) / sizeof(int32_t));
     }
 }
 
