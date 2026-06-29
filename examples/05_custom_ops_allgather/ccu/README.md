@@ -44,23 +44,38 @@
 
 本样例编译用到的软件依赖如下，注意满足版本号要求：
 
-- gcc & g++ : 7.3.0 至 13.3.x
+- gcc & g++ >= 7.3.0
 - cmake >= 3.16.0
 
 ### 2. 安装 CANN Toolkit 开发套件包
 
-参考 [昇腾文档中心-CANN软件安装指南](https://www.hiascend.com/document/redirect/CannCommunityInstWizard)，安装最新版本 CANN Toolkit 开发套件包。
+参考 [昇腾文档中心-CANN软件安装指南](https://www.hiascend.com/document/redirect/CannCommunityInstWizard)，安装与样例配套的 9.1.0 版本 CANN Toolkit 开发套件包。
+
+安装方式支持默认路径安装和指定路径安装两种方式：
+
+- **默认路径安装**：无需指定 `--install-path` 参数，安装完成后软件位于 `/usr/local/Ascend`（root 用户）或 `${HOME}/Ascend`（非 root 用户）。
+- **指定路径安装**：通过 `--install-path` 参数指定安装目录，安装完成后软件位于 `${install_path}`，后续编译及环境变量配置均需使用该路径。
+
+```bash
+# 确保安装包具有可执行权限
+chmod +x Ascend-cann-toolkit_${cann_version}_linux-${arch}.run
+# 默认路径安装
+./Ascend-cann-toolkit_${cann_version}_linux-${arch}.run --install
+# 指定路径安装（${install_path} 替换为实际安装目录）
+# ./Ascend-cann-toolkit_${cann_version}_linux-${arch}.run --install --install-path=${install_path}
+```
 
 ### 3. 配置环境变量
 
-按需选择合适的命令使环境变量生效。
-    
+安装完 CANN Toolkit 开发套件包后，需根据安装方式选择对应的环境变量配置命令，使环境变量生效。
+
 ```bash
 # 默认路径安装，以root用户为例（非root用户，将/usr/local替换为${HOME}）
 source /usr/local/Ascend/cann/set_env.sh
 # 指定路径安装，${install_path}表示CANN-Toolkit包实际安装路径
 # source ${install_path}/cann/set_env.sh
 ```
+set_env.sh 是 环境初始化脚本，负责配置 PATH、LD_LIBRARY_PATH、PYTHONPATH 等环境变量，使编译器和运行时能正确找到昇腾 NPU 的工具链、库文件和算子库。
 
 ## 二、编译自定义算子包
 
@@ -118,22 +133,21 @@ bash build.sh --vendor=cust --ops=allgather_ccu --custom_ops_path=./examples/05_
 
 ## 四、执行自定义算子
 
-### 1. 编译样例
+### 1. 编译测试样例
 
 在 `examples/05_custom_ops_allgather/ccu/testcase` 代码目录下执行如下命令：
 
 ```bash
-# 编译样例
+# 编译测试样例
 make
 ```
 
-### 2. 执行样例
+### 2. 执行测试样例
 
 在 `examples/05_custom_ops_allgather/ccu/testcase` 代码目录下执行如下命令：
  	 
 ```bash
-# 运行样例
-export LD_LIBRARY_PATH=${ASCEND_HOME_PATH}/opp/vendors/cust/lib64:${LD_LIBRARY_PATH}
+# 运行测试样例
 make test
 
 # 或直接执行样例二进制
