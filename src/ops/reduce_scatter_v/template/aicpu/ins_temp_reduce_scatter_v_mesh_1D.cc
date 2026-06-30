@@ -71,12 +71,13 @@ HcclResult InsTempReduceScatterVMesh1D::KernelRun(const OpParam& param,
         GetNotifyIdxSubToMain(notifyIdxSubToMain_);
         CHK_RET(PostSyncInterThreads(templateResource.threads[0], subThreads, notifyIdxSubToMain_));
     }
-    PostCopy(tempAlgParams, templateResource.threads);
+    CHK_RET(PostCopy(param, tempAlgParams, templateResource.threads));
     HCCL_INFO("[InsTempReduceScatterVMesh1D] Run End");
     return HcclResult::HCCL_SUCCESS;
 }
 
-HcclResult InsTempReduceScatterVMesh1D::PostCopy(const TemplateDataParams &tempAlgParams, const std::vector<ThreadHandle> &threads)
+HcclResult InsTempReduceScatterVMesh1D::PostCopy(const OpParam& param, 
+    const TemplateDataParams &tempAlgParams, const std::vector<ThreadHandle> &threads)
 {
     // 通信结束之后，数据都在 cclBuffer 上，需要搬运到对应的输出位置。
     u32 myAlgRank = 0;
@@ -102,6 +103,13 @@ HcclResult InsTempReduceScatterVMesh1D::PostCopy(const TemplateDataParams &tempA
                                        repeatIdx * tempAlgParams.outputRepeatStride,
                                        allRankProcessSize_[myAlgRank], allRankCounts_[myAlgRank]);
         CHK_RET(static_cast<HcclResult>(LocalCopy(threads[0], srcSlice, dstSlice)));
+        if (dataType_ == HCCL_DATA_TYPE_INT64 || reduceOp_ == HcclReduceOp::HCCL_REDUCE_PROD) {
+            CHK_RET(static_cast<HcclResult>(HcommBatchModeEnd(param.algTag)));
+            CHK_RET(static_cast<HcclResult>(HcommBatchModeStart(param.algTag)));
+            for (const auto &thread : threads) {
+                CHK_RET(static_cast<HcclResult>(HcommThreadJoin(thread, CUSTOM_TIMEOUT)));
+            }
+        }
         
         // 把其他卡的数据input累加到output
         for (u32 tmpRank = 0; tmpRank < templateRankSize_; tmpRank++) {
