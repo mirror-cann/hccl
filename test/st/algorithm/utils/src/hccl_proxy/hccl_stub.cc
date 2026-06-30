@@ -420,6 +420,19 @@ int32_t HcommThreadNotifyWaitOnThreadWithDefaultTimeout(ThreadHandle thread, uin
     return HcommThreadNotifyWaitOnThread(thread, notifyIdx, 0);
 }
 
+#ifdef HCOMM_TIMEOUT_FLOAT_TYPE
+int32_t HcommSetNotifyWaitTimeOut(float timeOut)
+{
+    static_cast<void>(timeOut);
+    return HCCL_SUCCESS;
+}
+
+int32_t HcommThreadResAcquireTimeOut(float timeOut)
+{
+    static_cast<void>(timeOut);
+    return HCCL_SUCCESS;
+}
+#else
 int32_t HcommSetNotifyWaitTimeOut(uint32_t timeOut)
 {
     static_cast<void>(timeOut);
@@ -431,6 +444,7 @@ int32_t HcommThreadResAcquireTimeOut(uint32_t timeOut)
     static_cast<void>(timeOut);
     return HCCL_SUCCESS;
 }
+#endif
 
 int32_t HcommThreadNotifyRecordOnThread(ThreadHandle thread, ThreadHandle dstThread, uint32_t dstNotifyIdx)
 {
