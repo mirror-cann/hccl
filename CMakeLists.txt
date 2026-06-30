@@ -109,6 +109,7 @@ elseif(ENABLE_CUSTOM)
     include(cmake/config.cmake)
     include(cmake/func.cmake)
     include(cmake/package.cmake)
+    include(version.cmake)
 
     # AICPU Device 构建目标
     add_custom_target(custom_aicpu)
