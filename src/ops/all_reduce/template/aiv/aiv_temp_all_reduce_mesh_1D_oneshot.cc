@@ -45,7 +45,7 @@ HcclResult AivTempAllReduceMesh1DOneShot::CalcRes(HcclComm comm, const OpParam& 
     std::vector<HcclChannelDesc> level0Channels;
     if(topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS && !topoInfo->level0PcieMix) {
         std::vector<HcclChannelDesc> myChannelDescs;
-        CHK_RET(CalcChannelRequestMesh1DWithPriorityTopo(comm, param, topoInfo, subCommRanks_, myChannelDescs, CommTopo::COMM_TOPO_1DMESH));
+        CHK_RET(CalcChannelRequestMeshClosMultiJetty(comm, param, topoInfo, subCommRanks_, myChannelDescs, true));
         for(auto channel : myChannelDescs) {
             if(channel.channelProtocol == COMM_PROTOCOL_UB_MEM) {
                 level0Channels.push_back(channel);

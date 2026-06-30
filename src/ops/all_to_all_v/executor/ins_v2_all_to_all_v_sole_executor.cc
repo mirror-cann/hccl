@@ -186,7 +186,7 @@ HcclResult InsV2AlltoAllVSoleExecutor<AlgTopoMatch, InsAlgTemplate>::Orchestrate
     HCCL_INFO("[InsV2AlltoAllVSoleExecutor][OrchestrateLoop] Start");
 
     TemplateResource templateAlgRes;
-    if (remoteRankToChannelInfo_.size() > 0) {
+    if (param.engine != CommEngine::COMM_ENGINE_AIV && remoteRankToChannelInfo_.size() > 0) {
         templateAlgRes.channels = remoteRankToChannelInfo_[0];
     }
     if (param.engine == COMM_ENGINE_CCU) {
@@ -249,7 +249,7 @@ HcclResult InsV2AlltoAllVSoleExecutor<AlgTopoMatch, InsAlgTemplate>::Orchestrate
     }
 
     std::vector<std::vector<u32>> tempAlgHierachyInfo;
-    if (resCtx.topoInfo.level0Topo == Level0Shape::MESH_1D_CLOS && !resCtx.topoInfo.level0PcieMix) {
+    if (resCtx.topoInfo.level0Topo == Level0Shape::MESH_1D_CLOS && !resCtx.topoInfo.level0PcieMix && param.engine != CommEngine::COMM_ENGINE_AIV) {
         if (resCtx.topoInfo.topoLevelNums == 1 ) {
             tempAlgHierachyInfo = {resCtx.algHierarchyInfo.infos[0][1]};
         } else {
