@@ -53,6 +53,7 @@
 #include "hccl_res_expt_dl.h"
 #include "ccu_launch_dl.h"
 #include "hccl_ccu_res_dl.h"
+#include "comm_engine_utils.h"
 
 namespace ops_hccl {
 // 用于维护增量建链算子的host ctx信息
@@ -338,10 +339,10 @@ HcclResult ConstructHcclDfxOpInfo(const OpParam &param, const char* tag, u32 tag
     CHK_PRT_RET(sRet != EOK, HCCL_ERROR("%s call strncpy_s failed, tag:%s, tagSize:%u, sRet:%d.",
         __func__, tag, tagSize, sRet), HCCL_E_MEMORY);
     HCCL_INFO("[%s]HcclDfxOpInfo param: algTag[%s], opMode[%u], opType[%u], reduceOp[%u], dataType[%u], dataCount[%llu], "
-        "root[%u], engine[%u], inputMemAddr[0x%llx], inputMemSize[%llu], outputMemAddr[0x%llx], outputMemSize[%llu], "
+        "root[%u], engine[%s], inputMemAddr[0x%llx], inputMemSize[%llu], outputMemAddr[0x%llx], outputMemSize[%llu], "
         "cpuTsThread[0x%llu], cpuWaitAicpuNotifyIdx[%u]",
         __func__, hcclDfxOpInfo.algTag, hcclDfxOpInfo.opMode, hcclDfxOpInfo.opType, hcclDfxOpInfo.reduceOp,
-        hcclDfxOpInfo.dataType, hcclDfxOpInfo.dataCount, hcclDfxOpInfo.root, hcclDfxOpInfo.engine,
+        hcclDfxOpInfo.dataType, hcclDfxOpInfo.dataCount, hcclDfxOpInfo.root, GetEnumToString(GetCommEngineStatusStrMap(), hcclDfxOpInfo.engine).c_str(),
         hcclDfxOpInfo.inputMemAddr, hcclDfxOpInfo.inputMemSize, hcclDfxOpInfo.outputMemAddr,
         hcclDfxOpInfo.outputMemSize, hcclDfxOpInfo.cpuTsThread, hcclDfxOpInfo.cpuWaitAicpuNotifyIdx);
     return HCCL_SUCCESS;
@@ -1006,8 +1007,8 @@ HcclResult HcclGetAlgRes(HcclComm comm, OpParam& param, std::unique_ptr<InsCollA
             if (i > 0) channelNumInfo += ", ";
             channelNumInfo += "level" + std::to_string(i) + "[" + std::to_string(resCtxHost->channels[i].size()) + "]";
         }
-        HCCL_RUN_INFO("[HcclGetAlgRes] engine[%d], algTag[%s], resource allocated: thread num[%u], "
-            "channel num per level[%s], ccu kernel num[%u].", static_cast<int>(param.engine), param.algTag,
+        HCCL_RUN_INFO("[HcclGetAlgRes] engine[%s], algTag[%s], resource allocated: thread num[%u], "
+            "channel num per level[%s], ccu kernel num[%u].", GetEnumToString(GetCommEngineStatusStrMap(), param.engine).c_str(), param.algTag,
             resCtxHost->threads.size(), channelNumInfo.c_str(), resCtxHost->ccuKernels.size());
     }
 
@@ -1120,7 +1121,7 @@ HcclResult GetAlgResWithEngine(HcclComm comm, OpParam &param, AlgResourceRequest
         }
         CHK_RET(ret);
     } else {
-        HCCL_ERROR("fail to get engine, invalid engine type[%d].", param.engine);
+        HCCL_ERROR("fail to get engine, invalid engine type[%s].", GetEnumToString(GetCommEngineStatusStrMap(), param.engine).c_str());
         return HCCL_E_PARA;
     }
     param.ctxSize = size;

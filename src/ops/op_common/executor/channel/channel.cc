@@ -18,6 +18,7 @@
 #include "topo.h"
 #include "topo_host.h"
 #include "alg_env_config.h"
+#include "comm_engine_utils.h"
 #if !defined(HCCL_CANN_COMPAT_850)
 #include "ccu_alg_template_base.h"
 #endif
@@ -223,8 +224,8 @@ HcclResult GetProtocolByEngine(const OpParam& param, std::vector<CommProtocol> &
             protocols.push_back(CommProtocol::COMM_PROTOCOL_ROCE);
             break;
         default:
-            HCCL_WARNING("[GetProtocolByEngine] Unknown engine[%d], set protocol to RESERVED",
-                         static_cast<int>(param.engine));
+            HCCL_WARNING("[GetProtocolByEngine] Unknown engine[%s], set protocol to RESERVED",
+                         GetEnumToString(GetCommEngineStatusStrMap(), param.engine).c_str());
             break;
     }
 #else

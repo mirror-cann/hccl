@@ -8,6 +8,7 @@
  * See LICENSE in the root of the software repository for the full text of the License.
  */
 #include "omnipipe_data_slice_calc.h"
+#include "comm_engine_utils.h"
 
 namespace ops_hccl {
 constexpr double BANDWIDTH_RATIO_BOUND = 10;
@@ -466,8 +467,8 @@ std::vector<u64> CalcOmniPipeScratchInfo(OmniPipeScratchParam &omniPipeScratchPa
     CommEngine engine = omniPipeScratchParam.engine;
     HCCL_INFO(
         "[CalcOmniPipeScratchInfo] "
-        "dataSize=[%llu],dataTypeSize=[%llu],maxTmpMemSize=[%llu],opMode=[%u],engine=[%u],levelAlgType.size()=[%u]",
-        dataSize, dataTypeSize, maxTmpMemSize, opMode, engine, levelAlgType.size());
+        "dataSize=[%llu],dataTypeSize=[%llu],maxTmpMemSize=[%llu],opMode=[%u],engine=[%s],levelAlgType.size()=[%u]",
+        dataSize, dataTypeSize, maxTmpMemSize, opMode, GetEnumToString(GetCommEngineStatusStrMap(), engine).c_str(), levelAlgType.size());
 
     double xyB = xB;
     if(yB >= xB){
