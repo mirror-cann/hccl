@@ -36,7 +36,7 @@ public:
             ProcessSmallData();
         } else {
             // 多核大数据量场景
-            ProcessMultiRank();
+            ProcessMultiCore();
         }
     }
 
