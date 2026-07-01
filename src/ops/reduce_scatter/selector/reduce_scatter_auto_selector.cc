@@ -153,8 +153,15 @@ SelectorStatus ReduceScatterAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWi
         return SelectorStatus::NOT_MATCH;
     }
 
+    constexpr u64 CCU_SCHEDULE_2LEVEL_MAX_PER_RANK_DATA_SIZE = 32ULL * 1024 * 1024;
+
     if (topoInfo->topoLevelNums > 1) {
         if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
+            if (dataSize * topoInfo->userRankSize >= CCU_SCHEDULE_2LEVEL_MAX_PER_RANK_DATA_SIZE) {
+                HCCL_INFO("[ReduceScatterAutoSelector] 2 level topo perRankDataSize[%llu] exceeds limit, "
+                        "fallback to aicpu.", dataSize);
+                return SelectorStatus::NOT_MATCH;
+            }
             // Level1Nhr 已在 CalcTopoShape 中设置（GCD==1 时为 true）
             if (topoInfo->Level1Nhr) {
                 selectAlgName = "CcuReduceScatterNHR1DMem2Mem";

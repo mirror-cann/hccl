@@ -297,6 +297,9 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
     u64 interScratchOffset = static_cast<u64>(hcclBuffMultipleIntra * hcclMemBlockSize);
     u64 maxCountPerLoop = std::min(static_cast<u64>(hcclMemBlockSize), static_cast<u64>(UB_MAX_DATA_SIZE)) / HCCL_MIN_SLICE_ALIGN
         * HCCL_MIN_SLICE_ALIGN / dataTypeSize_; 
+    CHK_PRT_RET(maxCountPerLoop == 0,
+        HCCL_ERROR("[InsV2ScatterParallelExecutor][GenInsQuesHost] maxCountPerLoop is 0"),
+        HcclResult::HCCL_E_INTERNAL);
 
     u32 loopTimes = dataCount_ / maxCountPerLoop + ((dataCount_ % maxCountPerLoop == 0) ? 0 : 1);
 
@@ -326,12 +329,30 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
     
     interTemplateAlgRes.threads = interThreads_;
 
-    for (u32 loopIndex = 0; loopIndex < loopTimes; loopIndex++) {
-        u64 currCount = (loopIndex == loopTimes - 1) ? (dataCount_ - loopIndex * maxCountPerLoop) : maxCountPerLoop;
+    u64 alignSize = AICPU_ALIGN_SIZE;
+    u64 processedCount = 0;
+    u32 loopIndex = 0;
+    while (processedCount < dataCount_) {
+        u64 remainingCount = dataCount_ - processedCount;
+        u32 remainingLoopTimes = (loopIndex < loopTimes) ? (loopTimes - loopIndex) : 1;
+        u64 currCount = (remainingCount + remainingLoopTimes - 1) / remainingLoopTimes;
+        currCount = std::min(currCount, maxCountPerLoop);
         u64 dataCountPerLoopAixs0 = static_cast<u64>(dataSplitSize.at(0) * currCount);
         u64 dataCountPerLoopAixs1 = currCount - dataCountPerLoopAixs0;
-
-        u64 dataOffset0 = loopIndex * maxCountPerLoop * dataTypeSize_;
+        if (remainingLoopTimes > 1) {
+            u64 alignedCountPart0 = dataCountPerLoopAixs0;
+            u64 alignedCountPart1 = dataCountPerLoopAixs1;
+            alignedCountPart0 = alignedCountPart0 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
+            alignedCountPart1 = alignedCountPart1 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
+            if (alignedCountPart0 + alignedCountPart1 > 0) {
+                dataCountPerLoopAixs0 = alignedCountPart0;
+                dataCountPerLoopAixs1 = alignedCountPart1;
+            }
+        }
+        CHK_PRT_RET(dataCountPerLoopAixs0 + dataCountPerLoopAixs1 == 0,
+            HCCL_ERROR("[InsV2ScatterParallelExecutor][GenInsQuesHost] currCount is 0"),
+            HcclResult::HCCL_E_INTERNAL);
+        u64 dataOffset0 = processedCount * dataTypeSize_;
         u64 dataOffset1 = dataOffset0 + dataCountPerLoopAixs0 * dataTypeSize_;
         HCCL_DEBUG("[InsV2ScatterParallelExecutor][Orchestrate] loopIndex[%u] in loopTimes[%u], currCount[%u], "
                   "dataCountPerLoopAixs0[%u], dataCountPerLoopAixs1[%u], dataOffset0[%u], dataOffset1[%u]",
@@ -396,6 +417,8 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
             CHK_RET(FastLaunchSaveCtx(param, intraTemplateAlgRes, interTemplateAlgRes, resCtx.notifyNumOnMainThread));
         }
 #endif
+        processedCount += dataCountPerLoopAixs0 + dataCountPerLoopAixs1;
+        loopIndex++;
     }
     return HcclResult::HCCL_SUCCESS;
 }

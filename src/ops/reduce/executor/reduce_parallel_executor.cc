@@ -491,12 +491,33 @@ HcclResult
     ReduceParallelExecutor<AlgTopoMatch, AlgTemplate0, AlgTemplate1, AlgTemplate2, AlgTemplate3>::OrchestrateLoop(
         u32 loopTimes, u64 maxCountPerLoop)
 {
+    u64 alignSize = AICPU_ALIGN_SIZE;
     u64 processedCount = 0;
-    for (u32 loopIndex = 0; loopIndex < loopTimes; loopIndex++) {
-        u64 currCount = (loopIndex + 1 == loopTimes) ? (dataCount_ - loopIndex * maxCountPerLoop) : maxCountPerLoop;
-        dataCountPerLoop_.at(0) = static_cast<u64>(currCount * multipleDimensionSplitRatio_);
-        dataCountPerLoop_.at(1) = currCount - dataCountPerLoop_.at(0);
-        dataOffsetPerLoop_.at(0) = loopIndex * maxCountPerLoop * dataTypeSize_;
+    u32 loopIndex = 0;
+    while (processedCount < dataCount_) {
+        u64 remainingCount = dataCount_ - processedCount;
+        u32 remainingLoopTimes = (loopIndex < loopTimes) ? (loopTimes - loopIndex) : 1;
+        u64 currCount = (remainingCount + remainingLoopTimes - 1) / remainingLoopTimes;
+        currCount = std::min(currCount, maxCountPerLoop);
+        u64 currCountPart0 = static_cast<u64>(currCount * multipleDimensionSplitRatio_);
+        u64 currCountPart1 = currCount - currCountPart0;
+        if (remainingLoopTimes > 1) {
+            u64 alignedCountPart0 = currCountPart0;
+            u64 alignedCountPart1 = currCountPart1;
+            alignedCountPart0 = alignedCountPart0 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
+            alignedCountPart1 = alignedCountPart1 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
+            if (alignedCountPart0 + alignedCountPart1 > 0) {
+                currCountPart0 = alignedCountPart0;
+                currCountPart1 = alignedCountPart1;
+            }
+        }
+        CHK_PRT_RET(currCountPart0 + currCountPart1 == 0,
+                    HCCL_ERROR("[ReduceParallelExecutor][OrchestrateLoop] currCount is 0"),
+                    HcclResult::HCCL_E_INTERNAL);
+        dataCountPerLoop_.at(0) = currCountPart0;
+        dataCountPerLoop_.at(1) = currCountPart1;
+        u64 currProcessedCount = currCountPart0 + currCountPart1;
+        dataOffsetPerLoop_.at(0) = processedCount * dataTypeSize_;
         dataOffsetPerLoop_.at(1) = dataOffsetPerLoop_.at(0) + dataCountPerLoop_.at(0) * dataTypeSize_;
 
         u32 stageNum = 2;
@@ -527,14 +548,14 @@ HcclResult
 #endif
             }
         }
-        if (myRank_ != root_) {
-            continue;
+        if (myRank_ == root_) {
+            const DataSlice srcSlice(resCtx_.cclMem.addr, 0, currProcessedCount * dataTypeSize_);
+            const DataSlice dstSlice(param_.outputPtr, processedCount * dataTypeSize_, currProcessedCount * dataTypeSize_);
+            CHK_RET(LocalCopy(threads_.at(0), srcSlice, dstSlice));
         }
-        const DataSlice srcSlice(resCtx_.cclMem.addr, 0, currCount * dataTypeSize_);
-        const DataSlice dstSlice(param_.outputPtr, processedCount * dataTypeSize_, currCount * dataTypeSize_);
-        CHK_RET(LocalCopy(threads_.at(0), srcSlice, dstSlice));
 
-        processedCount += currCount;
+        processedCount += currProcessedCount;
+        loopIndex++;
     }
 
     return HCCL_SUCCESS;
