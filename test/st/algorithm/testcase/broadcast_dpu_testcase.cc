@@ -116,7 +116,7 @@ TEST_F(DPU_BROADCAST_TEST, st_broadcast_a5_aicpu_1DTwoShot_2x3_test)
     auto count = 100;  // 数据量
     auto dataType = HcclDataType::HCCL_DATA_TYPE_INT8;  // 数据类型
     auto root = 0;  // root节点
-    auto dataTypeSize = sizeof(int32_t);
+    auto dataTypeSize = sizeof(int8_t);
     RunBroadcastTest(topoMeta, rankSize, count, dataType, root, dataTypeSize);
 
 }
@@ -136,7 +136,7 @@ TEST_F(DPU_BROADCAST_TEST, st_broadcast_a5_aicpu_1DTwoShot_2x2_test)
     auto count = 100;  // 数据量
     auto dataType = HcclDataType::HCCL_DATA_TYPE_INT16;  // 数据类型
     auto root = 0;  // root节点
-    auto dataTypeSize = sizeof(int32_t);
+    auto dataTypeSize = sizeof(int16_t);
     RunBroadcastTest(topoMeta, rankSize, count, dataType, root, dataTypeSize);
 
 }
@@ -216,7 +216,7 @@ TEST_F(DPU_BROADCAST_TEST, st_broadcast_a5_aicpu_1DTwoShot_root1_test)
     uint64_t count = 100;  // 数据量
     auto dataType = HcclDataType::HCCL_DATA_TYPE_FP16;  // 数据类型
     auto root = 1;  // root节点
-    auto dataTypeSize = sizeof(int32_t);
+    auto dataTypeSize = sizeof(int16_t);
     RunBroadcastTest(topoMeta, rankSize, count, dataType, root, dataTypeSize);
 
 }
@@ -236,7 +236,7 @@ TEST_F(DPU_BROADCAST_TEST, st_broadcast_a5_aicpu_1DTwoShot_root3_test)
     uint64_t count = 400;  // 数据量
     auto dataType = HcclDataType::HCCL_DATA_TYPE_FP16;  // 数据类型
     auto root = 3;  // root节点
-    auto dataTypeSize = sizeof(int32_t);
+    auto dataTypeSize = sizeof(int16_t);
     RunBroadcastTest(topoMeta, rankSize, count, dataType, root, dataTypeSize);
 
 }

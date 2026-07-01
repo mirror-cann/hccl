@@ -185,6 +185,17 @@ TEST_F(DPU_SEND_RECV_TEST, dpu_send_recv_test_int16)
     DPUSendRecvTest(topoMeta, sendRecvMap, dataCount, dataType);
 }
 
+TEST_F(DPU_SEND_RECV_TEST, dpu_send_recv_test_count1)
+{
+    TopoMeta topoMeta{{{0, 1}, {2, 3}}};
+    std::map<RankId, RankId> sendRecvMap = {{0, 2}, {1, 3}};
+
+    auto dataCount = 1;
+    auto dataType = HcclDataType::HCCL_DATA_TYPE_FP16;
+
+    DPUSendRecvTest(topoMeta, sendRecvMap, dataCount, dataType);
+}
+
 // 单卡单机两超节点100个int32
 TEST_F(DPU_SEND_RECV_TEST, dpu_send_recv_test_uint16)
 {
