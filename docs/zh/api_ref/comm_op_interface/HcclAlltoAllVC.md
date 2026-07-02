@@ -77,9 +77,9 @@ aclrtStream stream;
 aclrtCreateStream(&stream);
 
 // 设置收发数据量，收发数据量相同
-std::vector&lt;uint64_t> sendCountMatrix(rankSize * rankSize);
-for (uint32_t i = 0; i &lt; rankSize; ++i) {
-    for (uint32_t j = 0; j &lt; rankSize; ++j) {
+std::vector<uint64_t> sendCountMatrix(rankSize * rankSize);
+for (uint32_t i = 0; i < rankSize; ++i) {
+    for (uint32_t j = 0; j < rankSize; ++j) {
         sendCountMatrix[i * rankSize + j] = count / rankSize;
     }
 }

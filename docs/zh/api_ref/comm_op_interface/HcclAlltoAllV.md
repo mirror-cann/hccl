@@ -92,11 +92,11 @@ aclrtStream stream;
 aclrtCreateStream(&stream);
 
 // 设置收发数据量，收发数据量相同
-std::vector&lt;uint64_t> sendCounts(rankSize, 1);
-std::vector&lt;uint64_t> recvCounts(rankSize, 1);
-std::vector&lt;uint64_t> sdispls(rankSize);
-std::vector&lt;uint64_t> rdispls(rankSize);
-for (size_t i = 0; i &lt; rankSize; ++i) {
+std::vector<uint64_t> sendCounts(rankSize, 1);
+std::vector<uint64_t> recvCounts(rankSize, 1);
+std::vector<uint64_t> sdispls(rankSize);
+std::vector<uint64_t> rdispls(rankSize);
+for (size_t i = 0; i < rankSize; ++i) {
     sdispls[i] = i;
     rdispls[i] = i;
 }
