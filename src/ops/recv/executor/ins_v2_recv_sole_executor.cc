@@ -134,7 +134,7 @@ namespace ops_hccl
         templateResource.channels = remoteRankToChannelInfo_[0];
         templateResource.npu2DpuShmemPtr = resCtx.npu2DpuShmemPtr;
         templateResource.dpu2NpuShmemPtr = resCtx.dpu2NpuShmemPtr;
-        maxTmpMemSize_ = std::min<u64>(UB_MAX_DATA_SIZE, resCtx.cclMem.size); // maxTmpMemSize_取ub和ccl的最小值
+        maxTmpMemSize_ = resCtx.cclMem.size;
         u64 resDataSize = dataSize_;
         u64 maxRoundTransferSize = (maxTmpMemSize_ / dataTypeSize_) * dataTypeSize_;
         while (resDataSize > 0)

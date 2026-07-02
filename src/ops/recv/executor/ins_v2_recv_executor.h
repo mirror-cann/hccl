@@ -38,19 +38,18 @@ namespace ops_hccl {
         HcclResult InitRecvInfo(
             const HcclComm comm, const OpParam &param, const TopoInfoWithNetLayerDetails *topoInfo,
             const AlgHierarchyInfoForAllLevel &algHierarchyInfo);
+        HcclResult CalNumBlocks(u32& numBlocks, u64 dataSize, u32 numBlocksLimit) const;
         // 图模式&单算子
         HcclResult OrchestrateImpl(const OpParam &param, const AlgResourceCtxSerializable &resCtx);
 
-        HcclResult CalNumBlocks(u32& numBlocks, u64 dataSize, u32 numBlocksLimit) const;
-
-        // 单算子|图模式
-        OpMode opMode_;
         u32 remoteRank_;
         // 一次搬运最大数据量
         u64 maxLoopTransSize_;
         // 一次搬运最大数据个数
         u64 maxLoopTransCount_;
         u32 sliceId_{0};
+        // 单算子|图模式
+        OpMode opMode_;
     };
 
 } // namespace ops_hccl

@@ -55,7 +55,7 @@ HcclResult GetTopoTypeByLink(HcclComm comm, uint32_t netLayer, CommLink &link, C
 HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vector<HcclChannelDesc> &channels,
                                   CommTopo priorityTopo);
 HcclResult ProcessLinksForChannelMutiJetty(HcclComm comm, CommProtocol &expectedProtocol, std::vector<CommLink>& linkList, u32 myRank, u32 remoteRank, 
-                                               uint32_t netLayer, std::vector<HcclChannelDesc>& channels, bool isMesh, bool isClos, bool isIsolation = false);
+                                               uint32_t netLayer, std::vector<HcclChannelDesc>& channels, bool execptMesh, bool isIsolation = false);
 HcclResult GetProtocolByEngine(const OpParam& param, std::vector<CommProtocol> &protocols);
 HcclResult ProcessMeshInfo(const HcclComm comm,const std::vector<std::vector<u32>>& subcommInfo,
                         std::map<u32, u32>& rank2ChannelIdx, u32 myRank,

@@ -59,7 +59,7 @@ HcclResult CcuTempAlltoAllMesh1D::CalcRes(HcclComm comm, const OpParam& param, c
     kernelInfo.channels = channelDescs;
     resourceRequest.ccuKernelInfos.push_back(kernelInfo);
 
-    HCCL_DEBUG("[CcuTempAlltoAllMeshMem2Mem1D::CalcRes] channelDescs.size()=%llu, dimsize=%llu, "
+    HCCL_DEBUG("[CcuTempAlltoAllMesh1D::CalcRes] channelDescs.size()=%llu, dimsize=%llu, "
                "ccuKernelInfos.size()=%llu",
                channelDescs.size(), subCommRanks_[0].size(), resourceRequest.ccuKernelInfos.size());
 
@@ -126,7 +126,7 @@ HcclResult CcuTempAlltoAllMesh1D::FastLaunch(const OpParam& param, const Templat
                                             tempFastLaunchCtx.ccuKernelSubmitInfos[0].kernelHandle,
                                             taskArgs, argSize);
     if (launchRet != CCU_SUCCESS) {
-        HCCL_ERROR("[CcuTempReduceScatterMesh1D::FastLaunch] kernel launch failed, ccuRet -> %d", launchRet);
+        HCCL_ERROR("[CcuTempAlltoAllMesh1D::FastLaunch] kernel launch failed, ccuRet -> %d", launchRet);
         return ConvertCcuToHccl(launchRet);
     }
 

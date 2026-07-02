@@ -257,11 +257,11 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
         for (uint32_t i = 0; i < size; i++) {
             src[i].addr = src[i].addr + goSize.addrOffset;
         }
+        sliceSizeExpansion = 0;
         for (uint32_t i = 0; i < expansionNum; i++) {
             dst.addr = dst.addr + goSize.addrOffset;
         }
 
-        sliceSizeExpansion = 0;
         for (uint32_t i = 0; i < expansionNum; i++) {
             sliceSizeExpansion = sliceSizeExpansion + goSize.residual;
         }
@@ -270,8 +270,8 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
             var.loopSrc[0][i].addr = src[i].addr;
             var.loopSrc[0][i].token = src[i].token;
         }
-        var.loopDst[0].addr = dst.addr;
         var.loopDst[0].token = dst.token;
+        var.loopDst[0].addr = dst.addr;
         var.loopLen[0] = goSize.residual;
         var.loopLenExp[0] = sliceSizeExpansion;
 
@@ -282,8 +282,8 @@ static CcuResult ReduceLoopGroup(AllreduceMesh1D2DieOneShotContext &ctx,
             dst.addr = dst.addr + goSize.residual;
         }
 
-        sliceSize = ctx.moConfig.memSlice;
         sliceSizeExpansion = ctx.moConfig.memSlice * expansionNum;
+        sliceSize = ctx.moConfig.memSlice;
 
         for (uint32_t i = 0; i < size; ++i) {
             var.loopSrc[1][i].addr = src[i].addr;

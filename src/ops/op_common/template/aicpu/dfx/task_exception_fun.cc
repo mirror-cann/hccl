@@ -16,6 +16,7 @@
 #include "log.h"
 #include "alg_param.h"
 #include "dlsym_common.h"
+#include "comm_engine_utils.h"
 
 namespace ops_hccl {
 HcclResult CreateScatter(OpParam *param, ScatterOpInfo *opInfo)
@@ -97,10 +98,10 @@ HcclResult ConvertToHcclDfxOpInfo(OpParam *param, HcclDfxOpInfoCompat *hcclDfxOp
     hcclDfxOpInfo->outputMemAddr = reinterpret_cast<uint64_t>(param->outputPtr);
     hcclDfxOpInfo->outputMemSize = param->outputSize;
     HCCL_INFO("[%s]HcclDfxOpInfo param: algTag[%s], opMode[%u], opType[%u], reduceOp[%u], dataType[%u], dataCount[%llu],"
-        "root[%u], engine[%u], cpuTsThread[%u], cpuWaitAicpuNotifyIdx[%u], "
+        "root[%u], engine[%s], cpuTsThread[%u], cpuWaitAicpuNotifyIdx[%u], "
         "inputMemAddr[0x%llx], inputMemSize[%llu], outputMemAddr[0x%llx], outputMemSize[%llu]",
         __func__, hcclDfxOpInfo->algTag, hcclDfxOpInfo->opMode, hcclDfxOpInfo->opType, hcclDfxOpInfo->reduceOp,
-        hcclDfxOpInfo->dataType, hcclDfxOpInfo->dataCount, hcclDfxOpInfo->root, hcclDfxOpInfo->engine,
+        hcclDfxOpInfo->dataType, hcclDfxOpInfo->dataCount, hcclDfxOpInfo->root, GetEnumToString(GetCommEngineStatusStrMap(), hcclDfxOpInfo->engine).c_str(),
         hcclDfxOpInfo->cpuTsThread, hcclDfxOpInfo->cpuWaitAicpuNotifyIdx, hcclDfxOpInfo->inputMemAddr,
         hcclDfxOpInfo->inputMemSize, hcclDfxOpInfo->outputMemAddr, hcclDfxOpInfo->outputMemSize);
     return HCCL_SUCCESS;

@@ -77,14 +77,9 @@ SelectorStatus AllGatherAutoSelector::SelectMeshAlgo(const TopoInfoWithNetLayerD
         CHK_PRT_RET(CheckClosNumMultipleOfMeshNum(topoInfo, isClosNumMultipleOfMeshNum) != HCCL_SUCCESS,
             HCCL_DEBUG("[AllGatherAutoSelector] CheckClosNumMultipleOfMeshNum failed."), SelectorStatus::NOT_MATCH);
         if (dataSize > SMALL_COUNT_512KB) {
-            // 大数据量场景，4P内并发executor，4P外回退ccu_sched模式
-            if (isMeshNumEqualToClosNum && (topoInfo->userRankSize <= MAX_RANK_NUM_FOR_CONCURRENT_ALGO)) {
-                selectAlgName = "CcuAllGatherConcurrentMesh1DNHR";
-                return SelectorStatus::MATCH;
-            } else {
-                HCCL_DEBUG("[AllGatherAutoSelector] Level0Shape::MESH_1D_CLOS in large data scene is not supported for ccu_ms mode, reset to default.");
-                return SelectorStatus::NOT_MATCH;
-            }
+            // 大数据量场景，4P内并发executor资源不够暂不支持，因此4P内和4P外回退ccu_sched模式
+            HCCL_DEBUG("[AllGatherAutoSelector] Level0Shape::MESH_1D_CLOS in large data scene is not supported for ccu_ms mode, reset to default.");
+            return SelectorStatus::NOT_MATCH;
         } else {
                 selectAlgName = "CcuAllGatherMesh1D";
                 return SelectorStatus::MATCH;
@@ -304,7 +299,8 @@ SelectorStatus AllGatherAutoSelector::SelectAicpuAlgo(
                     selectAlgName = "InsAllGatherMesh1D";
                 }
             } else if(isClosNumMultipleOfMeshNum && dataSize > SMALL_COUNT_512KB) {
-                selectAlgName = "InsAllGatherParallelMesh1DNHRMultiJetty";
+                selectAlgName = (dataSize < OMNI_PCIE_AG_DATA_SIZE) ? "InsAllGatherParallelMesh1DNHRMultiJetty" :
+                                                                          "InsV2AllGatherOmniPipe";
             } else {
                 // 4P外非对称场景，大小数据量都用NHR算法
                 selectAlgName = "InsAllGatherNHR";

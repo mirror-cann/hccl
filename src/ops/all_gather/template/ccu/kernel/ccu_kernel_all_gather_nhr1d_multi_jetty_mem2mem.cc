@@ -175,13 +175,18 @@ static CcuResult DoRepeatAllGatherNHRSingleStep(AllGatherNHR1DMultiJettyMem2MemC
     ctx.srcMem.token = ctx.token[ctx.myRankIdx];
     ctx.dstMem.token = ctx.token[toRankIdx];
 
-    CCU_CHK_RET(ccu::NotifyRecord(recvChannel, CKE_IDX_0, 1 << STEP_PRE_SYNC_ID)); // 待修改
+    CCU_CHK_RET(ccu::NotifyRecord(recvChannel, CKE_IDX_0, 1 << STEP_PRE_SYNC_ID));
     CCU_CHK_RET(ccu::NotifyWait(sendChannel, CKE_IDX_0, 1 << STEP_PRE_SYNC_ID));
 
     for (u32 i = 0; i < sendSliceIdxList.size(); i++) {
         sendSliceIdx = sendSliceIdxList[i];
-        ctx.srcMem.addr = ctx.output[ctx.myRankIdx];
-        ctx.srcMem.addr += ctx.outputSliceOffset[sendSliceIdx];
+        if (sendSliceIdx == arg->rankId) {
+            ctx.srcMem.addr = ctx.input;
+            ctx.srcMem.addr += ctx.myrankInputSliceOffset;
+ 	    } else {
+            ctx.srcMem.addr = ctx.output[ctx.myRankIdx];
+            ctx.srcMem.addr += ctx.outputSliceOffset[sendSliceIdx];
+ 	    }
         ctx.dstMem.addr = ctx.output[toRankIdx];
         ctx.dstMem.addr += ctx.outputSliceOffset[sendSliceIdx];
 
@@ -209,27 +214,33 @@ static CcuResult DoRepeatAllGatherNHRSingleStep(AllGatherNHR1DMultiJettyMem2MemC
 static CcuResult DoRepeatAllGatherNHR(AllGatherNHR1DMultiJettyMem2MemContext &ctx)
 {
     ccu::Variable tmpSliceOffset;
-    ccu::Variable myrankInputSliceOffset;
     const auto *arg = ctx.arg;
     tmpSliceOffset = 0;
-    myrankInputSliceOffset = 0;
+    ctx.myrankInputSliceOffset = 0;
 
     for (u64 i = 0; i < arg->rankId; i++) {
-        myrankInputSliceOffset += ctx.inputSliceStride;
+        ctx.myrankInputSliceOffset += ctx.inputSliceStride;
     }
     for (u64 i = 0; i < arg->rankSize; i++) {
         ctx.outputSliceOffset[i] = tmpSliceOffset;
         tmpSliceOffset += ctx.outputSliceStride;
     }
 
+    // Phase 1: 远端读写
+    for (auto &nhrStepInfo : arg->stepInfoVector) {
+        CCU_CHK_RET(DoRepeatAllGatherNHRSingleStep(ctx, nhrStepInfo));
+    }
+
+    // Phase 2: 本地拷贝GroupCopy使用CCU_WHILE
     ctx.srcMem.addr = ctx.input;
-    ctx.srcMem.addr += myrankInputSliceOffset;
+    ctx.srcMem.addr += ctx.myrankInputSliceOffset;
     ctx.myDstMem.addr = ctx.output[ctx.myRankIdx];
     ctx.myDstMem.addr += ctx.outputSliceOffset[arg->rankId];
     ctx.srcMem.token = ctx.token[ctx.myRankIdx];
     ctx.myDstMem.token = ctx.token[ctx.myRankIdx];
 
     ctx.tmpCopyRepeatNumInv = ctx.repeatNumInv;
+    ctx.repeatTimeflag = 0;
 
     CCU_WHILE(ctx.tmpCopyRepeatNumInv != UINT64_MAX)
     {
@@ -247,13 +258,8 @@ static CcuResult DoRepeatAllGatherNHR(AllGatherNHR1DMultiJettyMem2MemContext &ct
         } CCU_ELSE {
             CCU_CHK_RET(ccu::EventRecord(ctx.event, rankMask));
         }
-        
         CCU_CHK_RET(ccu::EventWait(ctx.event, rankMask));
         ctx.repeatTimeflag = 1;
-    }
-
-    for (auto &nhrStepInfo : arg->stepInfoVector) {
-        CCU_CHK_RET(DoRepeatAllGatherNHRSingleStep(ctx, nhrStepInfo));
     }
 
     return CCU_SUCCESS;

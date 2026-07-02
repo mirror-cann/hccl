@@ -18,10 +18,16 @@ HCCL通信域Server间/超节点间支持如下算法的自适应选择，自适
 - Pairwise算法：逐对通信算法，仅用于AlltoAll、AlltoAllV与AlltoAllVC算子，通信步数较多（线性复杂度），时延相对较高，但可以避免网络中出现一打多现象（指一个rank通过同一个端口给多个rank发送数据），适合通信数据量较大、需要规避网络一打多现象的场景。
 - AHC（Asymmetric Hierarchical Concatenate）算法：层次化集合通信算法，仅用于ReduceScatter、AllGather、AllReduce算子，适用于通信域内NPU分布存在多个层次、同时支持多个层次间NPU对称或者非对称分布的场景，当通信域内层次间存在带宽收敛时相对收益会更好。
 
-> [!NOTE]说明 
+> [!NOTE]说明
 >
 > - 开发者若想指定Server间或超节点间通信算法，可通过环境变量[HCCL_ALGO](../hccl_env/HCCL_ALGO.md)进行设置。需要注意，若通过环境变量HCCL_ALGO指定了Server间或超节点间通信算法，通信算法的自适应选择功能不再生效，以用户指定的算法为准。
 > - 每种算法支持的算子以及产品可参见环境变量[HCCL_ALGO](../hccl_env/HCCL_ALGO.md)。
+
+## 特殊说明
+
+- 分组Full Mesh算法：分组全连接通信算法，仅用于Atlas A3 训练系列产品/Atlas A3 推理系列产品的AlltoAll、AlltoAllV与AlltoAllVC算子，在集群规模较大时，以一定的并发度分多组完成通信，在超节点内的并发度高、时延小，超节点间的并发度低、时延相对较高（以避免网络中出现一打多现象）。该算法不支持通过环境变量[HCCL_ALGO](../hccl_env/HCCL_ALGO.md)进行设置。
+
+- NHR-HCF（NHR Highest Common Factor）算法：最大公约数算法，仅适用于Atlas A3 训练系列产品/Atlas A3 推理系列产品，在超节点间Server数不一致但Server内卡数一致的场景默认生效，不支持通过环境变量[HCCL_ALGO](../hccl_env/HCCL_ALGO.md)进行设置，该算法通过计算超节点间Server数的最大公约数将通信域切分为多个对称分布的逻辑超节点，并基于新的逻辑拓扑形态选择通信算法，在“超节点间Server数的最大公约数大于1”的场景相对收益会更好。
 
 ## 耗时评估
 

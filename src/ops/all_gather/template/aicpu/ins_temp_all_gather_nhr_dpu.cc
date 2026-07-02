@@ -128,10 +128,10 @@ HcclResult InsTempAllGatherNHRDPU::GetStepInfo(uint32_t step, uint32_t nSteps, A
 {
     uint32_t rankIdx = 0;
     CHK_RET(GetAlgRank(myRank_, subCommRanks_[0], rankIdx));
-    stepInfo.txSliceIdxs.clear();
-    stepInfo.rxSliceIdxs.clear();
     stepInfo.step = step;
     stepInfo.myRank = rankIdx;
+    stepInfo.txSliceIdxs.clear();
+    stepInfo.rxSliceIdxs.clear();
 
     // 计算通信对象
     uint32_t deltaRank = 1 << (nSteps - 1 - step);
@@ -145,8 +145,8 @@ HcclResult InsTempAllGatherNHRDPU::GetStepInfo(uint32_t step, uint32_t nSteps, A
     uint32_t rxSliceIdx = (rankIdx - (1 << (nSteps - 1 - step)) + templateRankSize_) % templateRankSize_;
 
     stepInfo.nSlices = nSlices;
-    stepInfo.toRank = sendTo;
     stepInfo.fromRank = recvFrom;
+    stepInfo.toRank = sendTo;
 
     for (uint32_t i = 0; i < nSlices; i++) {
         stepInfo.txSliceIdxs.push_back(txSliceIdx);

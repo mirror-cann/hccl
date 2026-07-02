@@ -12,6 +12,7 @@
 #include <sstream>
 #include <memory>
 #include <cstring>
+#include <sched.h>
 #include <hccl/hccl_comm.h>
 #include "alg_param.h"
 #include "executor_base.h"
@@ -258,6 +259,13 @@ bool IsOpsV2(const char* algName, DevType deviceType)
 
 extern "C" unsigned int HcclLaunchAicpuKernel(OpParam *param)
 {
+    // 修改当前进程的调度策略和优先级
+    struct sched_param schedParam;
+    schedParam.sched_priority = 0; // 设置优先级为0
+    if (sched_setscheduler(0, SCHED_OTHER, &schedParam) == -1) {
+        HCCL_ERROR("%s sched_setscheduler to SCHED_OTHER failed", __func__);
+        return 1;
+    }
     if (param == nullptr) {
         HCCL_ERROR("%s param is nullptr", __func__);
         return 1;

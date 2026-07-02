@@ -52,11 +52,11 @@ struct AllReduceNHR1DContext: CcuKernelCtxBase {
     std::vector<ccu::Variable> output;
     std::vector<ccu::Variable> token;
     ccu::Variable isInputOutputEqual;
-    ccu::Variable die0Size;
-    ccu::Variable die1Size;
     ccu::Variable sliceSize;
     ccu::Variable die0SliceSize;
     ccu::Variable die1SliceSize;
+    ccu::Variable die0Size;
+    ccu::Variable die1Size;
     ccu::Variable die0LastSliceSize;
     ccu::Variable die1LastSliceSize;
 

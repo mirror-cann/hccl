@@ -33,14 +33,14 @@ public:
     }
     HcclResult KernelRun(const OpParam &param, const TemplateDataParams &tempAlgParams,
                          TemplateResource &templateResource) override;
+    HcclResult GetRes(AlgResourceRequest &resourceReques) const override;
     HcclResult CalcRes(HcclComm comm, const OpParam &param, const TopoInfoWithNetLayerDetails *topoInfo,
                        AlgResourceRequest &resourceRequest) override;
-    HcclResult GetRes(AlgResourceRequest &resourceReques) const override;
 
     u64 CalcScratchMultiple(BufferType inBuffType, BufferType outBuffType) override;
     u64 GetThreadNum() const override;
-    void GetNotifyIdxMainToSub(std::vector<u32> &notifyIdxMianToSub) override;
     void GetNotifyIdxSubToMain(std::vector<u32> &notifyIdxSubToMain) override;
+    void GetNotifyIdxMainToSub(std::vector<u32> &notifyIdxMianToSub) override;
 
 private:
     HcclResult RunAllGatherMesh(const std::vector<ThreadHandle> &threads,

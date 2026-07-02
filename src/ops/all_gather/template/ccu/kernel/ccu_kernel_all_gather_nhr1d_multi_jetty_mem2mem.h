@@ -59,11 +59,12 @@ struct AllGatherNHR1DMultiJettyMem2MemContext : CcuKernelCtxBase {
     ccu::Variable                             lastSliceSizePerJetty;
     ccu::Variable                             repeatNumInv;
     ccu::Variable                             inputSliceStride;
+    ccu::Variable                             myrankInputSliceOffset;
     ccu::Variable                             outputSliceStride;
     ccu::Variable                             inputRepeatStride;
     ccu::Variable                             outputRepeatStride;
     ccu::Variable                             isInputOutputEqual;
-    GroupOpSizeVars                         groupOpSize;
+    GroupOpSizeVars                           groupOpSize;
     ccu::Event                                event;
     std::vector<ccu::Variable>                outputSliceOffset;
     ccu::Variable                             constVar1;

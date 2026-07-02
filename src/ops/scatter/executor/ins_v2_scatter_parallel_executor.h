@@ -12,8 +12,6 @@
 #define HCCLV2_INS_V2_SCATTER_PARALLEL_EXECUTOR_H
 
 #include "alg_param.h"
-#include "channel.h"
-#include "alg_v2_template_base.h"
 #include "utils.h"
 #include "log.h"
 #include "workflow.h"
@@ -24,6 +22,8 @@
 #include "topo_match_multilevel.h"
 #include "topo_match_pcie_mix.h"
 #include "topo_match_ubx.h"
+#include "channel.h"
+#include "alg_v2_template_base.h"
 
 namespace ops_hccl {
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>

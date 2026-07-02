@@ -67,8 +67,8 @@ HcclResult InsV2ReduceSequenceExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemp
     // 初始化一些基本成员变量
     InitCommInfo(param, topoInfo, algHierarchyInfo);
 
-    rankSizeLevel0_ = algHierarchyInfo.infos[0].size();
     rankSizeLevel1_ = algHierarchyInfo.infos[1].size();
+    rankSizeLevel0_ = algHierarchyInfo.infos[0].size();
 
     std::shared_ptr<InsAlgTemplate0> reduceScatterMesh1DTempAlg =
         std::make_shared<InsAlgTemplate0>(param, myRank_, algHierarchyInfo.infos[0]);

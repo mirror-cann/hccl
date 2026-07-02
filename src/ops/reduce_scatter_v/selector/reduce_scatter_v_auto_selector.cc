@@ -196,9 +196,6 @@ SelectorStatus ReduceScatterVAutoSelector::SelectAicpuAlgo(const TopoInfoWithNet
                                                       std::string &selectAlgName) const
 {
     (void)configAlgMap;
-    CHK_PRT_RET(opParam.reduceType == HcclReduceOp::HCCL_REDUCE_PROD,
-        HCCL_ERROR("[Algo][ReduceScatterVAutoSelector] ReduceOp [PROD] is not supported yet for aicpu mode."),
-        SelectorStatus::NOT_MATCH);
     if (Is64BitDataType(opParam.vDataDes.dataType) && opParam.vDataDes.dataType != HcclDataType::HCCL_DATA_TYPE_INT64) {
         HCCL_ERROR("[SelectAicpuAlgo] [ReduceScatterVAutoSelector] UINT64 or FP64 are not yet supported for aicpu mode.");
         return SelectorStatus::NOT_MATCH;

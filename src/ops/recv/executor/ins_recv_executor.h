@@ -44,6 +44,8 @@ namespace ops_hccl {
         // 单算子
         HcclResult OrchestrateOpbase(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const ThreadHandle &thread, const ChannelInfo &channel);
 
+        // 是否使用dma read
+        bool isDmaRead_{false};
         // 单算子|图模式
         OpMode opMode_;
         u32 remoteRank_;
@@ -51,8 +53,6 @@ namespace ops_hccl {
         u64 maxLoopTransSize_;
         // 一次搬运最大数据个数
         u64 maxLoopTransCount_;
-        // 是否使用dma read
-        bool isDmaRead_{false};
     };
 } // namespace ops_hccl
 

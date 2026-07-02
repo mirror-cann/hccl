@@ -29,6 +29,7 @@ public:
         info += std::to_string(templateRankSize_);
         return info;
     }
+    u64 GetThreadNum() const override;
     HcclResult KernelRun(const OpParam &param, const TemplateDataParams &tempAlgParams,
                          TemplateResource &templateResource) override;
     HcclResult CalcRes(HcclComm comm, const OpParam &param, const TopoInfoWithNetLayerDetails *topoInfo,
@@ -36,7 +37,6 @@ public:
     HcclResult GetResWithoutLinks(AlgResourceRequest &resourceRequest) const;
  
     u64 CalcScratchMultiple(BufferType inBuffType, BufferType outBuffType) override;
-    u64 GetThreadNum() const override;
 
     void GetNotifyIdxMainToSub(std::vector<u32> &notifyIdxMainToSub) override;
     void GetNotifyIdxSubToMain(std::vector<u32> &notifyIdxSubToMain) override;

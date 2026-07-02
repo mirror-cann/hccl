@@ -140,16 +140,16 @@ HcclResult TopoMatchUBX::MatchTopo(const HcclComm comm, TopoInfoWithNetLayerDeta
             myRank),
         HcclResult::HCCL_E_PARA);
     // 1.获取并校验通信层数
-    uint32_t *netLayers;
     uint32_t layerNum = 0;
+    uint32_t *netLayers;
     CHK_RET(HcclRankGraphGetLayers(comm, &netLayers, &layerNum));
 
     HCCL_DEBUG("[CollAlgFactory] [TopoMatchUBX] Rank [%d], netLayers[%u][%s]",
                 myRank, layerNum, PrintCArray<uint32_t>(netLayers, layerNum).c_str());
 
     // 2. 获取每个pod上rank数量以及pod数量
-    uint32_t *instSizeList;
     uint32_t listSize = 0;
+    uint32_t *instSizeList;
     CHK_RET(HcclRankGraphGetInstSizeListByLayer(comm, 0, &instSizeList, &listSize));
     HCCL_INFO("[CollAlgFactory] [TopoMatchUBX] Rank [%d], [%u] pods ,ranksize on each pod :[%s]",
         myRank,
