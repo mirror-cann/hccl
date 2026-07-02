@@ -194,7 +194,7 @@ HcclResult InsTempAlltoAllVMesh1D::RunALLtoALL(
         if (isDmaRead_) {
             if (roundIdx == 0) {
                 // 如果是read模式，第一轮做统一的前拷贝
-                CHK_RET(PreCopyByLoop(commRanks, channels, threads, tempAlgParams, myAlgRank));
+                CHK_RET(PreCopyByLoop(commRanks, channels, threads, tempAlgParams));
                 if (threadNum_ > 1) {
                     GetNotifyIdxSubToMain(notifyIdxSubToMain_);
                     CHK_RET(PostSyncInterThreads(threads[0], subThreads, notifyIdxSubToMain_)); // 第1轮通信中将前拷贝与本卡数据拷贝错开
@@ -281,9 +281,11 @@ HcclResult InsTempAlltoAllVMesh1D::RunSendRecvByChannel(const TemplateDataParams
     u32 queIdx = myRankCclBuffIdx * channelsPerRank_ + 1;
     const ThreadHandle &mainThreadCurRank = threads[queIdx]; // 当前rank分配到的第一条流（rank内主流）
     std::vector<ThreadHandle> subThreadsCurRank; // 当前rank的rank内从流
-    if (curValidChannelsSize > 1 && roundIdx != 0) {
+    if (curValidChannelsSize > 1) {
         subThreadsCurRank.assign(threads.begin() + queIdx + 1, threads.begin() + queIdx + curValidChannelsSize);
-        PreSyncInterThreadsPerRank(mainThreadCurRank, subThreadsCurRank);
+        if (roundIdx != 0) {
+            CHK_RET(PreSyncInterThreadsPerRank(mainThreadCurRank, subThreadsCurRank));
+        }
     }
     for (u32 channelId = 0; channelId < curValidChannelsSize; channelId++) {
         if (roundIdx != 0 && isDmaRead_ && sendSizeSplit_[channelId] > 0) {
@@ -320,7 +322,7 @@ HcclResult InsTempAlltoAllVMesh1D::RunSendRecvByChannel(const TemplateDataParams
         DataInfo recvInfo{channelRecv, {rxSrcSlices, rxDstSlices}, dataType_};
         SendRecvInfo sendRecvInfo{{channelSend, channelRecv},
             {{txSrcSlices, txDstSlices}, {rxSrcSlices, rxDstSlices}}, dataType_};
-        CHK_RET(RunSendRecv(tempAlgParams, sendRecvInfo, sendInfo, recvInfo, threads[queIdx], channelId));
+        CHK_RET(RunSendRecv(sendRecvInfo, sendInfo, recvInfo, threads[queIdx], channelId));
         HCCL_INFO("[InsTempAlltoAllVMesh1D][RunSendRecvByLoop] do send recv write on thread[%u], channelId[%u], "\
             "send size[%llu], recv size[%llu], remote rank[%u].",
             queIdx, channelId, sendSizeSplit_[channelId], recvSizeSplit_[channelId], remoteRank);
@@ -331,14 +333,13 @@ HcclResult InsTempAlltoAllVMesh1D::RunSendRecvByChannel(const TemplateDataParams
         queIdx++;
     }
     if (curValidChannelsSize > 1 && roundIdx != commLoops - 1) {
-        PostSyncInterThreadsPerRank(mainThreadCurRank, subThreadsCurRank);
+        CHK_RET(PostSyncInterThreadsPerRank(mainThreadCurRank, subThreadsCurRank));
     }
     return HcclResult::HCCL_SUCCESS;
 }
 
-HcclResult InsTempAlltoAllVMesh1D::RunSendRecv(const TemplateDataParams &tempAlgParams,
-    const SendRecvInfo &sendRecvInfo, const DataInfo &sendInfo, const DataInfo &recvInfo,
-    const ThreadHandle& thread, const u32 channelId) const
+HcclResult InsTempAlltoAllVMesh1D::RunSendRecv(const SendRecvInfo &sendRecvInfo, const DataInfo &sendInfo,
+    const DataInfo &recvInfo, const ThreadHandle& thread, const u32 channelId) const
 {
     if (isDmaRead_) {
         if (sendSizeSplit_[channelId] > 0 && recvSizeSplit_[channelId] > 0) {
@@ -379,7 +380,7 @@ HcclResult InsTempAlltoAllVMesh1D::RunSendRecv(const TemplateDataParams &tempAlg
 
 HcclResult InsTempAlltoAllVMesh1D::PreCopyByLoop(const std::vector<u32> &commRanks, 
     const std::map<u32, std::vector<ChannelInfo>> &channels, const std::vector<ThreadHandle> &threads,
-    const TemplateDataParams &tempAlgParams, const u32 myAlgRank)
+    const TemplateDataParams &tempAlgParams)
 {
     for (u32 rankIdx = 0; rankIdx < commRanks.size(); rankIdx++) {
         u32 remoteRank = commRanks[rankIdx];

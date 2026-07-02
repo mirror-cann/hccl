@@ -53,7 +53,7 @@ private:
         const u64 &sendCount, const u64 &sendOffset) const;
     HcclResult PreCopyByLoop(const std::vector<u32> &commRanks,
         const std::map<u32, std::vector<ChannelInfo>> &channels, const std::vector<ThreadHandle> &threads,
-        const TemplateDataParams &tempAlgParams, const u32 myAlgRank);
+        const TemplateDataParams &tempAlgParams);
     HcclResult PostCopy(const TemplateDataParams &tempAlgParams, const ThreadHandle &thread,
         const u32 myRankCclBuffIdx, const u32 remoteRank, const u64 &recvSize,
         const u64 &recvCount, const u64 &recvOffset) const;
@@ -68,8 +68,7 @@ private:
     HcclResult RunSendRecvByChannel(const TemplateDataParams &tempAlgParams, const u32 roundIdx,
         const u32 curValidChannelsSize, const std::vector<ChannelInfo> &curChannels, const u32 remoteRank,
         const std::vector<ThreadHandle> &threads, const u32 commLoops) const;
-    HcclResult RunSendRecv(const TemplateDataParams &tempAlgParams,
-        const SendRecvInfo &sendRecvInfo, const DataInfo &sendInfo, const DataInfo &recvInfo,
+    HcclResult RunSendRecv(const SendRecvInfo &sendRecvInfo, const DataInfo &sendInfo, const DataInfo &recvInfo,
         const ThreadHandle& thread, const u32 channelId) const;
     HcclResult PreSyncInterThreadsPerRank(const ThreadHandle &mainThreadCurRank,
         const std::vector<ThreadHandle> &subThreadsCurRank) const;
