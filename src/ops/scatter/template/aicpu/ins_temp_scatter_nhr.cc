@@ -159,7 +159,7 @@ HcclResult InsTempScatterNHR::KernelRun(const OpParam& param, const TemplateData
     HCCL_DEBUG("[InsTempScatterNHR] Use Dma Read[%d]", isDmaRead_);
     CHK_RET(PreprareDataSplitForMultiChannel(templateResource, tempAlgParams));
     
-    HCCL_INFO("[InsTempScatterNHR] queNum_ =  [%d], threads size = [%d]", threadNum_, templateResource.threads.size());
+    HCCL_INFO("[InsTempScatterNHR] queNum_ = [%d], threads size = [%d]", threadNum_, templateResource.threads.size());
     HCCL_INFO("[InsTempScatterNHR] Run Start");
     CHK_PRT_RET(templateResource.threads.empty(), 
  	            HCCL_ERROR("[InsTempScatterNHR][KernelRun] threads is empty"), 
