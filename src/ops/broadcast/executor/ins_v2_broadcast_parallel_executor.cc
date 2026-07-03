@@ -581,7 +581,7 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         currCount = std::min(currCount, sliceCount);
         u64 currCountPart0 = static_cast<u64>(float(currCount) * dataSplitSize.at(0));
         u64 currCountPart1 = currCount - currCountPart0;
-        if (remainingLoopTimes > 1) {
+        if (remainingLoopTimes > 1 || currCountPart0 > sliceCountPart0) {
             u64 alignedCountPart0 = currCountPart0;
             u64 alignedCountPart1 = currCountPart1;
             alignedCountPart0 = alignedCountPart0 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
@@ -591,9 +591,15 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
                 currCountPart1 = alignedCountPart1;
             }
         }
-        CHK_PRT_RET(currCountPart0 + currCountPart1 == 0,
+        const u64 currProcessedCount = currCountPart0 + currCountPart1;
+        CHK_PRT_RET(currProcessedCount == 0,
                     HCCL_ERROR("[InsBroadcastParallelExecutor][OrchestrateLoop] currCount is 0"),
                     HcclResult::HCCL_E_INTERNAL);
+#ifndef AICPU_COMPILE
+        const bool saveCcuFastLaunchCtx = loopTimes == 1 && loopIndex == 0 && processedCount == 0 &&
+            currProcessedCount == dataCount_ && param.engine == CommEngine::COMM_ENGINE_CCU &&
+            param.opMode != OpMode::OFFLOAD;
+#endif
         u64 dataOffset0 = processedCount * dataTypeSize_;
         u64 dataOffset1 = dataOffset0 + currCountPart0 * dataTypeSize_;
         // 计算算法模板所需资源
@@ -614,7 +620,7 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         // 第一步做完后回到主流做尾同步
         CHK_RET(PostSyncInterThreads(mainThread_, templateMainThreads_, syncNotifyOnMain_));
 #ifndef AICPU_COMPILE
-    if (loopTimes == 1 && param.engine == CommEngine::COMM_ENGINE_CCU) {
+    if (saveCcuFastLaunchCtx) {
         ccuKernelLaunchNumIntra0_ = intraTempAlgRes.submitInfos.size();
         ccuKernelLaunchNumInter1_ = interTempAlgRes.submitInfos.size();
     }
@@ -636,7 +642,7 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         // 尾同步
         CHK_RET(PostSyncInterThreads(mainThread_, templateMainThreads_, syncNotifyOnMain_));
 #ifndef AICPU_COMPILE
-    if (loopTimes == 1 && param.engine == CommEngine::COMM_ENGINE_CCU) {
+    if (saveCcuFastLaunchCtx) {
         ccuKernelLaunchNumInter0_ = interTempAlgRes.submitInfos.size() - ccuKernelLaunchNumInter1_;
         ccuKernelLaunchNumIntra1_ = intraTempAlgRes.submitInfos.size() - ccuKernelLaunchNumIntra0_;
     }
@@ -654,7 +660,7 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         // 尾同步
         CHK_RET(PostSyncInterThreads(mainThread_, templateMainThreads_, syncNotifyOnMain_));
 #ifndef AICPU_COMPILE
-    if (loopTimes == 1 && param.engine == CommEngine::COMM_ENGINE_CCU) {
+    if (saveCcuFastLaunchCtx) {
         ccuKernelLaunchNumInter01_ = interTempAlgRes1.submitInfos.size();
         ccuKernelLaunchNumIntra11_ = intraTempAlgRes1.submitInfos.size();
     }
@@ -666,11 +672,11 @@ HcclResult InsBroadcastParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         // 第四步做完后回到主流做尾同步
         CHK_RET(PostSyncInterThreads(mainThread_, templateMainThreads_, syncNotifyOnMain_));
 #ifndef AICPU_COMPILE
-    if (loopTimes == 1 && param.engine == CommEngine::COMM_ENGINE_CCU && param.opMode != OpMode::OFFLOAD) {
+    if (saveCcuFastLaunchCtx) {
         CHK_RET(FastLaunchSaveCtx(param, intraTempAlgRes, interTempAlgRes, intraTempAlgRes1, interTempAlgRes1, resCtx.notifyNumOnMainThread));
     }
 #endif
-        processedCount += currCountPart0 + currCountPart1;
+        processedCount += currProcessedCount;
         loopIndex++;
     }
 
