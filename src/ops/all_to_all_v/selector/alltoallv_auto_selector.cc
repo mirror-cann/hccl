@@ -65,9 +65,7 @@ SelectorStatus AlltoAllVAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
                 if ((isMeshNumEqualToClosNum == true) && (topoInfo->userRankSize <= CONST_4)) { // 同一组4P，走并发算法
                     selectAlgName = "CcuAllToAllVMesh1DConcurrent";
                 } else {
-                    HCCL_DEBUG("[AlltoAllVAutoSelector] algo is not supported yet for ccu_schedule mode, "
-                        "reset to default.");
-                    return SelectorStatus::NOT_MATCH;
+                    selectAlgName = "CcuAllToAllVMesh1DMultiJetty";
                 }
             }
         } else {

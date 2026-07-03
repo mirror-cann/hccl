@@ -310,7 +310,7 @@ REGISTER_EXEC_V2(HcclCMDType::HCCL_CMD_ALLTOALLV,
                 CcuAllToAllVMesh1DMultiJetty,
                 InsAlltoAllVSoleExecutor,
                 TopoMatchUBX,
-                CcuTempAllToAllVMesh1DMultiJetty);
+                CcuTempAlltoAllVMesh1D);
 #endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
 #endif
 }
