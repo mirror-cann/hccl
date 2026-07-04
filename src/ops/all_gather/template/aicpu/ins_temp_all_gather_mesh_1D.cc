@@ -65,11 +65,15 @@ HcclResult InsTempAllGatherMesh1D::KernelRun(const OpParam &param, const Templat
         HCCL_INFO("[InsTempAllGatherMesh1D] Rank [%d], get slicesize zero.", myRank_);
         return HCCL_SUCCESS;
     }
-    inputSymWindow_ = param.inputSymWindow;
-    outputSymWindow_ = param.outputSymWindow;
-    inputOffset_ = param.inputOffset;
-    outputOffset_ = param.outputOffset;
-    supportSymmetricMemory_ = param.supportSymmetricMemory;
+    supportSymmetricMemory_ = tempAlgParams.supportSymmetricMemory;
+    if (supportSymmetricMemory_) {
+        HCCL_INFO("[InsTempAllGatherMesh1D] symmetric memory enabled");
+        inputSymWindow_ = param.inputSymWindow;
+        outputSymWindow_ = param.outputSymWindow;
+        inputOffset_ = param.inputOffset;
+        outputOffset_ = param.outputOffset;
+    }
+    
     threadNum_ = templateResource.threads.size();
     tempAlgParams_ = tempAlgParams;
     dataType_ = param.DataDes.dataType;
