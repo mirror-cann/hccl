@@ -38,7 +38,7 @@
 
 ### 1. 环境要求
 
-本样例支持以下昇腾产品，组网为单机N卡（N>=2）：
+本样例支持以下昇腾产品，组网要求为支持UB协议的Mesh互联，N卡（N>=2）：
 
 - <term>Ascend 950PR</term> / <term>Ascend 950DT</term>
 
@@ -148,6 +148,9 @@ make
 在 `examples/05_custom_ops_allgather/ccu/testcase` 代码目录下执行如下命令：
  	 
 ```bash
+# 设置环境变量：HCCL_OP_EXPANSION_MODE 用于指定通信算子的展开模式，取值 CCU_SCHED 表示启用 CCU 调度模式
+export HCCL_OP_EXPANSION_MODE="CCU_SCHED"
+
 # 运行测试样例
 make test
 

@@ -38,7 +38,7 @@ This sample demonstrates how to develop an AllGather communication operator base
 
 ### 1.1 Environment Requirements
 
-This sample supports the following Ascend products in a single-server N-card configuration (N >= 2):
+This sample supports the following Ascend products in a UB-protocol Mesh interconnection configuration with N cards (N >= 2):
 
 - <term>Ascend 950PR</term> / <term>Ascend 950DT</term>
 
@@ -148,6 +148,9 @@ make
 Run the following commands in the `examples/05_custom_ops_allgather/ccu/testcase` directory:
 
 ```bash
+# Set the environment variable: HCCL_OP_EXPANSION_MODE specifies the expansion mode of communication operators. CCU_SCHED enables CCU scheduling.
+export HCCL_OP_EXPANSION_MODE="CCU_SCHED"
+
 # Run the test sample
 make test
 
