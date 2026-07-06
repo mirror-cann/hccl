@@ -13,6 +13,7 @@
 #include "hccl_aiv_utils.h"
 
 namespace ops_hccl {
+constexpr u64 BROADCAST_MESH_CCU_MAX_DATA_SIZE = 16 * 1024;  // 64p 总数据量 1M 以下用 mesh 算法
 constexpr u64 BROADCAST_NHR_CCU_MAX_DATA_SIZE = 1 * 1024 * 1024;
 
 SelectorStatus BroadcastAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
@@ -91,7 +92,9 @@ SelectorStatus BroadcastAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
                 u64 perDataSize = DATATYPE_SIZE_TABLE[opParam.DataDes.dataType];
                 u64 dataSize = opParam.DataDes.count * perDataSize;
                 u64 perRankSize = (topoInfo->userRankSize > 0) ? (dataSize / topoInfo->userRankSize) : dataSize;
-                if (perRankSize <= BROADCAST_NHR_CCU_MAX_DATA_SIZE) {
+                if (perRankSize <= BROADCAST_MESH_CCU_MAX_DATA_SIZE && topoInfo->userRankSize <= 64) {
+                    selectAlgName = "CcuBroadcastMesh1DMem2Mem";
+                } else if (perRankSize <= BROADCAST_NHR_CCU_MAX_DATA_SIZE) {
                     selectAlgName = "CcuBroadcastNHR1DMem2Mem";
                 } else {
                     selectAlgName = "CcuBroadcastParallelMesh1DNHR";

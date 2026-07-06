@@ -66,7 +66,7 @@ HcclResult CcuTempBroadcastMesh1DMem2Mem::CalcRes(HcclComm comm, const OpParam& 
         }
         HCCL_DEBUG("[CcuTempBroadcastMesh1DMem2Mem::CalcRes] Get Channel Success!");
     } else {
-        CHK_RET(CalcChannelRequestMesh1D(comm, param, topoInfo, subCommRanks_, channelDescs));
+        CHK_RET(CalcChannelRequestMesh1DFullMesh(comm, param, topoInfo, subCommRanks_, channelDescs));
     }
 
     auto kernelArg = std::make_shared<CcuKernelArgBroadcastMesh1DMem2Mem>();

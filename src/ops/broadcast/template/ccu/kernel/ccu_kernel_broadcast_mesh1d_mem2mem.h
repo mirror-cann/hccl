@@ -29,7 +29,12 @@ struct CcuKernelArgBroadcastMesh1DMem2Mem : CcuKernelArgBase {
 struct BroadcastMesh1DMem2MemContext : CcuKernelCtxBase {
     const CcuKernelArgBroadcastMesh1DMem2Mem *arg;
 
-    std::vector<ccu::Variable> input;
+    // 本 rank 资源（用 LoadArg 加载）：单独存储避免放入 vector 末尾造成 resize+1 浪费
+    ccu::Variable myInput;
+    ccu::Variable myOutput;
+    ccu::Variable myToken;
+    // 远端 rank 的 output/token：用 reserve+push_back(GetResByChannel) 避免 resize 默认构造浪费寄存器
+    // vector 大小 = rankSize - 1，按 peerId 升序跳过 rankId，访问时用 vecIdx = (peerId < rankId) ? peerId : peerId - 1
     std::vector<ccu::Variable> output;
     std::vector<ccu::Variable> token;
     ccu::Variable currentRankSliceInputOffset;
@@ -46,8 +51,11 @@ struct BroadcastMesh1DMem2MemContext : CcuKernelCtxBase {
     ccu::LocalAddr myScatterDst;
     ccu::LocalAddr allgatherSrc;
     std::vector<ccu::LocalAddr> scattersrcMem;
-    std::vector<ccu::RemoteAddr> scatterdstMem;
-    std::vector<ccu::RemoteAddr> allgatherdstMem;
+    // scatterdstMem 与 allgatherdstMem 复用同一寄存器集：两者都是 vector<RemoteAddr>，且时间上不重叠
+    //   - DoRepeaScatterMem2Mem 构造后立即在 DoScatter 中使用，DoScatter 完成后不再访问
+    //   - DoRepeatAllGatherMem2Mem 重新构造后立即在 DoAllGather 中使用，覆盖上一阶段的值
+    // 64p 场景节省 1 个 vector<RemoteAddr> = 192 个寄存器
+    std::vector<ccu::RemoteAddr> remoteDstMem;
 };
 
 CcuResult CcuBroadcastMesh1DMem2MemKernel(CcuKernelArg arg);
