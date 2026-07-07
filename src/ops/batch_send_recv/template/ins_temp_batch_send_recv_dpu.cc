@@ -33,7 +33,7 @@ namespace ops_hccl
     HcclResult InsTempBatchSendRecvDpu::CalcRes(
         HcclComm comm, const OpParam &param, const TopoInfoWithNetLayerDetails *topoInfo, AlgResourceRequest &resourceRequest)
     {
-        HCCL_INFO("[InsTempBatchSendRecvDpu][CalcRes] Sucessfully calres!");
+        HCCL_INFO("[InsTempBatchSendRecvDpu][CalcRes] Successfully calres!");
         return HCCL_SUCCESS;
     }
 

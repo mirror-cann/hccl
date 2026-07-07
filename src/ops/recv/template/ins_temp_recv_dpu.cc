@@ -36,7 +36,7 @@ namespace ops_hccl
         std::vector<HcclChannelDesc> level0Channels;
         CHK_RET(CalcChannelRequestMesh1D(comm, param, topoInfo, subCommRanks_, level0Channels));
         resourceRequest.channels.push_back(level0Channels);
-        HCCL_INFO("[InsTempRecvDpu][CalcRes] Sucessfully calres!");
+        HCCL_INFO("[InsTempRecvDpu][CalcRes] Successfully calres!");
         return HCCL_SUCCESS;
     }
 
