@@ -25,14 +25,14 @@
 ## 函数原型
 
 ```c
-HcclResult HcclRecv(void* recvBuf, uint64_t count, HcclDataType dataType, uint32_t srcRank,HcclComm comm, aclrtStream stream)
+HcclResult HcclRecv(void* recvBuf, uint64_t count, HcclDataType dataType, uint32_t srcRank, HcclComm comm, aclrtStream stream)
 ```
 
 ## 参数说明
 
 | 参数名 | 输入/输出 | 描述 |
 | --- | --- | --- |
-| recvBuf | 输入 | 数据接收buffer地址。 |
+| recvBuf | 输出 | 数据接收buffer地址。 |
 | count | 输入 | 接收数据的个数。 |
 | dataType | 输入 | 接收数据的数据类型，[HcclDataType](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/data_type_definition/HcclDataType.md)类型。<br>不同的型号支持的数据类型不同，详细请参见[数据类型说明](#数据类型说明)。|
 | srcRank | 输入 | 通信域内数据发送端的rank编号。 |
