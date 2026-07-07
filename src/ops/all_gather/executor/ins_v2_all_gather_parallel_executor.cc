@@ -125,7 +125,7 @@ HcclResult InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsIntra0(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra0) const
+    const u64 dataCountPerLoopAxis0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra0) const
 {
     tempAlgParamsIntra0.buffInfo.inputPtr = param.inputPtr;
     tempAlgParamsIntra0.buffInfo.outputPtr = param.outputPtr;
@@ -139,8 +139,8 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
     tempAlgParamsIntra0.buffInfo.inBuffBaseOff = dataOffset;
     tempAlgParamsIntra0.buffInfo.outBuffBaseOff = rankIdxLevel1_ * rankSizeLevel0_ * dataSize_ + dataOffset;
     tempAlgParamsIntra0.buffInfo.hcclBuffBaseOff = scratchOffset;
-    tempAlgParamsIntra0.sliceSize = dataCountPerLoopAixs0 * dataTypeSize_;
-    tempAlgParamsIntra0.count = dataCountPerLoopAixs0;
+    tempAlgParamsIntra0.sliceSize = dataCountPerLoopAxis0 * dataTypeSize_;
+    tempAlgParamsIntra0.count = dataCountPerLoopAxis0;
     tempAlgParamsIntra0.tailSize = tempAlgParamsIntra0.sliceSize;
 
     tempAlgParamsIntra0.inputSliceStride = 0;
@@ -163,7 +163,7 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsInter0(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter0) const
+    const u64 dataCountPerLoopAxis0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter0) const
 {
     tempAlgParamsInter0.buffInfo.inputPtr = param.outputPtr;
     tempAlgParamsInter0.buffInfo.outputPtr = param.outputPtr;
@@ -176,8 +176,8 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
     tempAlgParamsInter0.buffInfo.hcclBuffType = BufferType::HCCL_BUFFER;
     tempAlgParamsInter0.buffInfo.inputSize = param.inputSize;
     tempAlgParamsInter0.buffInfo.outputSize = param.outputSize;
-    tempAlgParamsInter0.sliceSize = dataCountPerLoopAixs0 * dataTypeSize_;
-    tempAlgParamsInter0.count = dataCountPerLoopAixs0;
+    tempAlgParamsInter0.sliceSize = dataCountPerLoopAxis0 * dataTypeSize_;
+    tempAlgParamsInter0.count = dataCountPerLoopAxis0;
     tempAlgParamsInter0.tailSize = tempAlgParamsInter0.sliceSize;
 
     tempAlgParamsInter0.inputSliceStride = dataSize_ * rankSizeLevel0_;
@@ -198,7 +198,7 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsInter1(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter1) const
+    const u64 dataCountPerLoopAxis1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter1) const
 {
     tempAlgParamsInter1.buffInfo.inputPtr = param.inputPtr;
     tempAlgParamsInter1.buffInfo.outputPtr = param.outputPtr;
@@ -211,8 +211,8 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
     tempAlgParamsInter1.buffInfo.hcclBuffType = BufferType::HCCL_BUFFER;
     tempAlgParamsInter1.buffInfo.inputSize = param.inputSize;
     tempAlgParamsInter1.buffInfo.outputSize = param.outputSize;
-    tempAlgParamsInter1.sliceSize = dataCountPerLoopAixs1 * dataTypeSize_;
-    tempAlgParamsInter1.count = dataCountPerLoopAixs1;
+    tempAlgParamsInter1.sliceSize = dataCountPerLoopAxis1 * dataTypeSize_;
+    tempAlgParamsInter1.count = dataCountPerLoopAxis1;
     tempAlgParamsInter1.tailSize = tempAlgParamsInter1.sliceSize;
 
     tempAlgParamsInter1.inputSliceStride = 0;
@@ -232,7 +232,7 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsIntra1(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra1) const
+    const u64 dataCountPerLoopAxis1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra1) const
 {
     tempAlgParamsIntra1.buffInfo.inputPtr = param.outputPtr;
     tempAlgParamsIntra1.buffInfo.outputPtr = param.outputPtr;
@@ -245,8 +245,8 @@ void InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplat
     tempAlgParamsIntra1.buffInfo.hcclBuffType = BufferType::HCCL_BUFFER;
     tempAlgParamsIntra1.buffInfo.inputSize = param.inputSize;
     tempAlgParamsIntra1.buffInfo.outputSize = param.outputSize;
-    tempAlgParamsIntra1.sliceSize = dataCountPerLoopAixs1 * dataTypeSize_;
-    tempAlgParamsIntra1.count = dataCountPerLoopAixs1;
+    tempAlgParamsIntra1.sliceSize = dataCountPerLoopAxis1 * dataTypeSize_;
+    tempAlgParamsIntra1.count = dataCountPerLoopAxis1;
     tempAlgParamsIntra1.tailSize = tempAlgParamsIntra1.sliceSize;
 
     tempAlgParamsIntra1.inputSliceStride = dataSize_;

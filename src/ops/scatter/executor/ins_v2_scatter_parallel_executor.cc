@@ -341,42 +341,42 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         u32 remainingLoopTimes = (loopIndex < loopTimes) ? (loopTimes - loopIndex) : 1;
         u64 currCount = (remainingCount + remainingLoopTimes - 1) / remainingLoopTimes;
         currCount = std::min(currCount, maxCountPerLoop);
-        u64 dataCountPerLoopAixs0 = static_cast<u64>(dataSplitSize.at(0) * currCount);
-        u64 dataCountPerLoopAixs1 = currCount - dataCountPerLoopAixs0;
+        u64 dataCountPerLoopAxis0 = static_cast<u64>(dataSplitSize.at(0) * currCount);
+        u64 dataCountPerLoopAxis1 = currCount - dataCountPerLoopAxis0;
         if (remainingLoopTimes > 1) {
-            u64 alignedCountPart0 = dataCountPerLoopAixs0;
-            u64 alignedCountPart1 = dataCountPerLoopAixs1;
+            u64 alignedCountPart0 = dataCountPerLoopAxis0;
+            u64 alignedCountPart1 = dataCountPerLoopAxis1;
             alignedCountPart0 = alignedCountPart0 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
             alignedCountPart1 = alignedCountPart1 * dataTypeSize_ / alignSize * alignSize / dataTypeSize_;
             if (alignedCountPart0 + alignedCountPart1 > 0) {
-                dataCountPerLoopAixs0 = alignedCountPart0;
-                dataCountPerLoopAixs1 = alignedCountPart1;
+                dataCountPerLoopAxis0 = alignedCountPart0;
+                dataCountPerLoopAxis1 = alignedCountPart1;
             }
         }
-        CHK_PRT_RET(dataCountPerLoopAixs0 + dataCountPerLoopAixs1 == 0,
+        CHK_PRT_RET(dataCountPerLoopAxis0 + dataCountPerLoopAxis1 == 0,
             HCCL_ERROR("[InsV2ScatterParallelExecutor][GenInsQuesHost] currCount is 0"),
             HcclResult::HCCL_E_INTERNAL);
         u64 dataOffset0 = processedCount * dataTypeSize_;
-        u64 dataOffset1 = dataOffset0 + dataCountPerLoopAixs0 * dataTypeSize_;
+        u64 dataOffset1 = dataOffset0 + dataCountPerLoopAxis0 * dataTypeSize_;
         HCCL_DEBUG("[InsV2ScatterParallelExecutor][Orchestrate] loopIndex[%u] in loopTimes[%u], currCount[%u], "
-                  "dataCountPerLoopAixs0[%u], dataCountPerLoopAixs1[%u], dataOffset0[%u], dataOffset1[%u]",
+                  "dataCountPerLoopAxis0[%u], dataCountPerLoopAxis1[%u], dataOffset0[%u], dataOffset1[%u]",
             loopIndex,
             loopTimes,
             currCount,
-            dataCountPerLoopAixs0,
-            dataCountPerLoopAixs1,
+            dataCountPerLoopAxis0,
+            dataCountPerLoopAxis1,
             dataOffset0,
             dataOffset1);
         // 第一步开始前同步
         PreSyncInterTemplates();
         if (rankIdxLevel1_ == root_ / rankSizeLevel0_) {  // 数据0的server内的mesh算法
             GenTemplateAlgParamsIntra0(
-                param, resCtx, dataOffset0, dataCountPerLoopAixs0, intraScratchOffset, tempAlgParamsIntra0);
+                param, resCtx, dataOffset0, dataCountPerLoopAxis0, intraScratchOffset, tempAlgParamsIntra0);
             CHK_RET(tempAlgIntra.KernelRun(param, tempAlgParamsIntra0, intraTemplateAlgRes));
         }
         if (rankIdxLevel0_ == root_ % rankSizeLevel0_) {  // 数据1的server间的nhr算法
             GenTemplateAlgParamsInter1(
-                param, resCtx, dataOffset1, dataCountPerLoopAixs1, interScratchOffset, tempAlgParamsInter1);
+                param, resCtx, dataOffset1, dataCountPerLoopAxis1, interScratchOffset, tempAlgParamsInter1);
             CHK_RET(tempAlgInter.KernelRun(param, tempAlgParamsInter1, interTemplateAlgRes));
         }
         // 第一步做完后回到主流做尾同步
@@ -403,13 +403,13 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
         PreSyncInterTemplates();
         // 数据0的server间的nhr算法
         GenTemplateAlgParamsInter0(
-            param, resCtx, dataOffset0, dataCountPerLoopAixs0, intraScratchOffset, tempAlgParamsInter0);
+            param, resCtx, dataOffset0, dataCountPerLoopAxis0, intraScratchOffset, tempAlgParamsInter0);
         tempAlgInter.SetRoot(root_ / rankSizeLevel0_ * rankSizeLevel0_ +
                              rankIdxLevel0_);  // 与root同框的同列rank作为新server间模板的root
         CHK_RET(tempAlgInter.KernelRun(param, tempAlgParamsInter0, interTemplateAlgRes));
         // 数据1的server内的mesh算法
         GenTemplateAlgParamsIntra1(
-            param, resCtx, dataOffset1, dataCountPerLoopAixs1, interScratchOffset, tempAlgParamsIntra1);
+            param, resCtx, dataOffset1, dataCountPerLoopAxis1, interScratchOffset, tempAlgParamsIntra1);
         tempAlgIntra.SetRoot(root_ % rankSizeLevel0_ +
                              rankIdxLevel1_ * rankSizeLevel0_);  // 各框内与root相连的rank作为新server内模板的新root
         CHK_RET(tempAlgIntra.KernelRun(param, tempAlgParamsIntra1, intraTemplateAlgRes));
@@ -421,7 +421,7 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
             CHK_RET(FastLaunchSaveCtx(param, intraTemplateAlgRes, interTemplateAlgRes, resCtx.notifyNumOnMainThread));
         }
 #endif
-        processedCount += dataCountPerLoopAixs0 + dataCountPerLoopAixs1;
+        processedCount += dataCountPerLoopAxis0 + dataCountPerLoopAxis1;
         loopIndex++;
     }
     return HcclResult::HCCL_SUCCESS;
@@ -515,7 +515,7 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsIntra0(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra0) const
+    const u64 dataCountPerLoopAxis0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra0) const
 {
     tempAlgParamsIntra0.buffInfo.inputPtr = param.inputPtr;
     tempAlgParamsIntra0.buffInfo.outputPtr = resCtx.cclMem.addr;
@@ -528,7 +528,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
     tempAlgParamsIntra0.buffInfo.inBuffBaseOff = dataOffset;
     tempAlgParamsIntra0.buffInfo.outBuffBaseOff = scratchOffset;
     tempAlgParamsIntra0.buffInfo.hcclBuffBaseOff = scratchOffset;
-    tempAlgParamsIntra0.sliceSize = dataCountPerLoopAixs0 * dataTypeSize_;
+    tempAlgParamsIntra0.sliceSize = dataCountPerLoopAxis0 * dataTypeSize_;
     tempAlgParamsIntra0.tailSize = tempAlgParamsIntra0.sliceSize;
 
     tempAlgParamsIntra0.inputSliceStride = dataSize_;
@@ -544,7 +544,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsInter0(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter0) const
+    const u64 dataCountPerLoopAxis0, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter0) const
 {
     tempAlgParamsInter0.buffInfo.inputPtr = resCtx.cclMem.addr;
     tempAlgParamsInter0.buffInfo.outputPtr = param.outputPtr;
@@ -557,7 +557,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
     tempAlgParamsInter0.buffInfo.inBuffBaseOff = scratchOffset;
     tempAlgParamsInter0.buffInfo.outBuffBaseOff = dataOffset;
     tempAlgParamsInter0.buffInfo.hcclBuffBaseOff = scratchOffset;
-    tempAlgParamsInter0.sliceSize = dataCountPerLoopAixs0 * dataTypeSize_;
+    tempAlgParamsInter0.sliceSize = dataCountPerLoopAxis0 * dataTypeSize_;
     tempAlgParamsInter0.tailSize = tempAlgParamsInter0.sliceSize;
 
     tempAlgParamsInter0.inputSliceStride = tempAlgParamsInter0.sliceSize;
@@ -573,7 +573,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsInter1(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter1) const
+    const u64 dataCountPerLoopAxis1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsInter1) const
 {
     tempAlgParamsInter1.buffInfo.inputPtr = param.inputPtr;
     tempAlgParamsInter1.buffInfo.outputPtr = resCtx.cclMem.addr;
@@ -586,7 +586,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
     tempAlgParamsInter1.buffInfo.inBuffBaseOff = dataOffset;
     tempAlgParamsInter1.buffInfo.outBuffBaseOff = scratchOffset;
     tempAlgParamsInter1.buffInfo.hcclBuffBaseOff = scratchOffset;
-    tempAlgParamsInter1.sliceSize = dataCountPerLoopAixs1 * dataTypeSize_;
+    tempAlgParamsInter1.sliceSize = dataCountPerLoopAxis1 * dataTypeSize_;
     tempAlgParamsInter1.tailSize = tempAlgParamsInter1.sliceSize;
 
     tempAlgParamsInter1.inputSliceStride = dataSize_ * rankSizeLevel0_;
@@ -602,7 +602,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::GenTemplateAlgParamsIntra1(
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset,
-    const u64 dataCountPerLoopAixs1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra1) const
+    const u64 dataCountPerLoopAxis1, const u64 scratchOffset, TemplateDataParams &tempAlgParamsIntra1) const
 {
     tempAlgParamsIntra1.buffInfo.inputPtr = resCtx.cclMem.addr;
     tempAlgParamsIntra1.buffInfo.outputPtr = param.outputPtr;
@@ -615,7 +615,7 @@ void InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1
     tempAlgParamsIntra1.buffInfo.inBuffBaseOff = scratchOffset;
     tempAlgParamsIntra1.buffInfo.outBuffBaseOff = dataOffset;
     tempAlgParamsIntra1.buffInfo.hcclBuffBaseOff = scratchOffset;
-    tempAlgParamsIntra1.sliceSize = dataCountPerLoopAixs1 * dataTypeSize_;
+    tempAlgParamsIntra1.sliceSize = dataCountPerLoopAxis1 * dataTypeSize_;
     tempAlgParamsIntra1.tailSize = tempAlgParamsIntra1.sliceSize;
 
     tempAlgParamsIntra1.inputSliceStride = tempAlgParamsIntra1.sliceSize;

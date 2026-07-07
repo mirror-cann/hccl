@@ -53,13 +53,13 @@ protected:
     HcclResult PrepareResForTemplate(InsAlgTemplate0 &tempAlgIntra);
     HcclResult GenInsQuesHost(
         const OpParam &param, const AlgResourceCtxSerializable &resCtx, InsAlgTemplate0 &tempAlgIntra, InsAlgTemplate1 &tempAlgInter);
-    void GenTemplateAlgParamsIntra0(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAixs0, const u64 scratchOffset,
+    void GenTemplateAlgParamsIntra0(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAxis0, const u64 scratchOffset,
         TemplateDataParams &tempAlgParamsIntra0) const;
-    void GenTemplateAlgParamsIntra1(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAixs1, const u64 scratchOffset,
+    void GenTemplateAlgParamsIntra1(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAxis1, const u64 scratchOffset,
         TemplateDataParams &tempAlgParamsIntra1) const;
-    void GenTemplateAlgParamsInter0(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAixs0, const u64 scratchOffset,
+    void GenTemplateAlgParamsInter0(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAxis0, const u64 scratchOffset,
         TemplateDataParams &tempAlgParamsInter0) const;
-    void GenTemplateAlgParamsInter1(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAixs1, const u64 scratchOffset,
+    void GenTemplateAlgParamsInter1(const OpParam &param, const AlgResourceCtxSerializable &resCtx, const u64 dataOffset, const u64 dataCountPerLoopAxis1, const u64 scratchOffset,
         TemplateDataParams &tempAlgParamsInter1) const;
 
     void GetParallelDataSplit(std::vector<double> &splitDataSize) const;
