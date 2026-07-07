@@ -311,13 +311,12 @@ HcclResult ReduceScatterVEntryLog(void *sendBuf, const void *sendCounts, const v
         ACLCHECK(aclrtGetDevice(&deviceLogicId));
         s32 streamId = 0;
         ACLCHECK(aclrtStreamGetId(stream, &streamId));
-        char stackLogBuffer[LOG_TMPBUF_SIZE];
-        s32 ret = snprintf_s(stackLogBuffer, LOG_TMPBUF_SIZE, LOG_TMPBUF_SIZE - 1U,
-            "tag[%s], sendBuf[%p], recvBuf[%p], sendCounts[%p], recvCount[%llu], sendDispls[%p], dataType[%s], reduceOp[%s], streamId[%d], deviceLogicId[%d]",
-            tag.c_str(), sendBuf, recvBuf, GetDataStr(sendCounts,totalRanks).c_str(), recvCount, GetDataStr(sendDispls,totalRanks).c_str(), GetDataTypeEnumStr(dataType).c_str(), GetReduceOpEnumStr(op).c_str(), streamId, deviceLogicId);
-        CHK_PRT_CONT(ret == -1, HCCL_WARNING("Failed to build log info, tag[%s].", tag.c_str()));
-        std::string logInfo = "Entry-" + opName + ":" + std::string(stackLogBuffer);
-        HCCL_RUN_INFO("%s", logInfo.c_str());
+        HCCL_RUN_INFO("Entry-%s: tag[%s], sendBuf[%p], recvBuf[%p], recvCount[%llu], dataType[%s], reduceOp[%s], streamId[%d], deviceLogicId[%d]",
+            opName.c_str(), tag.c_str(), sendBuf, recvBuf, recvCount,
+            GetDataTypeEnumStr(dataType).c_str(), GetReduceOpEnumStr(op).c_str(), streamId, deviceLogicId);
+
+        PrintEntryArrayLog(opName, tag, "sendCounts", sendCounts, totalRanks);
+        PrintEntryArrayLog(opName, tag, "sendDispls", sendDispls, totalRanks);
     }
     return HCCL_SUCCESS;
 }
