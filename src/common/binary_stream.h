@@ -145,10 +145,10 @@ public:
         return stream.str();
     }
 
-    std::string SplictStream(u64& start, u64& end){
+    std::string SplitStream(u64& start, u64& end){
         std::string temp = stream.str();
         if (start >= temp.length()) {
-            HCCL_ERROR("[SplictStream]start[%llu] is bigger than stream length[%llu]", start, temp.length());
+            HCCL_ERROR("[SplitStream]start[%llu] is bigger than stream length[%llu]", start, temp.length());
             return "";
         }
 
