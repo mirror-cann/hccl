@@ -60,7 +60,7 @@ REG_OP(HcomAllGather)
  * @par Inputs:
  * @li x: A tensor. Must be one of the following types: int8, int16, int32, int64, float16, bfloat16,
   float32, uint8, uint16, uint32, uint64, float64.
- * @li send_count: A data. specifies current rank the the number of
+ * @li send_count: A data. specifies current rank the number of
   elements to receive to send, only support int64.
  * @li recv_counts: A list, where entry i specifies the first dimension of
   elements to receive from rank i, only support int64.
