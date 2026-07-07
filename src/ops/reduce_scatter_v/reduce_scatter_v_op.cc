@@ -174,7 +174,7 @@ HcclResult PrepareReduceScatterVParam(void *sendBuf, const void *sendDispls, con
 {
     u32 perDataSize = DATATYPE_SIZE_TABLE[dataType];
     u64 outputSize = recvCount * perDataSize;
-    HCCL_INFO("PrepareReduceScatterVParam[outputSize]:[%u]", outputSize);
+    HCCL_INFO("PrepareReduceScatterVParam[outputSize]:[%llu]", outputSize);
 
     CHK_RET(HcclGetCommName(comm, param.commName));
     param.stream = stream;
@@ -199,9 +199,9 @@ HcclResult PrepareReduceScatterVParam(void *sendBuf, const void *sendDispls, con
     const void *temp = sendCounts;
     param.vDataDes.counts = const_cast<void*>(temp);
 
-    HCCL_INFO("PrepareReduceScatterVParam: sendBuf:[%u]", sendBuf);
-    HCCL_INFO("PrepareReduceScatterVParam: recvBuf:[%u]", recvBuf);
-    HCCL_INFO("PrepareReduceScatterVParam: recvCount:[%u]", recvCount);
+    HCCL_INFO("PrepareReduceScatterVParam: sendBuf:[%p]", sendBuf);
+    HCCL_INFO("PrepareReduceScatterVParam: recvBuf:[%p]", recvBuf);
+    HCCL_INFO("PrepareReduceScatterVParam: recvCount:[%llu]", recvCount);
 
     // 参数准备
     u32 rankNum = 2;
@@ -219,7 +219,7 @@ HcclResult PrepareReduceScatterVParam(void *sendBuf, const void *sendDispls, con
     param.varMemSize = varMemSize;
 
     for (u64 i=0; i < countsAndDispls.size();++i) {
-        HCCL_INFO("PrepareReduceScatterVParam: countsAndDispls[%u]:[%u]", i, countsAndDispls[i]);
+        HCCL_INFO("PrepareReduceScatterVParam: countsAndDispls[%llu]:[%llu]", i, countsAndDispls[i]);
     }
 
     // 从源内存地址按字节直接拷贝数据到目标地址
