@@ -156,7 +156,9 @@ static ge::graphStatus HcomAllToAllVCInferShapeV2(gert::InferShapeContext *conte
     }
 
     constexpr size_t rankIndex = 0;
-    int64_t rank = *(attrs->GetAttrPointer<int64_t>(rankIndex));
+    auto rankPtr = attrs->GetAttrPointer<int64_t>(rankIndex);
+    OP_CHECK(rankPtr == nullptr, CUBE_INNER_ERR_REPORT(opName, "attr rank is null"), return GRAPH_FAILED);
+    int64_t rank = *rankPtr;
     int64_t rankSize = static_cast<int64_t>(sqrt(sendCountMatrix.size()));
     if (rankSize <= 0) {
         OP_LOGE(opName, "rankSize is illegal, expected: > 0, actual: %ld.", rankSize);

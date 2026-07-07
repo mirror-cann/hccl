@@ -41,7 +41,9 @@ static ge::graphStatus HcomAllGatherInferShapeV2(gert::InferShapeContext *contex
     OP_CHECK(outputShape == nullptr, CUBE_INNER_ERR_REPORT(opName, "output shape is null"), return GRAPH_FAILED);
  
     constexpr size_t rankIndex = 0;
-    int64_t rankSize = *(attrs->GetAttrPointer<int64_t>(rankIndex));
+    auto rankSizePtr = attrs->GetAttrPointer<int64_t>(rankIndex);
+    OP_CHECK(rankSizePtr == nullptr, CUBE_INNER_ERR_REPORT(opName, "attr rank_size is null"), return GRAPH_FAILED);
+    int64_t rankSize = *rankSizePtr;
     OP_CHECK((rankSize <= 0),
         CUBE_INNER_ERR_REPORT(opName, "attr rank_size is illegal, expected: > 0, actual: %ld.", rankSize), return GRAPH_FAILED);
     // not ShapeFirstDimDefined

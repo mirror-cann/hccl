@@ -41,7 +41,9 @@ static ge::graphStatus HcomReduceScatterInferShapeV2(gert::InferShapeContext *co
     OP_CHECK(outputShape == nullptr, CUBE_INNER_ERR_REPORT(opName, "output shape is null"), return GRAPH_FAILED);
  
      constexpr size_t rankSizeIndex = 4;
-    int64_t rankSize = *(attrs->GetAttrPointer<int64_t>(rankSizeIndex));
+    auto rankSizePtr = attrs->GetAttrPointer<int64_t>(rankSizeIndex);
+    OP_CHECK(rankSizePtr == nullptr, CUBE_INNER_ERR_REPORT(opName, "attr rank_size is null"), return GRAPH_FAILED);
+    int64_t rankSize = *rankSizePtr;
     if (rankSize <= 0){
         OP_LOGE(opName, "attr rank_size is illegal, expected: > 0, actual: %ld.", rankSize);
         return GRAPH_FAILED;
