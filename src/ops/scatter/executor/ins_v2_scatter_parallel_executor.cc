@@ -260,7 +260,7 @@ HcclResult InsV2ScatterParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
 {
     std::vector<ThreadHandle> subThreads{intraThreads_.at(0), interThreads_.at(0)};
     std::vector<u32> notifyIdxMainToSub{static_cast<u32>(intraThreads_.size() - 1),
-        static_cast<u32>(interThreads_.size() - 1)};  // 使用末尾的notifiy进行同步
+        static_cast<u32>(interThreads_.size() - 1)};  // 使用末尾的notify进行同步
     CHK_RET(PreSyncInterThreads(threads_.at(0), subThreads, notifyIdxMainToSub));
     return HCCL_SUCCESS;
 }

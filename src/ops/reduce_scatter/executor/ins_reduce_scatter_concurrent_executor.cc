@@ -137,7 +137,7 @@ HcclResult InsReduceScatterConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, Ins
                     ", please check");
         return HCCL_E_PARA;
     }
-    HCCL_INFO("[InsReduceScatterConcurrentExecutor::CalRes] CalRes success!");
+    HCCL_INFO("[InsReduceScatterConcurrentExecutor::CalcRes] CalcRes success!");
     return HCCL_SUCCESS;
 }
 
