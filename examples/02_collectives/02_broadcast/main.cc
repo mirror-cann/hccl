@@ -57,7 +57,7 @@ int Sample(void *arg)
 
     // 申请 Device 内存用于发送/接收数据
     ACLCHECK(aclrtMalloc(&buf, mallocSize, ACL_MEM_MALLOC_HUGE_ONLY));
-    // 在 Root 节点，构造发送数据，并将内容初始化为：0~7
+    // 在 Root 节点，构造发送数据，并将内容初始化为 0,1,2,… 递增序列（即第 i 个元素值为 i）
     if (device == rootRank) {
         void *hostBuf = nullptr;
         ACLCHECK(aclrtMallocHost(&hostBuf, mallocSize));

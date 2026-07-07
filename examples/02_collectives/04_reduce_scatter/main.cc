@@ -60,7 +60,7 @@ int Sample(void *arg)
     ACLCHECK(aclrtMalloc(&sendBuf, sendSize, ACL_MEM_MALLOC_HUGE_ONLY));
     ACLCHECK(aclrtMalloc(&recvBuf, recvSize, ACL_MEM_MALLOC_HUGE_ONLY));
 
-    // 申请 Host 内存用于存放输入数据，并将内容初始化为：0~7
+    // 申请 Host 内存用于存放输入数据，并将内容初始化为 0,1,2,… 递增序列（即第 i 个元素值为 i）
     void *hostBuf = nullptr;
     ACLCHECK(aclrtMallocHost(&hostBuf, sendSize));
     float *tmpHostBuff = static_cast<float *>(hostBuf);
