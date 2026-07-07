@@ -192,7 +192,7 @@ HcclResult InsV2AllReduceOmniPipe2dExecutor<AlgTopoMatch, CcuRsAlgTemplateX, Ccu
     // 算法展开
     HcclResult ret = OrchestrateLoop(param, resCtx);
     CHK_PRT_RET(ret != HCCL_SUCCESS,
-        HCCL_ERROR("[InsV2AllReduceOmniPipe2dExecutor][Orchestrate]errNo[0x%016llx] excutor kernel run failed",
+        HCCL_ERROR("[InsV2AllReduceOmniPipe2dExecutor][Orchestrate]errNo[0x%016llx] executor kernel run failed",
             HCCL_ERROR_CODE(ret)), ret);
 
     return HCCL_SUCCESS;
