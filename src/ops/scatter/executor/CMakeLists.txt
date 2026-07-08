@@ -12,6 +12,7 @@ set(src_list
     ${CMAKE_CURRENT_SOURCE_DIR}/ins_v2_scatter_sole_executor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ins_v2_scatter_parallel_executor.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/ins_v2_scatter_sequence_executor.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/ins_v2_scatter_omnipipe_2d_executor.cc
 )
 
 if(TARGET hccl)

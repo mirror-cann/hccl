@@ -17,6 +17,7 @@ namespace ops_hccl {
 constexpr u32 TOPO_LEVEL_NUM_3 = 3;
 constexpr u64 BROADCAST_MESH_CCU_MAX_DATA_SIZE = 16 * 1024;
 constexpr u64 BROADCAST_NHR_CCU_MAX_DATA_SIZE = 1 * 1024 * 1024;
+constexpr u64 OMNI2D_UBX_BR_DATA_SIZE = 16 * 1024 * 1024;
 
 SelectorStatus BroadcastAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                                     const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap,
@@ -108,7 +109,7 @@ SelectorStatus BroadcastAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
             return  SelectorStatus::NOT_MATCH;
         }
     } else {
-        SelectorStatus ret = SelectMeshAlgoCcuSchedule(topoInfo, selectAlgName);
+        SelectorStatus ret = SelectMeshAlgoCcuSchedule(topoInfo, opParam, selectAlgName);
         if (ret != SelectorStatus::MATCH) {
             return ret;
         }
@@ -118,8 +119,12 @@ SelectorStatus BroadcastAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
 }
 
 SelectorStatus BroadcastAutoSelector::SelectMeshAlgoCcuSchedule(const TopoInfoWithNetLayerDetails* topoInfo,
+                                                                const OpParam &opParam,
                                                                 std::string &selectAlgName) const
 {
+    u64 perDataSize = DATATYPE_SIZE_TABLE[opParam.DataDes.dataType];
+    u64 dataSize = opParam.DataDes.count * perDataSize;
+    HCCL_DEBUG("[SelectMeshAlgoCcuSchedule] dataSize[%llu]", dataSize);
     if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
         if (topoInfo->is2DieFullMesh) {
             HCCL_WARNING("[BroadcastAutoSelector] 2DieFullMesh is not supported yet for ccu schedule mode.");
@@ -134,7 +139,11 @@ SelectorStatus BroadcastAutoSelector::SelectMeshAlgoCcuSchedule(const TopoInfoWi
             HCCL_WARNING("[BroadcastAutoSelector] pcie mixed topo is not supported yet for ccu schedule mode.");
             return SelectorStatus::NOT_MATCH;
         } else {
-            selectAlgName = "CcuBroadcastParallelMesh1DNHRUBX";
+            if (dataSize < OMNI2D_UBX_BR_DATA_SIZE) {
+                selectAlgName = "CcuBroadcastParallelMesh1DNHRUBX";
+            } else {
+                selectAlgName = "CcuBroadcastOmniPipe2D";
+            }
         }
     } else if (topoInfo->level0Topo == Level0Shape::CLOS) {
         HCCL_WARNING("[Algo][BroadcastAutoSelector] level0Shape[%d] is not supported yet for ccu schedule mode.",

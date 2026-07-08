@@ -25,7 +25,7 @@ private:
     SelectorStatus SelectCcuScheduleAlgo(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                  const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap,
                                  std::string &selectAlgName) const override;
-    SelectorStatus SelectMeshAlgoCcuSchedule(const TopoInfoWithNetLayerDetails* topoInfo,
+    SelectorStatus SelectMeshAlgoCcuSchedule(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                   std::string &selectAlgName) const;
     SelectorStatus SelectMeshAlgoAicpu(const TopoInfoWithNetLayerDetails* topoInfo, const OpParam &opParam,
                                        std::string &selectAlgName) const;
