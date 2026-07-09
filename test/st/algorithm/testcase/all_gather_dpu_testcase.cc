@@ -229,3 +229,12 @@ TEST_F(ST_ALL_GATHER_DPU_TEST, host_dpu_opbase_all_gather_10m_hif8)
     HcclDataType dataType = HcclDataType::HCCL_DATA_TYPE_HIF8;  // 数据类型
     RunAllGatherDPUA5(topoMeta, sendCount, dataType);
 }
+
+// asymmetric topology
+TEST_F(ST_ALL_GATHER_DPU_TEST, host_dpu_opbase_all_gather_asymmetric_10m_hif8)
+{
+    TopoMeta topoMeta {{{0}, {0, 2, 3}}};  // 三维数组指定超节点-Server-Device信息
+    u64 sendCount = 10 * 1024 * 1024;  // 接收数据量
+    HcclDataType dataType = HcclDataType::HCCL_DATA_TYPE_HIF8;  // 数据类型
+    RunAllGatherDPUA5(topoMeta, sendCount, dataType);
+}
