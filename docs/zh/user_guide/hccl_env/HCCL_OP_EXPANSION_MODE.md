@@ -86,7 +86,7 @@
     算法编排展开位置设置为“AIV”时，若同时设置了[HCCL_DETERMINISTIC](HCCL_DETERMINISTIC.md)环境变量为“true”或“strict”开启了确定性计算，确定性计算的优先级更高，某些场景下“AIV”展开可能不生效。
 
 - **针对Atlas A2 训练系列产品/Atlas A2 推理系列产品**：支持的配置如下，若设置了不支持的环境变量，使用默认值。
-  - **HOST（默认值）**：代表通信算在Host侧CPU展开，Device侧根据硬件型号自动选择相应的调度器。
+  - **HOST（默认值）**：代表通信算子在Host侧CPU展开，Device侧根据硬件型号自动选择相应的调度器。
   - **HOST_TS**：代表通信算子在Host侧CPU展开，Host向Device的Task Scheduler下发任务，Device的Task Scheduler进行任务调度执行。
   - **AI_CPU**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
 

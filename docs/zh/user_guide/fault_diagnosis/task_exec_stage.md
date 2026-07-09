@@ -27,13 +27,13 @@ HCCL会基于已有的通信域信息与邻近的rank建立起独立的维测链
 
 - HCCL在检测到异常事件后，会在集群中进行信息的扩散转发，HCCL在运行过程中会将收到的异常事件打印到run日志。
 
-    **日志格式为：**\[HeartbeatAbnormal\]local rank\[IP/ID\]：crimer rank\[IP/ID\] status\[4异常事件类型\] by by informer rank\[IP/ID\]。
+    **日志格式为：**\[HeartbeatAbnormal\]local rank\[IP/ID\]：crimer rank\[IP/ID\] status\[4异常事件类型\]by informer rank\[IP/ID\]。
 
   - HeartbeatAbnormal：代表为心跳异常事件。
   - local rank：当前节点的信息。
   - crimer rank：根节点信息。
   - status：异常事件类型。
-  - by by informer rank：集群故障上报者信息。
+  - by informer rank：集群故障上报者信息。
 
     用户可结合关键字“HeartbeatAbnormal”与status状态进行检索，日志示例如下：
 

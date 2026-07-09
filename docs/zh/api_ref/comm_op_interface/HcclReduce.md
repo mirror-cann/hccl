@@ -65,10 +65,10 @@ HcclResult HcclReduce(void *sendBuf, void *recvBuf, uint64_t count, HcclDataType
 
 - 所有rank的count、dataType、op均应相同。
 - 算子的输入输出地址（sendBuf与recvBuf）根据不同的数据类型，应满足如下对齐要求：
-  - int8按照1 Byte地址对齐。
-  - int16、float16、bfp16按照2 Byte地址对齐。
-  - int32、float32按照4 Byte地址对齐。
-  - int64、uint64、float64按照8 Byte地址对齐。
+  - int8按照1Byte地址对齐。
+  - int16、float16、bfp16按照2Byte地址对齐。
+  - int32、float32按照4Byte地址对齐。
+  - int64、uint64、float64按照8Byte地址对齐。
 
 ## 调用示例
 

@@ -132,7 +132,7 @@ hccn_tool -i {deviceId} -ip -inet6 -g
     hccn_tool -i 0 -tls -s path /root pri pri.pem pub pub.pem ca1 ca1.pem ca2 ca2.pem crl xxx.crl
     ```
 
-    -i为Device ID，-path为指定证书/私钥/吊销列表存放路径，pri为私钥名字，pub为设备证书文件名，ca1/ca2/crl分别为根证书、二级根证书、吊销列表文件名。
+    -i为Device ID，-s path为指定证书/私钥/吊销列表存放路径，pri为私钥名字，pub为设备证书文件名，ca1/ca2/crl分别为根证书、二级根证书、吊销列表文件名。
 
     关于hccn_tool工具的更多用法及参数解释，可查看对应版本的《[HCCN Tool 接口参考](https://support.huawei.com/enterprise/zh/ascend-computing/ascend-hdk-pid-252764743?category=developer-documents&subcategory=interface-reference)》。
 

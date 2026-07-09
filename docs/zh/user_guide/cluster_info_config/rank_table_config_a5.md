@@ -75,7 +75,7 @@
 |  | local_a | 必选。<br>通信链路一端NPU的物理ID。<br>该ID须存在于“peer_list”中。 |
 |  | local_a_ports | 必选。<br>当前层次的通信链路在“local_a”对应的NPU中使用的端口列表，字符串类型，长度为1~32，列表中每个值的格式为：Die ID/端口ID。<br>例如："local_a_ports": ["1/0"]，代表Die1的0号端口。 |
 |  | local_b | 必选。<br>通信链路另一端NPU的物理ID。<br>该ID须存在于“peer_list”中。 |
-|  | local_b_ports | 必选。<br>当前层次的通信链路在“local_b”对应的NPU中使用的端口列表，字符串类型，长度为1~32，每个端口的配置格式为：Die ID/端口ID，多个端口之间用“,”分隔。<br>例如："local_a_ports": ["1/0"]，代表Die1的0号端口。 |
+|  | local_b_ports | 必选。<br>当前层次的通信链路在“local_b”对应的NPU中使用的端口列表，字符串类型，长度为1~32，每个端口的配置格式为：Die ID/端口ID，多个端口之间用“,”分隔。<br>例如："local_b_ports": ["1/0"]，代表Die1的0号端口。 |
 |  | topo_instance_id | 可选。<br>拓扑实例ID，取值范围：[0, UINT32_MAX]。 |
 |  | topo_type | 可选。<br>拓扑实例的拓扑类型，支持以下取值：<br>- CLOS（默认值）：所有节点均可通，例如通过交换机连接的胖树结构。<br>- 1DMESH：Device和Device之间直连，全互联拓扑。 |
 |  | position | 可选。<br>通信链路使用的网卡所属位置，支持以下取值：<br>  - HOST<br>  - DEVICE（默认值） |

@@ -12,7 +12,7 @@
 
     ![reducescatter_task](figures/reducescatter_task.png)
 
-3. 节点间实现AllReduce通信语义。由于节点间通过RoCE来实现notify同步及数据的通信，且notify record任务及数据通信任务均已RDMASend下发WQE的形式实现，因此在Profiling中会以RDMASend（notify record） + notify wait的组合对应着机间前同步和尾同步任务，同时会以RDMASend（数据通信）+ RDMASend（notify record） + notify wait的组合对应着机间的数据通信。
+3. 节点间实现AllReduce通信语义。由于节点间通过RoCE来实现notify同步及数据的通信，且notify record任务及数据通信任务均以RDMASend下发WQE的形式实现，因此在Profiling中会以RDMASend（notify record） + notify wait的组合对应着机间前同步和尾同步任务，同时会以RDMASend（数据通信）+ RDMASend（notify record） + notify wait的组合对应着机间的数据通信。
 
     ![节点间allreduce](figures/inter_allreduce.png)
 

@@ -44,7 +44,7 @@ export HCCL_SOCKET_FAMILY=AF_INET
 
 ## 配置示例
 
-假设执行分布式训练的AI Server节点数量为2，Device数量为16为例，每个AI Server节点有8个Device。启动每个Device上的训练进程前，在对应的shell窗口中配置如下环境变量，进行资源信息的配置。
+以执行分布式训练的AI Server节点数量为2，Device数量为16为例，每个AI Server节点有8个Device。启动每个Device上的训练进程前，在对应的shell窗口中配置如下环境变量，进行资源信息的配置。
 
 - 节点0，此节点为Master节点，负责集群信息管理、资源分配与调度。
 
