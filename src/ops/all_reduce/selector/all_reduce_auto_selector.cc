@@ -351,16 +351,16 @@ SelectorStatus AllReduceAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayer
         opParam.reduceType == HcclReduceOp::HCCL_REDUCE_PROD;
 
     if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->topoLevelNums == 3) {
-            if (topoInfo->deviceNumPerModule == 8) {
+        if (isDataTypeOrReduceTypeSpecial) {
+            selectAlgName = "InsAllReduceAicpuReduceNHR";
+        } else if (topoInfo->topoLevelNums == TOPO_LEVEL_NUM_3) {
+            if (topoInfo->deviceNumPerModule == DEVICE_NUM_PER_MODULE_8) {
                 selectAlgName = "InsV2AllReduceOmniPipeUboe";
             } else if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[1] == 1) {
                 selectAlgName = "InsAllReduceNHR";
             } else {
                 selectAlgName = "InsAllReduceParallelRSAGUboe";
             }
-        } else if (isDataTypeOrReduceTypeSpecial) {
-            selectAlgName = "InsAllReduceAicpuReduceNHR";
         } else if (topoInfo->Level1Nhr) {
             // Level1Nhr 已在 CalcTopoShape 中设置（GCD==1 时为 true）
             selectAlgName = "InsAllReduceNHR";
