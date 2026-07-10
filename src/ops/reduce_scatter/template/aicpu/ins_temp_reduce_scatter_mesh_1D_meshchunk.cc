@@ -216,10 +216,10 @@ HcclResult InsTempReduceScatterMesh1DMeshChunk::DoMeshChunk(
         }
         if (threadNum_ > 1 && stepIdx < (templateRankSize_ - rankNum)) {
             std::vector<ThreadHandle> subThreads(threads.begin() + 1, threads.end());
-            NotifyIdxMainToSubInMeshChunk(notifyIdxMainToSub_);
-            CHK_RET(PreSyncInterThreads(threads[0], subThreads, notifyIdxMainToSub_));
             NotifyIdxSubToMainInMeshChunk(notifyIdxSubToMain_);
             CHK_RET(PostSyncInterThreads(threads[0], subThreads, notifyIdxSubToMain_));
+            NotifyIdxMainToSubInMeshChunk(notifyIdxMainToSub_);
+            CHK_RET(PreSyncInterThreads(threads[0], subThreads, notifyIdxMainToSub_));
         }
     }
     return HcclResult::HCCL_SUCCESS;
@@ -282,7 +282,7 @@ void InsTempReduceScatterMesh1DMeshChunk::NotifyIdxSubToMainInMeshChunk(std::vec
     u32 threadNum = templateRankSize_ > 1 ? templateRankSize_ - 1 : 1;
     u32 notifyNum = threadNum - 1;
     for (u32 notifyIdx = 0; notifyIdx < notifyNum; notifyIdx++) {
-        notifyIdxSubToMain.push_back(notifyIdx + threadNum);
+        notifyIdxSubToMain.push_back(notifyIdx + notifyNum);
     }
 }
 } // namespace Hccl

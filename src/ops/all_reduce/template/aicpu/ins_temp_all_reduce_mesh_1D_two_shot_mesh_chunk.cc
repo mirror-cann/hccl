@@ -229,10 +229,10 @@ HcclResult InsTempAllReduceMesh1DTwoShotMeshChunk::ReduceScatterMeshChunk(const 
     if (stepIndex < (templateRankSize_ - rankNum)) {
         if (threadNum_ > 1) {
             std::vector<ThreadHandle> subThreads(threads.begin() + 1, threads.end());
-            NotifyIdxMainToSubInRSMeshChunk(notifyIdxMainToSub_);
-            CHK_RET(PreSyncInterThreads(threads[0], subThreads, notifyIdxMainToSub_));
             NotifyIdxSubToMainInRSMeshChunk(notifyIdxSubToMain_);
             CHK_RET(PostSyncInterThreads(threads[0], subThreads, notifyIdxSubToMain_));
+            NotifyIdxMainToSubInRSMeshChunk(notifyIdxMainToSub_);
+            CHK_RET(PreSyncInterThreads(threads[0], subThreads, notifyIdxMainToSub_));
         }
     }
     return HcclResult::HCCL_SUCCESS;
