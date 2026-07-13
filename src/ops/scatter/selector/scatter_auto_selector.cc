@@ -14,6 +14,8 @@
 
 namespace ops_hccl {
 
+constexpr uint32_t TOPO_LEVEL_3 = 3;
+
 SelectorStatus ScatterAutoSelector::SelectCcuMsAlgo(const TopoInfoWithNetLayerDetails *topoInfo, const OpParam &opParam,
                                                     const std::map<HcclCMDType, std::vector<HcclAlgoType>> &configAlgMap,
                                                     std::string &selectAlgName) const
@@ -111,7 +113,9 @@ SelectorStatus ScatterAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayerDe
     HCCL_DEBUG("[ScatterAutoSelector][%s] start, topoInfo levelNum[%u]", __func__, topoInfo->topoLevelNums);
 
     if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->Level1Nhr) {
+        if (topoInfo->topoLevelNums == TOPO_LEVEL_3) {
+            selectAlgName = "InsScatterNHR";
+        } else if (topoInfo->Level1Nhr) {
             selectAlgName = "InsScatterNHR";
         } else if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[0] == 1) {
             selectAlgName = "InsScatterNHR";
