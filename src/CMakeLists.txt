@@ -273,6 +273,8 @@ else()
         ${TOP_DIR}/hcomm/inc/hccl
         ${TOP_DIR}/hcomm/pkg_inc
         ${TOP_DIR}/hcomm/pkg_inc/hccl
+        ${TOP_DIR}/hcomm/pkg_inc/legacy
+        ${TOP_DIR}/hcomm/pkg_inc/legacy/hccl
         ${TOP_DIR}/hcomm/pkg_inc/hcomm/ccu
         ${TOP_DIR}/hcomm/include
         ${TOP_DIR}/hcomm/include/hccl
