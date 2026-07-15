@@ -14,7 +14,7 @@
     - "AI_CPU"配置将在后续版本废弃，使用“AICPU_TS”代替。当前版本中，“AICPU_TS”配置的功能与“AI_CPU”完全一致。
     - 图模式（Ascend IR）或者图捕获（aclgraph）场景，当通信算法采用AI CPU模式时，单卡上的并发图数量不能超过6个，否则可能会因AI CPU核被占满而导致通信阻塞。
 
-  - **AICPU_TS（默认值）**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
+  - **AICPU_TS（默认值）**：代表通信算子在AI CPU展开，使用STARS调度器调度运行。
 
     该配置项支持Broadcast、Reduce、AllReduce、Scatter、ReduceScatter、ReduceScatterV、AllGather、AllGatherV、AlltoAll、AlltoAllV、AlltoAllVC、Send、Recv、BatchSendRecv算子。
 
@@ -22,7 +22,7 @@
 
     图模式（Ascend IR）或者图捕获（aclgraph）场景，当通信算法采用AI CPU模式时，单卡上的并发图数量不能超过6个，否则可能会因AI CPU核被占满而导致通信阻塞。
 
-  - **AIV**：代表通信算子在Vector Core展开，执行也在Vector Core。Ascend 950PR不支持此配置。
+  - **AIV**：代表通信算子在Vector Core展开，执行也在Vector Core。
     - 该配置项仅支持对称组网、推理特性。
     - 该配置项不支持多通信域并行的场景（因为不支持多个通信域同时配置为“AIV”模式），否则可能会导致不可预期行为。您可以在初始化具有特定配置的通信域时，通过“HcclCommConfig”将某个通信域的算子展开模式设置为“AIV”。
     - 该配置项仅支持Broadcast、Reduce、AllReduce、ReduceScatter、Scatter、AllGather、AlltoAll、AlltoAllV算子。
