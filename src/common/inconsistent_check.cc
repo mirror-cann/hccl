@@ -90,40 +90,41 @@ HcclResult InconsistentCheckParams(HcclComm comm, const OpExchangeInfo &exchange
                 channel.remoteRank);
             return HCCL_E_PARA;
         }
-        HCCL_INFO("[InconsistentCheckParams] check OpExchangeInfo from remoteRank[%u]", channel.remoteRank);
         if (exchangeInfo.cclBufferSize != rmtExchangeInfo.cclBufferSize) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "HcclBufferSize",
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "HcclBufferSize",
                 std::to_string(exchangeInfo.cclBufferSize), std::to_string(rmtExchangeInfo.cclBufferSize)));
         }
         if (exchangeInfo.root != rmtExchangeInfo.root) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "RootRankId", exchangeInfo.root,
-                rmtExchangeInfo.root));
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "RootRankId",
+                exchangeInfo.root, rmtExchangeInfo.root));
         }
-        CHK_RET(InconsistentCheckOpType(exchangeInfo, rmtExchangeInfo.opType));
+        CHK_RET(InconsistentCheckOpType(channel.remoteRank, exchangeInfo, rmtExchangeInfo.opType));
         if (exchangeInfo.opExecuteConfig != rmtExchangeInfo.opExecuteConfig) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "OpExecuteConfig",
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "OpExecuteConfig",
                 static_cast<uint32_t>(exchangeInfo.opExecuteConfig),
                 static_cast<uint32_t>(rmtExchangeInfo.opExecuteConfig)));
         }
         if (exchangeInfo.reduceType != rmtExchangeInfo.reduceType) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "HcclReduceOp",
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "HcclReduceOp",
                 static_cast<uint32_t>(exchangeInfo.reduceType), static_cast<uint32_t>(rmtExchangeInfo.reduceType)));
         }
         if (exchangeInfo.dataType != rmtExchangeInfo.dataType) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "HcclDataType",
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "HcclDataType",
                 static_cast<uint32_t>(exchangeInfo.dataType), static_cast<uint32_t>(rmtExchangeInfo.dataType)));
         }
         if (exchangeInfo.count != rmtExchangeInfo.count) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "DataCount", std::to_string(exchangeInfo.count),
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "DataCount",
+                std::to_string(exchangeInfo.count),
                 std::to_string(rmtExchangeInfo.count)));
         }
         if (exchangeInfo.aivCoreLimit != rmtExchangeInfo.aivCoreLimit) {
             HCCL_RUN_WARNING("[InconsistentCheckParams]op information aivCoreLimit check fail."
-                " expectValue[%u] remotePara[%u]", exchangeInfo.aivCoreLimit, rmtExchangeInfo.aivCoreLimit);
+                " remoteRank[%u] expectValue[%u] remotePara[%u]", channel.remoteRank, exchangeInfo.aivCoreLimit,
+                rmtExchangeInfo.aivCoreLimit);
         }
         if (strncmp(exchangeInfo.group, rmtExchangeInfo.group, MAX_LENGTH) != 0) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "GroupName", exchangeInfo.group,
-                rmtExchangeInfo.group));
+            CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "GroupName",
+                exchangeInfo.group, rmtExchangeInfo.group));
         }
         if (strncmp(exchangeInfo.tag, rmtExchangeInfo.tag, TAG_LENGTH) != 0) {
             bool isGroupEnabled = false;
@@ -131,7 +132,8 @@ HcclResult InconsistentCheckParams(HcclComm comm, const OpExchangeInfo &exchange
                 CHK_RET(HcclGroupStatusGet(&isGroupEnabled));
             }
             if (!isGroupEnabled) {
-                CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "OpTag", exchangeInfo.tag, rmtExchangeInfo.tag));
+                CHK_RET(ReportOpExchangeInfoCheckFailed(channel.remoteRank, exchangeInfo, "OpTag",
+                    exchangeInfo.tag, rmtExchangeInfo.tag));
             }
         }
         HCCL_INFO("[InconsistentCheckParams] success. remoteRank[%u]", channel.remoteRank);
@@ -139,7 +141,7 @@ HcclResult InconsistentCheckParams(HcclComm comm, const OpExchangeInfo &exchange
     return HCCL_SUCCESS;
 }
 
-HcclResult InconsistentCheckOpType(const OpExchangeInfo &exchangeInfo, const HcclCMDType &rmtOpType)
+HcclResult InconsistentCheckOpType(uint32_t remoteRank, const OpExchangeInfo &exchangeInfo, const HcclCMDType &rmtOpType)
 {
     HcclCMDType locOpType = exchangeInfo.opType;
     if (locOpType == HcclCMDType::HCCL_CMD_SEND || locOpType == HcclCMDType::HCCL_CMD_RECEIVE) {
@@ -155,18 +157,18 @@ HcclResult InconsistentCheckOpType(const OpExchangeInfo &exchangeInfo, const Hcc
             static_cast<uint32_t>(HcclCMDType::HCCL_CMD_RECEIVE) - static_cast<uint32_t>(locOpType);
         if ((rmtOpType != HcclCMDType::HCCL_CMD_SEND && rmtOpType != HcclCMDType::HCCL_CMD_RECEIVE) ||
             locOpType == rmtOpType) {
-            CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "OpType", expectValue,
+            CHK_RET(ReportOpExchangeInfoCheckFailed(remoteRank, exchangeInfo, "OpType", expectValue,
                 static_cast<uint32_t>(rmtOpType)));
         }
     } else if (locOpType != rmtOpType) {
-        CHK_RET(ReportOpExchangeInfoCheckFailed(exchangeInfo, "OpType",
+        CHK_RET(ReportOpExchangeInfoCheckFailed(remoteRank, exchangeInfo, "OpType",
             static_cast<uint32_t>(locOpType), static_cast<uint32_t>(rmtOpType)));
     }
     return HCCL_SUCCESS;
 }
 
-HcclResult ReportOpExchangeInfoCheckFailed(const OpExchangeInfo &exchangeInfo, const std::string &paraName,
-    uint32_t expectVal, uint32_t remotePara)
+HcclResult ReportOpExchangeInfoCheckFailed(uint32_t remoteRank, const OpExchangeInfo &exchangeInfo,
+    const std::string &paraName, uint32_t expectVal, uint32_t remotePara)
 {
     std::string opInfo = "Unknown";
     CHK_RET(GetOpTypeName(exchangeInfo, opInfo));
@@ -175,21 +177,21 @@ HcclResult ReportOpExchangeInfoCheckFailed(const OpExchangeInfo &exchangeInfo, c
         std::vector<std::string>({"ccl_op", "group", "para_name", "local_para", "remote_para"}),
         std::vector<std::string>({opInfo, exchangeInfo.group, paraName, std::to_string(expectVal),
         std::to_string(remotePara)}));
-    HCCL_ERROR("[ReportOpExchangeInfoCheckFailed]op information %s check fail. expectValue[%u] remotePara[%u]",
-        paraName.c_str(), expectVal, remotePara);
+    HCCL_ERROR("[ReportOpExchangeInfoCheckFailed]op information %s check fail. remoteRank[%u] expectValue[%u] remotePara[%u]",
+        paraName.c_str(), remoteRank, expectVal, remotePara);
     return HCCL_E_PARA;
 }
 
-HcclResult ReportOpExchangeInfoCheckFailed(const OpExchangeInfo &exchangeInfo, const std::string &paraName,
-    const std::string &expectVal, const std::string &remotePara)
+HcclResult ReportOpExchangeInfoCheckFailed(uint32_t remoteRank, const OpExchangeInfo &exchangeInfo,
+    const std::string &paraName, const std::string &expectVal, const std::string &remotePara)
 {
     std::string opInfo = "Unknown";
     CHK_RET(GetOpTypeName(exchangeInfo, opInfo));
     RPT_INPUT_ERR(true, "EI0005",
         std::vector<std::string>({"ccl_op", "group", "para_name", "local_para", "remote_para"}),
         std::vector<std::string>({opInfo, exchangeInfo.group, paraName, expectVal, remotePara}));
-    HCCL_ERROR("[ReportOpExchangeInfoCheckFailed]op information %s check fail. expectValue[%s] remotePara[%s]",
-        paraName.c_str(), expectVal.c_str(), remotePara.c_str());
+    HCCL_ERROR("[ReportOpExchangeInfoCheckFailed]op information %s check fail. remoteRank[%u] expectValue[%s] remotePara[%s]",
+        paraName.c_str(), remoteRank, expectVal.c_str(), remotePara.c_str());
     return HCCL_E_PARA;
 }
 
