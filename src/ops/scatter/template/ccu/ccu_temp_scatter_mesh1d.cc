@@ -107,7 +107,7 @@ HcclResult CcuTempScatterMesh1D::FastLaunch(const OpParam& param, const Template
     args[inputIdx] = PointerToAddr(buffInfo_.inputPtr) + args[inputIdx];
     args[outputIdx] = PointerToAddr(buffInfo_.outputPtr) + args[outputIdx];
     void *taskArgs = reinterpret_cast<void*>(args);
-    uint64_t argSize = 11;
+    uint64_t argSize = 15;
     CcuResult launchRet = HcommCcuKernelLaunch(tempFastLaunchCtx.threads[0],
                                                tempFastLaunchCtx.ccuKernelSubmitInfos[0].kernelHandle,
                                                taskArgs, argSize);
@@ -123,6 +123,7 @@ HcclResult CcuTempScatterMesh1D::FastLaunch(const OpParam& param, const Template
 HcclResult CcuTempScatterMesh1D::KernelRun(const OpParam &param, const TemplateDataParams &templateDataParams,
                                                   TemplateResource& templateResource)
 {
+    HCCL_INFO("[CcuTempScatterMesh1D] Template KernelRun start.");
     if (templateDataParams.sliceSize == 0 && templateDataParams.tailSize == 0) {
         HCCL_INFO("[CcuTempScatterMesh1D] sliceSize is 0, no need do, just success.");
         return HcclResult::HCCL_SUCCESS;
@@ -140,37 +141,39 @@ HcclResult CcuTempScatterMesh1D::KernelRun(const OpParam &param, const TemplateD
     uint64_t outputRepeatStride = templateDataParams.outputRepeatStride;
     uint64_t normalSliceSize = templateDataParams.sliceSize;
     uint64_t lastSliceSize = templateDataParams.tailSize;
-    uint64_t isInputOutputEqual = inputAddr == outputAddr ? 1 : 0;
+    // root自身slice的大小：若root是最后一个rank则用lastSliceSize，否则用normalSliceSize
+    uint64_t rootSliceSize = (subCommRootId_ == templateRankSize_ - 1) ? lastSliceSize : normalSliceSize;
+    bool inputOutputEqual = (inputAddr + inputSliceStride * subCommRootId_ == outputAddr + outputSliceStride * subCommRootId_);
+    uint64_t isInputOutputEqual = static_cast<uint64_t>(inputOutputEqual);
     uint64_t repeatNum = UINT64_MAX - repeatNumTmp;
 
-    std::vector<uint64_t> taskArgs = {
-        inputAddr, outputAddr, token, inputSliceStride, outputSliceStride, inputRepeatStride, outputRepeatStride,
-        normalSliceSize, lastSliceSize, repeatNum, isInputOutputEqual
-    };
-    uint64_t argSize = 11;
-    CcuResult launchRet = HcommCcuKernelLaunch(templateResource.threads[0], templateResource.ccuKernels[0],
-                                               taskArgs.data(), argSize);
-    if (launchRet != CCU_SUCCESS) {
-        HCCL_ERROR("[CcuTempScatterMesh1D::KernelRun] kernel launch failed, ccuRet -> %d", launchRet);
-        return ConvertCcuToHccl(launchRet);
-    }
+    LoopGroupConfig config{};
+    config.msInterleave = CCU_MS_INTERLEAVE;
+    config.loopCount    = CCU_MS_LOCAL_COPY_LOOP_COUNT;
+    config.memSlice     = CCU_MS_SIZE * LOCAL_COPY_MS_PER_LOOP;
+    auto goSize = CalGoSize(rootSliceSize, config);
 
-    HCCL_DEBUG("[CcuTempScatterMesh1D::KernelRun] end");
+    std::vector<uint64_t> taskArgs = {inputAddr, outputAddr, token, inputSliceStride, outputSliceStride,
+        inputRepeatStride, outputRepeatStride, normalSliceSize, lastSliceSize, repeatNum, isInputOutputEqual,
+        goSize[0], goSize[1], goSize[2], goSize[3]};
+    CcuResult launchRet = HcommCcuKernelLaunch(templateResource.threads[0], templateResource.ccuKernels[0],
+                                               taskArgs.data(), taskArgs.size());
+    CHK_PRT_RET((launchRet != CCU_SUCCESS),
+        HCCL_ERROR("[CcuTempScatterMesh1D::KernelRun] kernel launch failed, ccuRet -> %d", launchRet),
+        ConvertCcuToHccl(launchRet));
 
     CcuKernelSubmitInfo submitInfo;
     submitInfo.kernelHandle = templateResource.ccuKernels[0];
-    submitInfo.cachedArgs[0]=buffInfo_.inBuffBaseOff; // input、output只存对应的偏移
-    submitInfo.cachedArgs[1]=buffInfo_.outBuffBaseOff;
-    submitInfo.cachedArgs[2]=token;
-    submitInfo.cachedArgs[3]=inputSliceStride;
-    submitInfo.cachedArgs[4]=outputSliceStride;
-    submitInfo.cachedArgs[5]=inputRepeatStride;
-    submitInfo.cachedArgs[6]=outputRepeatStride;
-    submitInfo.cachedArgs[7]=normalSliceSize;
-    submitInfo.cachedArgs[8]=lastSliceSize;
-    submitInfo.cachedArgs[9]=repeatNum;
-    submitInfo.cachedArgs[10]=isInputOutputEqual;
+    CHK_RET(FillCachedArgs(submitInfo, buffInfo_.inBuffBaseOff, buffInfo_.outBuffBaseOff, token, inputSliceStride,
+        outputSliceStride, inputRepeatStride, outputRepeatStride, normalSliceSize, lastSliceSize, repeatNum,
+        isInputOutputEqual, goSize[0], goSize[1], goSize[2], goSize[3]));
     templateResource.submitInfos.push_back(submitInfo);
+
+    HCCL_INFO("[CcuTempScatterMesh1D::KernelRun] TaskArgs: inputAddr[%llu], outputAddr[%llu], "
+               "inputSliceStride[%llu], outputSliceStride[%llu], inputRepeatStride[%llu], outputRepeatStride[%llu], "
+               "normalSliceSize[%llu], lastSliceSize[%llu], repeatNum[%llu], isInputOutputEqual[%llu]",
+               inputAddr, outputAddr, inputSliceStride, outputSliceStride, inputRepeatStride, outputRepeatStride,
+               normalSliceSize, lastSliceSize, repeatNumTmp, isInputOutputEqual);
 
     return HcclResult::HCCL_SUCCESS;
 }

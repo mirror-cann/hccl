@@ -70,6 +70,10 @@ static CcuResult LoadArgs(ScatterMesh1DContext &ctx)
     CCU_CHK_RET(ccu::LoadArg(ctx.lastSliceSize, argId++));
     CCU_CHK_RET(ccu::LoadArg(ctx.repeatNum, argId++));
     CCU_CHK_RET(ccu::LoadArg(ctx.isInputOutputEqual, argId++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.addrOffset, argId++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.loopParam, argId++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.parallelParam, argId++));
+    CCU_CHK_RET(ccu::LoadArg(ctx.goSize.residual, argId++));
     return CCU_SUCCESS;
 }
 
@@ -101,31 +105,19 @@ static CcuResult DoScatterOnce(ScatterMesh1DContext &ctx)
 {
     uint32_t channelId = 0;
 
-    ccu::LocalAddr myOutput;
-    myOutput.addr = ctx.outputMem[ctx.rankId].addr;
-    myOutput.token = ctx.outputMem[ctx.rankId].token;
-
     ccu::Variable sliceSize;
 
     for (uint64_t rankIdx = 0; rankIdx < ctx.rankSize; rankIdx++) {
-		uint16_t mask = 1 << rankIdx;
+        if (rankIdx == ctx.rankId) {
+            continue;
+        }
+        uint16_t mask = 1 << rankIdx;
         sliceSize = (rankIdx == ctx.rankSize - 1) ? ctx.lastSliceSize : ctx.normalSliceSize;
         CCU_IF(sliceSize != 0)
         {
-            if (rankIdx == ctx.rankId) {
-                CCU_IF(ctx.isInputOutputEqual == 0)
-                {
-                    ccu::LocalCopy(myOutput, ctx.inputMem[rankIdx], sliceSize, ctx.event, mask);
-                }
-                CCU_IF(ctx.isInputOutputEqual != 0)
-                {
-                    ccu::EventRecord(ctx.event, mask);
-                }
-            } else {
-                ccu::Write(ctx.arg->channels[channelId], ctx.outputMem[rankIdx],
-				             ctx.inputMem[rankIdx], sliceSize, ctx.event, mask);
-                channelId++;
-            }
+            ccu::Write(ctx.arg->channels[channelId], ctx.outputMem[rankIdx],
+                         ctx.inputMem[rankIdx], sliceSize, ctx.event, mask);
+            channelId++;
         }
         CCU_IF(sliceSize == 0)
         {
@@ -133,7 +125,21 @@ static CcuResult DoScatterOnce(ScatterMesh1DContext &ctx)
         }
     }
 
-    ccu::EventWait(ctx.event, (1 << ctx.rankSize) - 1);
+    // 阻塞接口放在Write之后，Write与GroupCopy并行执行
+    ccu::LocalAddr myOutput;
+    myOutput.addr = ctx.outputMem[ctx.rankId].addr;
+    myOutput.token = ctx.outputMem[ctx.rankId].token;
+    ccu::LocalAddr myInput;
+    myInput.addr = ctx.inputMem[ctx.rankId].addr;
+    myInput.token = ctx.inputMem[ctx.rankId].token;
+    CCU_IF(ctx.isInputOutputEqual == 0)
+    {
+        GroupCopy(ctx, myOutput, myInput, ctx.goSize);
+    }
+
+    // 仅等待远端Write完成
+    uint16_t allBit = ((1 << ctx.rankSize) - 1) & (~(1 << ctx.rankId));
+    ccu::EventWait(ctx.event, allBit);
     return CCU_SUCCESS;
 }
 
@@ -180,6 +186,13 @@ CcuResult CcuScatterMesh1DKernel(CcuKernelArg arg)
 {
     auto *kernelArg = static_cast<CcuKernelArgScatterMesh1D *>(arg);
     ScatterMesh1DContext ctx;
+    ctx.resourceAllocated = false;
+    ctx.moConfig.msInterleave = 0;
+    ctx.moConfig.loopCount = 0;
+    ctx.moConfig.memSlice = 0;
+    ctx.moRes.eventCount = 0;
+    ctx.moRes.bufCount = 0;
+    ctx.enginePool = 0;
 
     CCU_CHK_RET(ParseKernelArg(ctx, kernelArg));
     CCU_CHK_RET(InitResource(ctx));

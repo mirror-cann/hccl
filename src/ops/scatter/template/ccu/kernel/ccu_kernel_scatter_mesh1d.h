@@ -27,7 +27,7 @@ struct CcuKernelArgScatterMesh1D : CcuKernelArgBase {
     std::vector<std::vector<uint32_t>> subCommRanks;
 };
 
-struct ScatterMesh1DContext {
+struct ScatterMesh1DContext : CcuKernelCtxBase {
     const CcuKernelArgScatterMesh1D *arg;
 
     uint64_t rankSize{0};
@@ -48,6 +48,8 @@ struct ScatterMesh1DContext {
     ccu::Variable repeatNum;
     ccu::Variable isInputOutputEqual;
     ccu::Variable flag;
+
+    GroupOpSizeVars goSize;
 
     std::vector<ccu::LocalAddr> inputMem;
     std::vector<ccu::RemoteAddr> outputMem;
