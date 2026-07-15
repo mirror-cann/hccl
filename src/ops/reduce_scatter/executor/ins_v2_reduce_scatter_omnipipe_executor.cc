@@ -256,9 +256,10 @@ InsV2ReduceScatterOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate
 
     // 先初始化remoteRankToChannelInfo_，然后为nhr赋值多channel，最后再计算资源，这样计算线程资源的时候就能获取到多channel需要的线程数
     CHK_RET(RestoreChannelMap(resCtx, remoteRankToChannelInfo_));
-    // todo 这边写死了
-    if (rankSizeLevel1_ > 1) {
-        tempMap[OMNIPIPE_LEVEL1]->SetchannelsPerRank(remoteRankToChannelInfo_[1]);
+    if (resCtx.topoInfo.level0Topo == Level0Shape::MESH_1D_CLOS && !resCtx.topoInfo.level0PcieMix) {
+        if (rankSizeLevel1_ > 1) {
+            CHK_RET(tempMap[OMNIPIPE_LEVEL1]->SetchannelsPerRank(remoteRankToChannelInfo_[1]));
+        }
     }
 
     for (auto& temp : tempMap) {

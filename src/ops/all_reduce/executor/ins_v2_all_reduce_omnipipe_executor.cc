@@ -635,9 +635,10 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
     CHK_RET(BuildSubCommAndTempMap(param, algHierarchyInfo_,
             subCommRanks0, subCommRanks1, subCommRanks2, tempMap, &(resCtx.topoInfo)));
 
-    if (rankSizeLevel1_ > 1) {
-        tempMap[OMNIPIPE_RS_LEVEL1]->SetchannelsPerRank(remoteRankToChannelInfo_[1]);
-        tempMap[OMNIPIPE_AG_LEVEL1]->SetchannelsPerRank(remoteRankToChannelInfo_[1]);
+    if (resCtx.topoInfo.level0Topo == Level0Shape::MESH_1D_CLOS && !resCtx.topoInfo.level0PcieMix) {
+        if (rankSizeLevel1_ > 1) {
+            CHK_RET(tempMap[OMNIPIPE_RS_LEVEL1]->SetchannelsPerRank(remoteRankToChannelInfo_[1]));
+        }
     }
     // 为temp分配thread
     levelThreadsRS_.resize(OMNIPIPE_LEVEL_NUM);
