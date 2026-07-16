@@ -54,7 +54,7 @@
 source /usr/local/Ascend/cann/set_env.sh
 ```
 
-此外，运行测试用例需要 MPI 环境支持，请确保已安装并配置好 MPI。
+此外，运行测试用例需要 MPI 环境支持，请确保已安装并配置好 MPI。MPI配置请参考配套版本的[昇腾文档中心-HCCL性能测试工具使用指南](https://hiascend.com/document/redirect/CannCommunityToolHcclTest)中的“MPI安装与配置”章节。
 
 ## 二、编译与运行
 
