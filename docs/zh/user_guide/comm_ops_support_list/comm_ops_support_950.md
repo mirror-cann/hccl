@@ -7,7 +7,7 @@
 > - 下面按照通信算子的展开模式进行通信算子支持情况的呈现。
 > - 本节表格中“√”代表支持，“×”代表不支持，“NA”代表不涉及。
 
-## AI CPU
+## AICPU_TS（AI CPU）
 
 <table><thead align="left"><tr><th><p>算子</p>
 </th>
