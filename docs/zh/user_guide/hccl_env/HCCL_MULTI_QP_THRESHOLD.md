@@ -26,10 +26,20 @@ export HCCL_MULTI_QP_THRESHOLD=512
 
 该环境变量仅支持单算子调用方式，不支持静态图模式。
 
-## 支持的型号
+## 产品支持情况
 
-Ascend 950PR/Ascend 950DT
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+<!-- npu="950" id1 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- Atlas 训练系列产品：不支持
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- Atlas 推理系列产品：不支持
+<!-- end id5 -->

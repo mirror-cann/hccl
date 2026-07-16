@@ -2,6 +2,7 @@
 
 下面分别给出Server间不同型号的产品支持的算法，以及对应算法下支持的通信算子介绍，表格中未列出的则代表不支持。
 
+<!-- npu="950" id2 -->
 ## Ascend 950PR/Ascend 950DT
 
 - **NHR算法**
@@ -14,7 +15,9 @@
   | Broadcast | int8、int16、int32、int64、uint8、uint16、uint32、uint64、float16、float32、float64、bf16、fp8-e5m2、fp8-e4m3、hif8、fp8-e8m0 | - 单算子模式<br>  - 图模式（Ascend IR） | AI_CPU/CCU_SCHED |
   | Reduce | int8、int16、int32、float16、float32、bfp16 | - 单算子模式<br>  - 图模式（Ascend IR） | AI_CPU/CCU_SCHED |
   | Scatter | int8、int16、int32、int64、uint8、uint16、uint32、uint64、float16、float32、float64、bf16、fp8-e5m2、fp8-e4m3、hif8、fp8-e8m0 | - 单算子模式 | AI_CPU/CCU_SCHED |
+<!-- end id2 -->
 
+<!-- npu="A3" id3 -->
 ## Atlas A3 训练系列产品/Atlas A3 推理系列产品
 
 - **ring算法**
@@ -60,7 +63,9 @@
   | ReduceScatter | int8、int16、int32、int64、float16、float32、bfp16 | - 单算子模式<br>  - 图模式（Ascend IR） | 自动选择为NHR、H-D_R或者ring算法 |
   | AllGather | int8、int16、int32、int64、float16、float32、bfp16 | - 单算子模式<br>  - 图模式（Ascend IR） | 自动选择为NHR、H-D_R或者ring算法 |
   | AllReduce | int8、int16、int32、int64、float16、float32、bfp16 | - 单算子模式<br>  - 图模式（Ascend IR） | 自动选择为NHR、H-D_R或者ring算法 |
+<!-- end id3 -->
 
+<!-- npu="910b" id4 -->
 ## Atlas A2 训练系列产品/Atlas A2 推理系列产品
 
 - **ring算法**
@@ -145,6 +150,7 @@
   | 集合通信算子 | 数据类型 | 网络运行模式 | 不支持算子处理方法 |
   | --- | --- | --- | --- |
   | AlltoAllV | int8、int16、int32、int64、float16、float32、bfp16 | 单算子模式 | 自动选择为pairwise算法 |
+<!-- end id4 -->
 
 <!-- npu="910" id1 -->
 

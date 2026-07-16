@@ -31,10 +31,20 @@ export HCCL_NPU_SOCKET_PORT_RANGE="auto"
 - 在多卡场景下，若需要配置该环境变量，则同一通信域内的所有卡都必须进行配置。
 - 若业务为单卡多进程场景（即多个业务进程同时共用一个NPU），建议配置此环境变量，否则业务可能会因为端口冲突运行失败。但需要注意，多进程会对资源开销、通信性能产生一定的影响。
 
-## 支持的型号
+## 产品支持情况
 
-Ascend 950PR/Ascend 950DT
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
+<!-- npu="950" id1 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id3 -->
+<!-- npu="910" id4 -->
+- Atlas 训练系列产品：不支持
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- Atlas 推理系列产品：不支持
+<!-- end id5 -->

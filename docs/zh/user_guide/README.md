@@ -11,7 +11,9 @@
 - [相关参考](references.md)
   - [集群信息配置<a name="sub_menu"></a>](./cluster_info_config/README.md)
   - [环境变量参考<a name="sub_menu"></a>](./hccl_env/README.md)
+    <!-- npu="A3,910b" id1 -->
   - [推荐业务配置](recommended_config.md)
+    <!-- end id1 -->
   - [集合通信算法介绍<a name="sub_menu"></a>](./coll_algo_intro/README.md)
   - [通信算子支持度清单<a name="sub_menu"></a>](./comm_ops_support_list/README.md)
 

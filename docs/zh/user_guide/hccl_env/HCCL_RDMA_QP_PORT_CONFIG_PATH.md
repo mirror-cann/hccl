@@ -49,8 +49,20 @@ export HCCL_RDMA_QP_PORT_CONFIG_PATH=/home/tmp
 
     管理面多QP配置（通过hccn_tool工具的“-s multi_qp”参数配置） \> NSLB的QP配置（通过hccn_tool工具的"-t nslb-dp"参数配置）\> 环境变量HCCL_RDMA_QP_PORT_CONFIG_PATH \>  环境变量HCCL_RDMA_QPS_PER_CONNECTION。
 
-## 支持的型号
+## 产品支持情况
 
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
+<!-- npu="950" id3 -->
+- Ascend 950PR/Ascend 950DT：不支持
+<!-- end id3 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id2 -->
+<!-- npu="910b" id1 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id1 -->
+<!-- npu="910" id4 -->
+- Atlas 训练系列产品：不支持
+<!-- end id4 -->
+<!-- npu="310p" id5 -->
+- Atlas 推理系列产品：不支持
+<!-- end id5 -->

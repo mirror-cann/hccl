@@ -14,7 +14,23 @@
 [PID:3729526]2025-10-23-17:30:40.098.984Config_Error_Invalid_Environment_Variable(EI0001): Value 1000 for environment variable HCCL_RDMA_SL is invalid. Expected value : range[0, 7].
 ```
 
-针对Atlas 推理系列产品、Atlas 训练系列产品、Atlas A2 训练系列产品/Atlas A2 推理系列产品、Atlas A3 训练系列产品/Atlas A3 推理系列产品，CANN日志的ERROR日志中存在关键字"externalinput.cc"，表示是在读取环境变量配置时报错，如下所示：
+<!-- npu="A3,910b,910,310p" id4 -->
+针对如下产品，CANN日志的ERROR日志中存在关键字"externalinput.cc"，表示是在读取环境变量配置时报错。
+
+  <!-- npu="A3" id1 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  <!-- end id1 -->
+  <!-- npu="910b" id2 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  <!-- end id2 -->
+  <!-- npu="910" id5 -->
+- Atlas 训练系列产品
+  <!-- end id5 -->
+  <!-- npu="310p" id3 -->
+- Atlas 推理系列产品
+  <!-- end id3 -->
+
+报错示例如下所示：
 
 ```text
 [ERROR]HCCL(3729526,python3.11):2025-10-23-17:30:40.098.973 [externalinput.cc:963] [3729526][Parse][rdmaServerLevel]HCCL_RDMA_SL[1000] is invalid. except: [0, 7]
@@ -22,6 +38,7 @@
 [ERROR]HCCL(3729526,python3.11):2025-10-23-17:30:40.099.063 [externalinput.cc:47] [3729526][InitExternalInput]call trace: hcclRet -> 1
 [ERROR]HCCL(3729526,python3.11):2025-10-23-17:30:40.099.068 [op_base.cc:866] [3729526][HcclGetRootInfo]call trace: hcclRet -> 1
 ```
+<!-- end id4 -->
 
 ### 可能的原因及解决方法
 

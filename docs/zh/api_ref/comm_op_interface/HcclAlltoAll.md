@@ -47,11 +47,21 @@ HcclResult HcclAlltoAll(const void *sendBuf, uint64_t sendCount, HcclDataType se
 
 ### 数据类型说明
 
+<!-- npu="950" id10 -->
 - 针对Ascend 950PR/Ascend 950DT，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float8-e5m2、float8-e4m3、float8-e8m0、hifloat8、float16、float32、float64、bfp16。
+<!-- end id10 -->
+<!-- npu="A3" id11 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64、bfp16。
+<!-- end id11 -->
+<!-- npu="910b" id12 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64、bfp16。
+<!-- end id12 -->
+<!-- npu="910" id13 -->
 - 针对Atlas 训练系列产品，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64。
+<!-- end id13 -->
+<!-- npu="310p" id6 -->
 - 针对Atlas 300I Duo 推理卡，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64。
+<!-- end id6 -->
 
 ## 返回值
 

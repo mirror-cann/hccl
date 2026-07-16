@@ -33,14 +33,16 @@ HCCL提供了C与Python两种语言的开发接口，用于实现分布式能力
 - 单机集合通信场景，可通过HcclCommInitAll接口在单机内批量创建通信域。
 - 基于已有的通信域，可通过HcclCreateSubCommConfig接口切分具有特定配置的子通信域。
 
-> [!NOTE]说明
->
-> - 多个通信域下的所有通信算子在每个Device上需要保证串行下发，不允许乱序、多线程并发下发，也不支持线程重入。
-> - 在同一Device上，同一通信域内的所有通信算子的下发线程需要使用相同的Context。
-> - 同一个通信域内不支持图模式通信和单算子通信混合执行。
-> - 同一个通信域内的算子需要由使用者确保串行执行。
-> - 同一个NPU上需要串行创建多个通信域。
-> - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，通信域初始化时，如果组网中存在多个超节点，请将属于同一超节点内的AI Server信息配置在一起。假设有两个超节点，标识分别为“0”和“1”，请先配置“0”中的AI Server信息，再配置“1”中的AI Server信息，不支持“0”中的AI Server信息与“1”中的AI Server信息交叉配置。
+**说明**：
+
+- 多个通信域下的所有通信算子在每个Device上需要保证串行下发，不允许乱序、多线程并发下发，也不支持线程重入。
+- 在同一Device上，同一通信域内的所有通信算子的下发线程需要使用相同的Context。
+- 同一个通信域内不支持图模式通信和单算子通信混合执行。
+- 同一个通信域内的算子需要由使用者确保串行执行。
+- 同一个NPU上需要串行创建多个通信域。
+<!-- npu="A3" id4 -->
+- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，通信域初始化时，如果组网中存在多个超节点，请将属于同一超节点内的AI Server信息配置在一起。假设有两个超节点，标识分别为“0”和“1”，请先配置“0”中的AI Server信息，再配置“1”中的AI Server信息，不支持“0”中的AI Server信息与“1”中的AI Server信息交叉配置。
+<!-- end id4 -->
 
 ### 基于rank table创建通信域
 
@@ -66,17 +68,31 @@ HCCL提供了C与Python两种语言的开发接口，用于实现分布式能力
     HcclCommDestroy(hcclComm);
 ```
 
-> [!NOTE]说明
-> 针对Ascend 950PR/Ascend 950DT，Atlas A3 训练系列产品/Atlas A3 推理系列产品，Atlas A2 训练系列产品/Atlas A2 推理系列产品，若业务为单卡多进程场景，建议在rank table配置文件中配置“device_port”字段，并且不同的业务进程需要设置不同的端口号，否则业务可能会因为端口冲突运行失败。但需要注意，多进程会对资源开销、通信性能产生一定的影响。
+**说明**：
+
+针对如下产品：
+<!-- npu="950" id1 -->
+- Ascend 950PR/Ascend 950DT
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+<!-- end id3 -->
+
+若业务为单卡多进程场景，建议在rank table配置文件中配置“device_port”字段，并且不同的业务进程需要设置不同的端口号，否则业务可能会因为端口冲突运行失败。但需要注意，多进程会对资源开销、通信性能产生一定的影响。
 
 ### 基于root节点信息创建通信域
 
 多机集合通信场景，若无完整的集群信息配置文件（rank table文件），HCCL提供了基于root节点信息创建通信域的方式，**主要有如下两种典型使用场景**：
 
 - 每个Device对应一个业务进程的场景，实现流程如下所示：
+       <!-- npu="950" id5 -->
     1. 针对Ascend 950PR/Ascend 950DT，检查rootinfo文件是否存在，其他产品跳过此步骤。
 
         基于root节点信息创建通信域前，请检查“/etc/hccl_rootInfo.json”文件是否存在，此文件记录了NPU间通信的EID（Entity ID，通信中发起或接收对象的标识）信息，环境部署完成后自动生成。若无此文件，请在当前源码仓提issue。
+       <!-- end id5 -->
 
     2. 指定HCCL初始化时Host节点使用的通信IP地址或通信网卡（可选）。<a id="set_host_nic"></a>
 
@@ -113,17 +129,30 @@ HCCL提供了C与Python两种语言的开发接口，用于实现分布式能力
     5. 在通信域中所有节点调用[HcclCommInitRootInfo](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/HcclCommInitRootInfo.md)或者[HcclCommInitRootInfoConfig](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/HcclCommInitRootInfoConfig.md)接口（创建具有特定配置的通信域），基于接收到的“rootInfo”，以及本rank的rank id等信息，进行通信域初始化。
 
 - 每个AI Server对应一个业务进程，每个线程对应一个Device，通过多线程的方式创建多个通信域的场景，实现流程如下所示：
+       <!-- npu="950" id6 -->
     1. 针对Ascend 950PR/Ascend 950DT，检查rootinfo文件是否存在，其他产品跳过此步骤。
 
         基于root节点信息创建通信域前，请检查“/etc/hccl_rootInfo.json”文件是否存在，此文件记录了NPU间通信的EID（Entity ID，通信中发起或接收对象的标识）信息，环境部署完成后自动生成。若无此文件，请在当前代码仓提issue。
+       <!-- end id6 -->
 
     2. 参见[“每个Device对应一个业务进程”场景的步骤2](#set_host_nic)，指定HCCL初始化时Host节点使用的通信IP地址或通信网卡（可选）。
     3. 在主进程中循环执行“指定不同的Device  + 调用HcclGetRootInfo接口”，获取多个“rootInfo”信息。
     4. 每个Device匹配一个线程，分别根据不同的“rootInfo”信息，并发调用[HcclCommInitRootInfo](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/HcclCommInitRootInfo.md)或者[HcclCommInitRootInfoConfig](https://gitcode.com/cann/hcomm/blob/master/docs/zh/api_ref/comm_mgr_c/HcclCommInitRootInfoConfig.md)接口，进行通信域初始化。
 
-> [!NOTE]说明
->
-> 针对Ascend 950PR/Ascend 950DT，Atlas A3 训练系列产品/Atlas A3 推理系列产品，Atlas A2 训练系列产品/Atlas A2 推理系列产品，若业务为单卡多进程场景，建议通过环境变量“[HCCL_HOST_SOCKET_PORT_RANGE](./hccl_env/HCCL_HOST_SOCKET_PORT_RANGE.md)”与“[HCCL_NPU_SOCKET_PORT_RANGE](./hccl_env/HCCL_NPU_SOCKET_PORT_RANGE.md)”分别配置HCCL在Host侧与NPU侧使用的通信端口，否则可能会导致端口冲突，配置示例如下所示。但需要注意，多进程会对资源开销、通信性能产生一定的影响。
+**说明**:
+
+针对如下产品：
+<!-- npu="950" id7 -->
+- Ascend 950PR/Ascend 950DT
+<!-- end id7 -->
+<!-- npu="A3" id8 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+<!-- end id8 -->
+<!-- npu="910b" id9 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+<!-- end id9 -->
+
+若业务为单卡多进程场景，建议通过环境变量“[HCCL_HOST_SOCKET_PORT_RANGE](./hccl_env/HCCL_HOST_SOCKET_PORT_RANGE.md)”与“[HCCL_NPU_SOCKET_PORT_RANGE](./hccl_env/HCCL_NPU_SOCKET_PORT_RANGE.md)”分别配置HCCL在Host侧与NPU侧使用的通信端口，否则可能会导致端口冲突，配置示例如下所示。但需要注意，多进程会对资源开销、通信性能产生一定的影响。
 >
 > ```bash
 > export HCCL_HOST_SOCKET_PORT_RANGE="auto"

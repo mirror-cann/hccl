@@ -46,17 +46,33 @@ HcclResult HcclReduceScatterV(void *sendBuf, const void *sendCounts, const void 
 
 ### dataType说明
 
+<!-- npu="950" id10 -->
 - 针对Ascend 950PR/Ascend 950DT，支持数据类型：int8、int16、int32、int64、float16、float32、bfp16。
+<!-- end id10 -->
+<!-- npu="A3" id11 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型：int8、int16、int32、int64、float16、float32、bfp16。
+<!-- end id11 -->
+<!-- npu="910b" id12 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型：int8、int16、int32、float16、float32、bfp16。
+<!-- end id12 -->
+<!-- npu="310p" id6 -->
 - 针对Atlas 300I Duo 推理卡，支持数据类型：int16、float16、float32。
+<!-- end id6 -->
 
 ### op说明
 
+<!-- npu="950" id14 -->
 - 针对Ascend 950PR/Ascend 950DT，支持的操作类型为sum、prod、max、min，其中prod操作不支持int16、bfp16数据类型。
+<!-- end id14 -->
+<!-- npu="A3" id15 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持的操作类型为sum、max、min。
+<!-- end id15 -->
+<!-- npu="910b" id16 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持的操作类型为sum、max、min。
+<!-- end id16 -->
+<!-- npu="310p" id7 -->
 - 针对Atlas 300I Duo 推理卡，仅支持操作类型sum。
+<!-- end id7 -->
 
 ## 返回值
 
@@ -65,10 +81,18 @@ HcclResult HcclReduceScatterV(void *sendBuf, const void *sendCounts, const void 
 ## 约束说明
 
 - 所有rank的sendCounts、sendDispls、dataType、op均应相同。
+<!-- npu="950" id17 -->
 - 针对Ascend 950PR/Ascend 950DT，仅支持单Server场景，仅支持通信算子展开模式为CCU（Collective Communication Unit，集合通信加速单元）的场景。
+<!-- end id17 -->
+<!-- npu="A3" id18 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，仅支持单Server场景。
+<!-- end id18 -->
+<!-- npu="910b" id19 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅支持多机对称分布场景，不支持非对称分布（即卡数非对称）的场景。
+<!-- end id19 -->
+<!-- npu="310p" id8 -->
 - 针对Atlas 300I Duo 推理卡，仅支持单Server场景，单Server中最大支持部署2张Atlas 300I Duo 推理卡（即4个NPU）。
+<!-- end id8 -->
 - 算子的输入输出地址（sendBuf与recvBuf）根据不同的数据类型，应满足如下对齐要求：
   - int8按照1Byte地址对齐。
   - int16、float16、bfp16按照2Byte地址对齐。

@@ -37,18 +37,20 @@ export HCCL_SOCKET_FAMILY=AF_INET6      #IPv6
 
 无
 
-## 支持的型号
+## 产品支持情况
 
-Ascend 950PR/Ascend 950DT
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
-
+<!-- npu="950" id3 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id3 -->
+<!-- npu="A3" id4 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id4 -->
+<!-- npu="910b" id5 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id5 -->
 <!-- npu="910" id1 -->
-Atlas 训练系列产品
+- Atlas 训练系列产品：支持
 <!-- end id1 -->
-
 <!-- npu="310p" id2 -->
-Atlas 推理系列产品
+- Atlas 推理系列产品：支持
 <!-- end id2 -->

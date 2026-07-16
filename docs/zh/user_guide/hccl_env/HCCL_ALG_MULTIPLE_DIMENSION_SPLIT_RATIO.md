@@ -77,6 +77,20 @@ export HCCL_ALG_MULTIPLE_DIMENSION_SPLIT_RATIO=0.5
 - 该环境变量仅在AllReduce、AllGather、ReduceScatter、Broadcast、Reduce算子选择两维度并行通信算法时生效。若当前拓扑、数据量、数据类型、reduce类型或算子展开模式选择了其他通信算法，则该环境变量不生效。
 - 建议业务结合实际组网和通信数据量进行性能验证后再调整该环境变量。过小或过大的配置可能导致两片数据负载不均，影响通信性能。
 
-## 支持的型号
+## 产品支持情况
 
-Ascend 950PR/Ascend 950DT
+<!-- npu="950" id1 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id1 -->
+<!-- npu="A3" id2 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持
+<!-- end id2 -->
+<!-- npu="910b" id3 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：不支持
+<!-- end id3 -->
+<!-- npu="910" id5 -->
+- Atlas 训练系列产品：不支持
+<!-- end id5 -->
+<!-- npu="310p" id4 -->
+- Atlas 推理系列产品：不支持
+<!-- end id4 -->

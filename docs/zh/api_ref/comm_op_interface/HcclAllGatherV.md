@@ -50,10 +50,18 @@ HcclResult HcclAllGatherV(void *sendBuf, uint64_t sendCount, void *recvBuf, cons
 
 ### 数据类型说明
 
+<!-- npu="950" id11 -->
 - 针对Ascend 950PR/Ascend 950DT，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float8-e5m2、float8-e4m3、float8-e8m0、hifloat8、float16、float32、float64、bfp16。
+<!-- end id11 -->
+<!-- npu="A3" id12 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64、bfp16。
+<!-- end id12 -->
+<!-- npu="910b" id13 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64、bfp16。
+<!-- end id13 -->
+<!-- npu="310p" id6 -->
 - 针对Atlas 300I Duo 推理卡，支持数据类型：int8、uint8、int16、uint16、int32、uint32、int64、uint64、float16、float32、float64。
+<!-- end id6 -->
 
 ## 返回值
 
@@ -62,9 +70,15 @@ HcclResult HcclAllGatherV(void *sendBuf, uint64_t sendCount, void *recvBuf, cons
 ## 约束说明
 
 - 所有rank的recvCounts、recvDispls、dataType均应相同。
+<!-- npu="950" id14 -->
 - 针对Ascend 950PR/Ascend 950DT，仅支持单Server场景，仅支持通信算子展开模式为CCU（Collective Communication Unit，集合通信加速单元）的场景。
+<!-- end id14 -->
+<!-- npu="A3" id15 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，仅支持单Server场景。
+<!-- end id15 -->
+<!-- npu="910b" id16 -->
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅支持多机对称分布场景，不支持非对称分布（即卡数非对称）的场景。
+<!-- end id16 -->
 <!-- npu="310p" id10 -->
 - 针对Atlas 300I Duo 推理卡，仅支持单Server场景，单Server中最大支持部署2张Atlas 300I Duo 推理卡（即4个NPU）。
 <!-- end id10 -->

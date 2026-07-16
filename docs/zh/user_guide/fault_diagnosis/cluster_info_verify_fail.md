@@ -59,7 +59,10 @@ hccn_tool -i {deviceId} -ip -inet6 -g
 
 通信域创建过程中server节点收到通信域内所有rank的信息后，会校验通信域内所有rank的tls配置是否一致，若存在配置不一致场景，则会直接校验失败退出，同时会打印出Disable或者Enable的节点列表，而未打印的节点列表则为相反的tls配置。
 
-此校验功能仅支持在Ascend HDK 25.2.0以上的版本及通过root信息协商初始化通信域的场景中使用。Ascend 950PR/Ascend 950DT不支持此功能。
+此校验功能仅支持在Ascend HDK 25.2.0以上的版本及通过root信息协商初始化通信域的场景中使用。
+<!-- npu="950" id1 -->
+Ascend 950PR/Ascend 950DT不支持此功能。
+<!-- end id1 -->
 
 ### 解决方法
 
@@ -136,6 +139,7 @@ hccn_tool -i {deviceId} -ip -inet6 -g
 
     关于hccn_tool工具的更多用法及参数解释，可查看对应版本的《[HCCN Tool 接口参考](https://support.huawei.com/enterprise/zh/ascend-computing/ascend-hdk-pid-252764743?category=developer-documents&subcategory=interface-reference)》。
 
+<!-- npu="A3" id2 -->
 ## superDeviceId重复（EI0014）
 
 ### 问题现象
@@ -167,3 +171,5 @@ npu-smi info -t spod-info -i id -c chip_id
 ### 解决方法
 
 修改硬件配置或正确配置[HCCL_LOGIC_SUPERPOD_ID](../hccl_env/HCCL_LOGIC_SUPERPOD_ID.md)环境变量，避免同一个超节点内出现superDeviceId相同的设备。
+
+<!-- end id2 -->

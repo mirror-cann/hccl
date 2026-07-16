@@ -41,11 +41,21 @@ HCCL在与对端成功创建socket链接后，会互相交换算子入参、CANN
 
 HCCL在通信算子参数面建链阶段会有以下几个常见的报错阶段场景：
 
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品与Atlas A2 训练系列产品/Atlas A2 推理系列产品，device网卡端口绑定失败，可通过以下命令排查是否有端口绑定失败问题，详细信息可参考[参数面端口绑定失败（EI0019）](#参数面端口绑定失败ei0019)。
+  <!-- npu="A3,910b" id1 -->
+- device网卡端口绑定失败，可通过以下命令排查是否有端口绑定失败问题，详细信息可参考[参数面端口绑定失败（EI0019）](#参数面端口绑定失败ei0019)。
 
     ```bash
     grep -rE "socket type\[(0|1)\].*Please check the port status and whether the port is being used by other process"
     ```
+    
+    此操作仅适用于如下产品：
+      <!-- npu="A3" id2 -->
+    - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+      <!-- end id2 -->
+      <!-- npu="910b" id3 -->
+    - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+      <!-- end id3 -->
+  <!-- end id1 -->
 
 - 参数面socket建链超时，可通过以下命令排查是否有参数面建链失败问题，详细信息可参考[建链超时（EI0006）](#建链超时ei0006)。
 
@@ -219,6 +229,7 @@ HCCL建链超时受环境变量[HCCL_CONNECT_TIMEOUT](../hccl_env/HCCL_CONNECT_T
 
     若两个rank之间ping不通或者有网口是down的，请联系实验室管理员排查对应网卡及交换机的配置。
 
+    <!-- npu="A3" id4 -->
 3. 若使用Atlas A3 训练系列产品/Atlas A3 推理系列产品中的超节点，请注意检查是否错误地将不同物理超节点下的节点配置成为一个逻辑超节点，这种情况下HCCL会错误地认为两个节点能够通过超节点内的vnic进行通信，从而导致互等超时。
 
     可以通过如下日志确认两端的链路类型和物理超节点信息：链路类型为vnic，且两端的物理超节点ID不相同（分别是0和1），但由于配置了相同的逻辑超节点ID（logic_1），因此选择vnic链路进行通信导致超时，可以通过修改或者取消HCCL_LOGIC_SUPERPOD_ID配置进行修复。
@@ -234,6 +245,7 @@ HCCL建链超时受环境变量[HCCL_CONNECT_TIMEOUT](../hccl_env/HCCL_CONNECT_T
     ```text
     debug/plog/plog-3003628_20260205184354321.log:14:[ERROR] HCCL(3003628,scatter_test):2026-02-05-18:44:26.379.542 [transport_manager.cc:885] [3003959][TransportManager][PrintErrorInfo]local rank information: nicType[VNIC_TYPE], logicSuperPodId[logic_1], phySuperPodId[1]. Note: Do not configure ranks belonging to different physical superpod ID info a single logical superpod ID
     ```
+    <!-- end id4 -->
 
 需注意：
 

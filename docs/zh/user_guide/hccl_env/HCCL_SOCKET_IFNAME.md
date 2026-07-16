@@ -6,25 +6,25 @@
 
 开发者可以选取以下规则中的一种进行配置：
 
-- eth：使用所有以eth为前缀的网卡。
+- `eth`：使用所有以eth为前缀的网卡。
 
     若指定多个网卡前缀，多个网卡前缀间用英文逗号分隔。
 
     例如：export HCCL_SOCKET_IFNAME=eth,enp，表示使用所有以eth或enp为前缀的网卡。
 
-- ^eth：不使用以eth为前缀的网卡。
+- `^eth`：不使用以eth为前缀的网卡。
 
     若指定多个网卡前缀，多个网卡前缀间用英文逗号分隔。
 
     例如：export HCCL_SOCKET_IFNAME=^eth,enp，表示不使用任何以eth或enp为前缀的网卡。
 
-- =eth0：使用指定的eth0网卡。
+- `=eth0`：使用指定的eth0网卡。
 
     若指定多个网卡，多个网卡间用英文逗号分隔。
 
     例如：export HCCL_SOCKET_IFNAME==eth0,enp0，表示使用eth0网卡或enp0网卡。
 
-- ^=eth0：不使用指定eth0网卡。
+- `^=eth0`：不使用指定eth0网卡。
 
     若指定多个网卡，多个网卡间用英文逗号分隔。
 
@@ -50,18 +50,20 @@ export HCCL_SOCKET_IFNAME==eth0,endvnic
 
 无
 
-## 支持的型号
+## 产品支持情况
 
-Ascend 950PR/Ascend 950DT
-
-Atlas A3 训练系列产品/Atlas A3 推理系列产品
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品
-
+<!-- npu="950" id3 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id3 -->
+<!-- npu="A3" id4 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id4 -->
+<!-- npu="910b" id5 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id5 -->
 <!-- npu="910" id1 -->
-Atlas 训练系列产品
+- Atlas 训练系列产品：支持
 <!-- end id1 -->
-
 <!-- npu="310p" id2 -->
-Atlas 推理系列产品
+- Atlas 推理系列产品：支持
 <!-- end id2 -->

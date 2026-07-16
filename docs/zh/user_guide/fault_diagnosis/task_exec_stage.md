@@ -99,7 +99,18 @@ HCCL会基于已有的通信域信息与邻近的rank建立起独立的维测链
 
 ### 定位思路
 
-HCCL通信算子的任务编排完成后会下发到Device侧上异步执行，若此时HCCL下发的任务执行失败，会通过调用回调函数通知HCCL异常task信息（stream和taskId），HCCL会以此检索下发时的task信息，打印失败task的详细信息及其所在的算子信息。针对Atlas A3 训练系列产品/Atlas A3 推理系列产品与Atlas A2 训练系列产品/Atlas A2 推理系列产品，如果要跟踪task级信息，需要通过[HCCL_DIAGNOSE_ENABLE](../hccl_env/HCCL_DIAGNOSE_ENABLE.md)手动开启。
+HCCL通信算子的任务编排完成后会下发到Device侧上异步执行，若此时HCCL下发的任务执行失败，会通过调用回调函数通知HCCL异常task信息（stream和taskId），HCCL会以此检索下发时的task信息，打印失败task的详细信息及其所在的算子信息。
+
+<!-- npu="A3,910b" id3 -->
+针对如下产品，如果要跟踪task级信息，需要通过[HCCL_DIAGNOSE_ENABLE](../hccl_env/HCCL_DIAGNOSE_ENABLE.md)手动开启。
+
+  <!-- npu="A3" id4 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品
+  <!-- end id4 -->
+  <!-- npu="910b" id5 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品
+  <!-- end id5 -->
+<!-- end id3 -->
 
 此时在CANN日志中打印的task exception的关键日志为**"Task run failed"或"TaskExecStage"**，如下所示：
 
@@ -229,7 +240,9 @@ run/plog/plog-2111666_20251024111652405.log:[INFO] HCCL(2111666,all_reduce_test)
     grep -r "Entry-HcclCommDestroy" log/run/plog
     ```
 
+  <!-- npu="A3" id2 -->
 - Atlas A3 训练系列产品/Atlas A3 推理系列产品下，网络链路故障也会导致SDMA ERROR，此时需要检查两端之间的链路状态。
+  <!-- end id2 -->
 - 调用HCCL通信算子时，传入的输入或输出地址实际分配的内存大小小于传入的数据量Count。
 
 ### ERROR CQE报错（EI0013）
@@ -294,6 +307,7 @@ Solution: 1. Check whether the network devices between the two ends are abnormal
 
 其中，status\[12\]代表着RoCE报文重传超时，其他状态码极为少见，遇到后请联系技术支持。
 
+<!-- npu="910b" id1 -->
 ### AIV通信算子执行失败
 
 #### 问题现象
@@ -305,3 +319,4 @@ Solution: 1. Check whether the network devices between the two ends are abnormal
 ```
 
 此外也会有上述同样的task exception信息打印，仍可以通过[notify wait超时（EI0002）](#notify-wait超时ei0002)排查思路分析任务失败的根因，如是否全量超时、是否集群中存在某个先发生异常的节点等。
+<!-- end id1 -->

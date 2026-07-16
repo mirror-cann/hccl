@@ -29,16 +29,28 @@ HCCL_INTRA_PCIE_ENABLE与HCCL_INTRA_ROCE_ENABLE支持的配置组合如下表所
 export HCCL_INTRA_PCIE_ENABLE=1
 ```
 
+<!-- npu="910b" id3 -->
 ## 使用约束
 
 [Atlas 200T A2 Box16 异构子框](https://support.huawei.com/enterprise/zh/doc/EDOC1100318274/287e0458)存在左右两个模组，分别为0\~7卡和8\~15卡，针对此产品：
 
 **单机场景下**，当Server内采用PCIe链路通信时，若需要同时使用两个模组的卡，两个模组需使用相同的卡数且在同一平面，即0卡和8卡、1卡和9卡（以此类推）需要同时使用；当Server内采用RoCE链路通信时，无此限制。
+<!-- end id3 -->
 
-## 支持的型号
+## 产品支持情况
 
+<!-- npu="950" id4 -->
+- Ascend 950PR/Ascend 950DT：不支持
+<!-- end id4 -->
+<!-- npu="A3" id5 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：不支持
+<!-- end id5 -->
+<!-- npu="910b" id2 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：仅支持此处理器型号下的[Atlas 200T A2 Box16 异构子框](https://support.huawei.com/enterprise/zh/doc/EDOC1100318274/287e0458)。
+<!-- end id2 -->
 <!-- npu="910" id1 -->
-Atlas 训练系列产品：仅支持此处理器型号下的[Atlas 300T Pro 训练卡](https://support.huawei.com/enterprise/zh/ascend-computing/atlas-300t-pro-pid-256118195)。
+- Atlas 训练系列产品：仅支持此处理器型号下的[Atlas 300T Pro 训练卡](https://support.huawei.com/enterprise/zh/ascend-computing/atlas-300t-pro-pid-256118195)。
 <!-- end id1 -->
-
-Atlas A2 训练系列产品/Atlas A2 推理系列产品：仅支持此处理器型号下的[Atlas 200T A2 Box16 异构子框](https://support.huawei.com/enterprise/zh/doc/EDOC1100318274/287e0458)。
+<!-- npu="310p" id6 -->
+- Atlas 推理系列产品：不支持
+<!-- end id6 -->

@@ -78,7 +78,15 @@ HCCL端口绑定失败，在通信域创建阶段，HCCL需要默认绑定60000-
 可以通过如下方式配置端口范围：
 
 - 通过[HCCL_IF_BASE_PORT](../hccl_env/HCCL_IF_BASE_PORT.md)环境变量指定Host网卡的起始端口号及设置端口预留范围。
-- 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品与Atlas A2 训练系列产品/Atlas A2 推理系列产品，若业务上需要在单个NPU上同时执行多个进程，需通过[HCCL_HOST_SOCKET_PORT_RANGE](../hccl_env/HCCL_HOST_SOCKET_PORT_RANGE.md)设置HCCL在Host侧使用的通信端口范围来避免多进程之间端口使用冲突。
+  <!-- npu="A3,910b" id1 -->
+- 若业务上需要在单个NPU上同时执行多个进程，需通过[HCCL_HOST_SOCKET_PORT_RANGE](../hccl_env/HCCL_HOST_SOCKET_PORT_RANGE.md)设置HCCL在Host侧使用的通信端口范围来避免多进程之间端口使用冲突。**该操作仅适用于如下产品**：
+    <!-- npu="A3" id2 -->
+  - Atlas A3 训练系列产品/Atlas A3 推理系列产品
+    <!-- end id2 -->
+    <!-- npu="910b" id3 -->
+  - Atlas A2 训练系列产品/Atlas A2 推理系列产品
+    <!-- end id3 -->
+  <!-- end id1 -->
 
 ## 部分rank未连接到server节点（EI0015）
 

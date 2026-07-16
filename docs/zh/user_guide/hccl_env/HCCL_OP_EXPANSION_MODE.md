@@ -4,7 +4,9 @@
 
 该环境变量用于配置通信算子的展开模式。
 
+  <!-- npu="950" id2 -->
 - **针对Ascend 950PR/Ascend 950DT** ：支持的配置如下，若设置了不支持的环境变量，系统报错。
+
   - **AI_CPU**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
 
     该配置项支持Broadcast、Reduce、AllReduce、Scatter、ReduceScatter、ReduceScatterV、AllGather、AllGatherV、AlltoAll、AlltoAllV、AlltoAllVC、Send、Recv、BatchSendRecv算子。
@@ -47,8 +49,11 @@
     针对单机通信场景的AllReduce、ReduceScatter、Reduce算子，当数据量超过一定值时，为防止性能下降，系统会自动切换为AI_CPU模式（该阈值并非固定，会根据算子运行模式及网络规模等因素有所调整）。
 
     当CCU资源不足时，系统会自动切换为AI_CPU模式。
+  <!-- end id2 -->
 
+  <!-- npu="A3" id3 -->
 - **针对Atlas A3 训练系列产品/Atlas A3 推理系列产品**：支持的配置如下，若设置了不支持的环境变量，使用默认值。
+
   - **AI_CPU（默认值）**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
 
     在超节点内与超节点间支持全量通信算子。针对Reduce、ReduceScatter、ReduceScatterV、AllReduce算子，数据类型仅支持int8、int16、int32、float16、float32、bfp16，且reduce的操作类型仅支持sum、max、min。其他通信算子支持的数据类型可参见对应的集合通信接口参考。
@@ -84,8 +89,11 @@
     **注意：**
 
     算法编排展开位置设置为“AIV”时，若同时设置了[HCCL_DETERMINISTIC](HCCL_DETERMINISTIC.md)环境变量为“true”或“strict”开启了确定性计算，确定性计算的优先级更高，某些场景下“AIV”展开可能不生效。
+  <!-- end id3 -->
 
+  <!-- npu="910b" id4 -->
 - **针对Atlas A2 训练系列产品/Atlas A2 推理系列产品**：支持的配置如下，若设置了不支持的环境变量，使用默认值。
+
   - **HOST（默认值）**：代表通信算子在Host侧CPU展开，Device侧根据硬件型号自动选择相应的调度器。
   - **HOST_TS**：代表通信算子在Host侧CPU展开，Host向Device的Task Scheduler下发任务，Device的Task Scheduler进行任务调度执行。
   - **AI_CPU**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
@@ -120,8 +128,9 @@
 
     - 算法编排展开位置设置为“AIV”时，若同时设置了[HCCL_DETERMINISTIC](HCCL_DETERMINISTIC.md)环境变量为“true”或“strict”开启了确定性计算，确定性计算的优先级更高，某些场景下“AIV”展开可能不生效。
     - 对于Atlas 200T A2 Box16异构子框，不支持跨框通信场景。
+  <!-- end id4 -->
 
-<!-- npu="310p" id1 -->
+  <!-- npu="310p" id1 -->
 - **针对Atlas 300I Duo 推理卡**：支持的配置如下，若设置了不支持的环境变量，使用默认值。
   - **HOST（默认值）**：代表通信算子在Host侧CPU展开，Device侧根据硬件型号自动选择相应的调度器。
   - **AI_CPU**：代表通信算子在AI CPU展开，Device侧根据硬件型号自动选择相应的调度器。
@@ -129,7 +138,7 @@
     - 仅支持AllReduce算子，AllReduce算子支持的数据类型可参见HcclAllReduce接口。
     - 配置为“AI_CPU”后，通信算子不再支持profiling性能数据采集与分析功能。
     - 对于静态shape图，不支持此配置项，即不支持指定通信算子的展开模式为AI CPU。
-<!-- end id1 -->
+  <!-- end id1 -->
 
 ## 配置示例
 
@@ -151,3 +160,21 @@ export HCCL_OP_EXPANSION_MODE="AI_CPU"
     ................
     [ERROR] KERNEL(5044,sklogd):2024-07-29-10:33:24.874.211 [klogd.c:247][257384.473533] [ascend] [ERROR] [tsdrv] [tsdrv_hb_cq_callback 332] <kworker/0:0:20353> receive ts exception msg, call excep_code=0xb4060006, time=1722249204.850014098s, devid=0 tsid=0
     ```
+
+## 产品支持情况
+
+<!-- npu="950" id5 -->
+- Ascend 950PR/Ascend 950DT：支持
+<!-- end id5 -->
+<!-- npu="A3" id6 -->
+- Atlas A3 训练系列产品/Atlas A3 推理系列产品：支持
+<!-- end id6 -->
+<!-- npu="910b" id7 -->
+- Atlas A2 训练系列产品/Atlas A2 推理系列产品：支持
+<!-- end id7 -->
+<!-- npu="910" id8 -->
+- Atlas 训练系列产品：不支持
+<!-- end id8 -->
+<!-- npu="310p" id9 -->
+- Atlas 推理系列产品：支持
+<!-- end id9 -->
