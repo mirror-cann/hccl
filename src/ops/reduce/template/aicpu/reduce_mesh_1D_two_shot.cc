@@ -23,7 +23,7 @@ ReduceMesh1DTwoShot::~ReduceMesh1DTwoShot()
 
 void ReduceMesh1DTwoShot::SetRoot(u32 root) const
 {
-    (void)root;  // todo: 为啥mesh 1d不用设置root
+    (void)root;
     return;
 }
 

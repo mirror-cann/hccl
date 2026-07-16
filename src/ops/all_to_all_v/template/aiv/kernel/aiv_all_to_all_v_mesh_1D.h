@@ -13,7 +13,6 @@
 using namespace AscendC;
  
 template<typename T>
-// todo 简化参数
 class AivAlltoAllVMesh1D : public AivCommBase {
 public:
  

@@ -36,6 +36,11 @@ SelectorStatus AllGatherVAutoSelector::SelectCcuScheduleAlgo(
     HCCL_INFO("hccl algo op config: config opType:%d, level0:%u, level1:%u, level2:%u, level3:%u", opParam.opType,
               algos[0], algos[1], algos[2], algos[3]);
  
+    if (topoInfo->topoLevelNums == TOPO_LEVEL_NUM_3 && topoInfo->level2Uboe) {
+        HCCL_INFO("[AllGatherVAutoSelector][%s] ccu schedule is not supported with level2Uboe, reset to default.",
+            __func__);
+        return SelectorStatus::NOT_MATCH;
+    }
     // ccu schedule 模式不支持 inplace 场景
     CHK_PRT_RET(IsInputOutputOverlap(opParam) == true,
         HCCL_WARNING("[Algo][AllGatherVAutoSelector] ccu schedule does not support inplace allgatherv."),

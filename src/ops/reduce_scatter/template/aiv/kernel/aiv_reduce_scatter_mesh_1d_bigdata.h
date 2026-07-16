@@ -13,7 +13,6 @@
 using namespace AscendC;
 
 template<typename T>
-// todo 简化参数
 class AivReduceScatterMesh1DBigData : public AivCommBase {
     constexpr static uint64_t stageNum = 2;  // 生产者 消费者
     constexpr static uint64_t TAG_FLAG_SIZE = 8;
