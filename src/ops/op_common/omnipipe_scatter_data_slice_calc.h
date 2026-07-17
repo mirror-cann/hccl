@@ -49,19 +49,19 @@ struct ScatterTopoInfo {
 struct ScatterStepState {
     u64 outerStepNum;
     u64 innerStepNum;
-    int xyCornerStep;
-    int xInCornerStep;
-    int yInCornerStep;
-    int zCornerStep;
+    u64 xyCornerStep;
+    u64 xInCornerStep;
+    u64 yInCornerStep;
+    u64 zCornerStep;
     bool isZSlowAxis;
     bool isXSlowAxis;
 };
-void CalcScatterCornerStep(int innerStepNum, int outerStepNum, double xB, double yB, int zCornerStep, int &xyCornerStep,
-    int &xInCornerStep, int &yInCornerStep);
-void PushScatterZStepSize(std::vector<std::vector<u64>> &scatterStepDataSize, u64 *zScatterDataSize, int zCornerStep,
-    int outerStepNum, u64 xRankSize, u64 yRankSize);
+void CalcScatterCornerStep(u64 innerStepNum, u64 outerStepNum, double xB, double yB, u64 zCornerStep, u64 &xyCornerStep,
+    u64 &xInCornerStep, u64 &yInCornerStep);
+void PushScatterZStepSize(std::vector<std::vector<u64>> &scatterStepDataSize, u64 *zScatterDataSize, u64 zCornerStep,
+    u64 outerStepNum, u64 xRankSize, u64 yRankSize);
 void PushScatterAxisStepSize(std::vector<std::vector<u64>> &scatterStepDataSize, u64 *axisScatterDataSize,
-    int axisInCornerStep, int innerStepNum, int xyCornerStep, int outerStepNum, u64 maxStepNum, u64 crossAxisRankSize,
+    u64 axisInCornerStep, u64 innerStepNum, u64 xyCornerStep, u64 outerStepNum, u64 maxStepNum, u64 crossAxisRankSize,
     u64 zRankSize, int axisLevel);
 std::vector<std::vector<u64>> CalScatterDataSizeStep(u64 *xScatterDataSize, u64 *yScatterDataSize,
     u64 *zScatterDataSize, std::vector<u64> levelRankSize, u64 cornerStep, u64 outerStepNum, u64 innerStepNum,
@@ -78,13 +78,6 @@ u64 CalScatterDataSize2D(u64 *xStepP2pDataSize, u64 *yStepP2pDataSize, double xB
     u64 yRankSize, u64 dataSizeEachRank, u64 maxStep);
 void CheckRootOrSameAxisAsRoot(
     u64 xRankSize, u64 yRankSize, u64 zRankSize, uint32_t root, uint32_t rankId, bool &ifRoot, bool &ifSameAxisAsRoot);
-int CalcScatterOuterStepNum(u64 *xySCDataSize, u64 *zSCDataSize, double xyB, double zB, u64 xRankSize, u64 yRankSize,
-    u64 zRankSize, u64 dataSize, int maxStepNum);
-int CalcScatterInnerStepNum(u64 xSCDataSize[][MAX_STEP_NUM], u64 ySCDataSize[][MAX_STEP_NUM], u64 *xySCDataSize,
-    double xB, double yB, u64 xRankSize, u64 yRankSize, int outerStepNum, int maxStepNum);
-u64 CalcScatterZCornerStep(bool zGreaterThanXy, int outerStepNum, u64 finStepMark);
-u64 CalcScatterAllCclBufferSize(const std::vector<u64> &scratchSize, OpMode opMode, CommEngine engine, u64 dataSize,
-    u64 xRankSize, u64 yRankSize, u64 zRankSize);
 std::vector<u64> CalcScatterScratchSize(u64 *xSDataSize, u64 *ySDataSize, u64 *zSDataSize,
     std::vector<u64> levelRankSize, u64 cornerStep, u64 outerStepNum, u64 innerStepNum, u64 maxStepNum,
     std::vector<u64> levelAlgType, CommEngine engine, double xB, double yB);
@@ -100,7 +93,7 @@ void ZeroInitScatterDataArrays(u64 rankSize, u64 zSDataSize[][MAX_STEP_NUM], u64
     u64 xSDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 ySDataSize[][MAX_STEP_NUM][MAX_STEP_NUM],
     u64 zSOffset[][MAX_STEP_NUM], u64 xSOffset[][MAX_STEP_NUM][MAX_STEP_NUM],
     u64 ySOffset[][MAX_STEP_NUM][MAX_STEP_NUM], u64 xySOffset[][MAX_STEP_NUM]);
-void CalcScatterOneRankDataSize(const ScatterTopoInfo &topo, ScatterStepState &state, int rs, u64 finStepMark,
+void CalcScatterOneRankDataSize(const ScatterTopoInfo &topo, ScatterStepState &state, u64 rs, u64 finStepMark,
     double slowBw, double fastBw, u64 slowRankSize, u64 fastRankSize,
     u64 zSDataSize[][MAX_STEP_NUM], u64 xySDataSize[][MAX_STEP_NUM],
     u64 xSDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 ySDataSize[][MAX_STEP_NUM][MAX_STEP_NUM],
@@ -240,7 +233,7 @@ void PushScatterXInnerCornerOneDiag(std::vector<u64> &sliceSizeMultRankPiece, st
     u64 osn, u64 isn, u64 xSDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 xySOffset[][MAX_STEP_NUM],
     u64 xSOffset[][MAX_STEP_NUM][MAX_STEP_NUM], const std::vector<OmniPipeSplitSliceInfo> &perLoop,
     const std::vector<OmniPipeSplitSliceInfo> &total, u64 dataTypeSize, u64 maxDataPieceId, u64 xRankSize,
-    u64 yRankSize, u64 zRankSize, u64 yAxis, u64 zAxis, const std::vector<u64> &dataSizePerLoop, int oneDid);
+    u64 yRankSize, u64 zRankSize, u64 yAxis, u64 zAxis, const std::vector<u64> &dataSizePerLoop, u64 oneDid);
 void CalcScatterXOuterLEOffset(u64 &inputPieceIdOffset, u64 &outputPieceIdOffset, u64 &sliceSizeOnePiece,
     u64 xSDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 ySDataSize[][MAX_STEP_NUM][MAX_STEP_NUM],
     u64 xySOffset[][MAX_STEP_NUM], u64 ySOffset[][MAX_STEP_NUM][MAX_STEP_NUM],
@@ -250,12 +243,13 @@ void PushScatterYInnerCornerOneDiag(std::vector<u64> &sliceSizeMultRankPiece, st
     u64 osn, u64 isn, u64 ySDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 xySOffset[][MAX_STEP_NUM],
     u64 ySOffset[][MAX_STEP_NUM][MAX_STEP_NUM], const std::vector<OmniPipeSplitSliceInfo> &perLoop,
     const std::vector<OmniPipeSplitSliceInfo> &total, u64 dataTypeSize, u64 maxDataPieceId, u64 xRankSize,
-    u64 yRankSize, u64 zRankSize, u64 xAxis, u64 zAxis, int oneDid);
+    u64 yRankSize, u64 zRankSize, u64 xAxis, u64 zAxis, u64 oneDid);
 void CalcScatterYOuterGTOffset(u64 &inputPieceIdOffset, u64 &outputPieceIdOffset, u64 &sliceSizeOnePiece,
     u64 xSDataSize[][MAX_STEP_NUM][MAX_STEP_NUM], u64 ySDataSize[][MAX_STEP_NUM][MAX_STEP_NUM],
     u64 xySOffset[][MAX_STEP_NUM], u64 xSOffset[][MAX_STEP_NUM][MAX_STEP_NUM],
     const std::vector<OmniPipeSplitSliceInfo> &perLoop, uint32_t root, u64 osn, u64 isn, u64 innerStepNum, u64 pieceId);
 ScatterTopoInfo InitScatterTopoInfo(OmniPipeSliceParam &omniPipeSliceParam, uint32_t root);
 void InitScatterStepFlags(ScatterStepState &state, const ScatterTopoInfo &topo);
+std::vector<u64> OmniPipeSplitScatterData(u64 rankSize, u64 count, u64 dataTypeSize, u64 root);
 } // namespace ops_hccl
 #endif

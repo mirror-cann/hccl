@@ -67,7 +67,7 @@ protected:
         u64 maxCountPerLoop{0};                                  // 每个loop最大count
         u32 loopTimes{0};                                        // loop次数
     };
-    HcclResult CalcLoopSplitData(u64 maxTmpMemSize, LoopSplitData &loopSplitData);
+    HcclResult CalcLoopSplitData(u64 maxTmpMemSize, u64 root, LoopSplitData &loopSplitData);
 
     // 初始化OmniPipeSliceParam默认值（dataSizePerLoop/dataWholeSize/level配置等）
     HcclResult InitSliceParam(const OpParam &param, const std::vector<u64> &allRankSplitData,

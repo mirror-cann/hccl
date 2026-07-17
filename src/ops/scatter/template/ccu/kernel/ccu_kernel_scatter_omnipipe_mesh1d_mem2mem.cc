@@ -26,7 +26,6 @@ static CcuResult ParseKernelArg(
     ctx.rankId = kernelArg->rankId;
     ctx.rootId = kernelArg->rootId;
     ctx.dataType = kernelArg->opParam.DataDes.dataType;
-    ctx.subRankIdx2RankIdx = kernelArg->subRankIdx2RankIdx;
     ctx.ifRealRoot = kernelArg->ifRealRoot;
     ctx.myrealrank = kernelArg->myrealrank;
     return CCU_SUCCESS;
@@ -58,6 +57,7 @@ static CcuResult InitResource(ScatterOmniPipeMesh1DMem2MemContext &ctx)
     ctx.outputMem.resize(ctx.rankSize);
     ctx.outputOmniSliceStrideVec.resize(ctx.rankSize);
     ctx.inputOmniSliceStrideVec.resize(ctx.rankSize);
+    ctx.inputOmniSliceSizeVec.resize(ctx.rankSize);
     return CCU_SUCCESS;
 }
 
@@ -78,6 +78,9 @@ static CcuResult LoadArgs(ScatterOmniPipeMesh1DMem2MemContext &ctx)
     }
     for (uint64_t i = 0; i < ctx.rankSize; i++) {
         CCU_CHK_RET(ccu::LoadArg(ctx.outputOmniSliceStrideVec[i], argId++));
+    }
+    for (uint64_t i = 0; i < ctx.rankSize; i++) {
+        CCU_CHK_RET(ccu::LoadArg(ctx.inputOmniSliceSizeVec[i], argId++));
     }
     return CCU_SUCCESS;
 }
@@ -117,19 +120,21 @@ static CcuResult DoScatter(ScatterOmniPipeMesh1DMem2MemContext &ctx)
 
     for (uint64_t rankIdx = 0; rankIdx < ctx.rankSize; rankIdx++) {
         uint64_t mask = 1ULL << rankIdx;
-        CCU_IF(ctx.sliceSize != 0)
-        {
-            if (rankIdx == ctx.rankId) {
-                CCU_CHK_RET(ccu::EventRecord(ctx.event, mask));
-            } else {
+        ctx.sliceSize = ctx.inputOmniSliceSizeVec[rankIdx];
+
+        if (rankIdx == ctx.rankId) {
+            CCU_CHK_RET(ccu::EventRecord(ctx.event, mask));
+        } else {
+            CCU_IF(ctx.sliceSize != 0)
+            {
                 CCU_CHK_RET(ccu::Write(ctx.arg->channels[channelId], ctx.outputMem[rankIdx], ctx.inputMem[rankIdx],
                     ctx.sliceSize, ctx.event, mask));
-                channelId++;
             }
-        }
-        CCU_IF(ctx.sliceSize == 0)
-        {
-            CCU_CHK_RET(ccu::EventRecord(ctx.event, mask));
+            CCU_IF(ctx.sliceSize == 0)
+            {
+                CCU_CHK_RET(ccu::EventRecord(ctx.event, mask));
+            }
+            channelId++;
         }
     }
 

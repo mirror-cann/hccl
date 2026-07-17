@@ -13,7 +13,6 @@
 
 #include <vector>
 #include <ios>
-#include <map>
 #include "utils.h"
 #include "ccu_kernel_utils.h"
 #include "ccu_kernel_alg_base.h"
@@ -25,7 +24,6 @@ struct CcuKernelArgScatterOmniPipeMesh1DMem2Mem : CcuKernelArgBase {
     uint32_t rootId;
     OpParam opParam;
     std::vector<std::vector<uint32_t>> subCommRanks;
-    std::map<uint32_t, uint32_t> subRankIdx2RankIdx;
     bool ifRealRoot;
     uint32_t myrealrank;
 };
@@ -37,7 +35,6 @@ struct ScatterOmniPipeMesh1DMem2MemContext {
     uint32_t rootId{0};
     bool ifRealRoot{false};
     uint32_t myrealrank{0};
-    std::map<uint32_t, uint32_t> subRankIdx2RankIdx;
     HcclDataType dataType{HcclDataType::HCCL_DATA_TYPE_RESERVED};
 
     ccu::Variable input;
@@ -51,6 +48,7 @@ struct ScatterOmniPipeMesh1DMem2MemContext {
     ccu::Variable isLastPiece;
     std::vector<ccu::Variable> inputOmniSliceStrideVec;
     std::vector<ccu::Variable> outputOmniSliceStrideVec;
+    std::vector<ccu::Variable> inputOmniSliceSizeVec;
 
     std::vector<ccu::LocalAddr> inputMem;
     std::vector<ccu::RemoteAddr> outputMem;

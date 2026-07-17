@@ -258,8 +258,7 @@ HcclResult InsV2ScatterOmniPipe2DExecutor<AlgTopoMatch, InsAlgTempLevel0, InsAlg
     const OpParam &param, const AlgResourceCtxSerializable &resCtx, InsAlgTempLevel0 &algTempLevel0,
     InsAlgTempLevel1 &algTempLevel1)
 {
-    HCCL_DEBUG("[%s] start", __func__);
-    HCCL_DEBUG("[%s] localThreads_ size[%u]", __func__, localThreads_.size());
+    HCCL_DEBUG("[%s] start localThreads_ size[%u]", __func__, localThreads_.size());
     // 获取每个template的线程数
     u64 level0ThreadsNum = 0;
     u64 level1ThreadsNum = 0;

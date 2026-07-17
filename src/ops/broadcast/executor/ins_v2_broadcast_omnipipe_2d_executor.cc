@@ -354,10 +354,13 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
 template <typename AlgTopoMatch, typename CcuScatterAlgTemplateX, typename CcuScatterAlgTemplateY,
     typename CcuAgAlgTemplateX, typename CcuAgAlgTemplateY>
 HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX, CcuScatterAlgTemplateY,
-    CcuAgAlgTemplateX, CcuAgAlgTemplateY>::CalcLoopSplitData(u64 maxTmpMemSize, LoopSplitData &loopSplitData)
+    CcuAgAlgTemplateX, CcuAgAlgTemplateY>::CalcLoopSplitData(
+    u64 maxTmpMemSize, u64 root, LoopSplitData &loopSplitData)
 {
     // 1. 每个rank切分的总count
-    loopSplitData.allRankSplitData = OmniPipeSplitData(rankSize_, dataCount_, dataTypeSize_);
+    loopSplitData.allRankSplitData = OmniPipeSplitScatterData(rankSize_, dataCount_, dataTypeSize_, root);
+    CHK_PRT_RET(loopSplitData.allRankSplitData.empty(), HCCL_ERROR("[%s] allRankSplitData is empty", __func__),
+        HCCL_E_INTERNAL);
     for (int i = 0; i < loopSplitData.allRankSplitData.size(); i++) {
         HCCL_DEBUG("[%s] rankId[%d], allRankSplitData[%d]:%d", __func__, myRank_, i, loopSplitData.allRankSplitData[i]);
     }
@@ -371,8 +374,10 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
     CHK_PRT_RET(loopSplitData.maxCountPerLoop == 0, HCCL_ERROR("[%s] maxCountPerLoop is 0", __func__), HCCL_E_INTERNAL);
     HCCL_DEBUG("[%s] myRank[%u] maxCountPerLoop[%u]", __func__, myRank_, loopSplitData.maxCountPerLoop);
 
-    loopSplitData.loopTimes = loopSplitData.allRankSplitData[0] / loopSplitData.maxCountPerLoop
-                              + ((loopSplitData.allRankSplitData[0] % loopSplitData.maxCountPerLoop == 0) ? 0 : 1);
+    const u64 maxRankCount = *std::max_element(
+        loopSplitData.allRankSplitData.begin(), loopSplitData.allRankSplitData.end());
+    loopSplitData.loopTimes = maxRankCount / loopSplitData.maxCountPerLoop
+                              + ((maxRankCount % loopSplitData.maxCountPerLoop == 0) ? 0 : 1);
     HCCL_DEBUG("[%s] myRank[%u] loopTimes[%u]", __func__, myRank_, loopSplitData.loopTimes);
 
     // 3. 每个rank每个loop切分的count
@@ -394,13 +399,8 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
     const std::vector<u64> &allRankSplitData, const std::vector<std::vector<u64>> &multiLoopAllRankSplitData,
     OmniPipeSliceParam &sliceParam)
 {
-    // 每loop数据量: 取切分计划首loop首rank的大小，但不超过总数据量
-    u64 perLoopSize = multiLoopAllRankSplitData[0][0] * dataTypeSize_;
-    perLoopSize = dataSize_ > perLoopSize ? perLoopSize : dataSize_;
-    HCCL_DEBUG("[%s] perLoopSize[%u] dataSize_[%u]", __func__, perLoopSize, dataSize_);
-
-    sliceParam.dataSizePerLoop = std::vector<u64>(rankSize_, perLoopSize);
-    sliceParam.dataWholeSize = std::vector<u64>(rankSize_, allRankSplitData[myRank_] * dataTypeSize_);
+    sliceParam.dataSizePerLoop = CalcCountToDataSize(multiLoopAllRankSplitData[0], dataTypeSize_);
+    sliceParam.dataWholeSize = CalcCountToDataSize(allRankSplitData, dataTypeSize_);
     sliceParam.levelRankId = {rankIdxLevel0_, rankIdxLevel1_, 0};
     sliceParam.levelRankSize = {rankSizeLevel0_, rankSizeLevel1_, 1};
     sliceParam.levelAlgType = std::vector<u64>{1, 0, 1};
@@ -475,7 +475,7 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
     // 2、计算数据切分与loop次数
     maxTmpMemSize_ = resCtx.cclMem.size;
     LoopSplitData loopSplitData;
-    CHK_RET(CalcLoopSplitData(maxTmpMemSize_, loopSplitData));
+    CHK_RET(CalcLoopSplitData(maxTmpMemSize_, param.root, loopSplitData));
     const auto &allRankSplitData = loopSplitData.allRankSplitData;
     const auto &multiLoopAllRankSplitData = loopSplitData.multiLoopAllRankSplitData;
     u64 maxCountPerLoop = loopSplitData.maxCountPerLoop;
@@ -541,11 +541,19 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
             } else if (i != 0) {
                 // 中间步: 同y轴非root往x轴方向发送部分转发数据(mesh/templateX)
                 HCCL_DEBUG("[%s] myRank[%u] StepNum[%u]", __func__, myRank_, i);
-                if (isSameYAxisAsRoot && rankSizeLevel0_ > 1) {
-                    HCCL_DEBUG("[%s] set myRank[%u] as root", __func__, myRank_);
-                    scatterAlgTempX.SetRoot(myRank_);
-                    CHK_RET(GenTempAlgParamsHCCLBuff2HCCLBuff(tempScatterAlgParamsX,
-                        omniPipeSliceInfoSC.dataSliceLevel0[i], processedDataCount, resCtx, param));
+                if (endpointAttrBwAvgSC[0] <= endpointAttrBwAvgSC[1]) {
+                    if (isSameYAxisAsRoot && rankSizeLevel0_ > 1) {
+                        HCCL_DEBUG("[%s] set myRank[%u] as root", __func__, myRank_);
+                        scatterAlgTempX.SetRoot(myRank_);
+                        CHK_RET(GenTempAlgParamsHCCLBuff2HCCLBuff(tempScatterAlgParamsX,
+                            omniPipeSliceInfoSC.dataSliceLevel0[i], processedDataCount, resCtx, param));
+                    }
+                } else {
+                    scatterAlgTempY.ifDoTask_ = true;
+                    if (isSameXAxisAsRoot && rankSizeLevel1_ > 1) {
+                        CHK_RET(GenTempAlgParamsHCCLBuff2HCCLBuff(tempScatterAlgParamsY,
+                            omniPipeSliceInfoSC.dataSliceLevel1[i], processedDataCount, resCtx, param));
+                    }
                 }
             }
 
@@ -624,7 +632,7 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
             // 第一步做完后回到主流做尾同步
             CHK_RET(PostSyncInterThreads(mainThread, syncThreads, notifyIdxesSubToMain));
         }
-        processedDataCount += currDataCount;
+        processedDataCount += maxCountPerLoop;
     }
 
     HCCL_DEBUG("[%s][OrchestrateLoop] End.", __func__);
