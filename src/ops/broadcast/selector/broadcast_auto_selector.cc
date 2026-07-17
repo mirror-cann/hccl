@@ -266,6 +266,11 @@ SelectorStatus BroadcastAutoSelector::SelectDPUAlgo(const TopoInfoWithNetLayerDe
         if ((topoInfo->deviceNumPerModule == 1) || (topoInfo->level0Topo == Level0Shape::MESH_1D)) {
             selectAlgName = "InsBroadcastSequenceMeshNhrDPU";
             return SelectorStatus::MATCH;
+        } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
+            if (topoInfo->level0PcieMix) {
+                selectAlgName = "InsBroadcastSequenceMeshNhrDPU";
+                return SelectorStatus::MATCH;
+            }
         }
     }
 

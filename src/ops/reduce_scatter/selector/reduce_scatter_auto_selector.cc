@@ -486,9 +486,15 @@ SelectorStatus ReduceScatterAutoSelector::SelectDPUAlgo(const TopoInfoWithNetLay
     (void)configAlgMap;
     if (topoInfo->topoLevelNums > 1) {
         if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
-            selectAlgName = "InsV2ReduceScatterOmniPipe";
-            HCCL_INFO("Using algo InsV2ReduceScatterOmniPipe");
-            return SelectorStatus::MATCH;
+            if (!topoInfo->level0PcieMix) {
+                selectAlgName = "InsV2ReduceScatterOmniPipe";
+                HCCL_INFO("Using algo InsV2ReduceScatterOmniPipe");
+                return SelectorStatus::MATCH;
+            } else {
+                selectAlgName = "InsReduceScatterSequenceMeshMeshDPU";
+                HCCL_INFO("Using algo InsReduceScatterSequenceMeshMeshDPU");
+                return SelectorStatus::MATCH;
+            }
         } else {
             selectAlgName = "InsReduceScatterSequenceMeshMeshDPU";
             HCCL_INFO("Using algo InsReduceScatterSequenceMeshMeshDPU");

@@ -215,8 +215,13 @@ SelectorStatus AlltoAllAutoSelector::SelectDPUAlgo(const TopoInfoWithNetLayerDet
             selectAlgName = "InsAlltoAllMesh1DDPU";
             return SelectorStatus::MATCH;
         } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
-            selectAlgName = "InsAlltoAllClosMesh1DDPU";
-            return SelectorStatus::MATCH;
+            if (!topoInfo->level0PcieMix) {
+                selectAlgName = "InsAlltoAllClosMesh1DDPU";
+                return SelectorStatus::MATCH;
+            } else {
+                selectAlgName = "InsAlltoAllMesh1DDPU";
+                return SelectorStatus::MATCH;
+            }
         }
     }
 

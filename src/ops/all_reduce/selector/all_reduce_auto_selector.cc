@@ -595,9 +595,15 @@ SelectorStatus AllReduceAutoSelector::SelectDPUAlgo(const TopoInfoWithNetLayerDe
             HCCL_INFO("Using algo InsAllReduceSequenceMeshNhrDPU");
             return SelectorStatus::MATCH;
         } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
-            selectAlgName = "InsV2AllReduceOmniPipe";
-            HCCL_INFO("Using algo InsV2AllReduceOmniPipe");
-            return SelectorStatus::MATCH;
+            if (!topoInfo->level0PcieMix) {
+                selectAlgName = "InsV2AllReduceOmniPipe";
+                HCCL_INFO("Using algo InsV2AllReduceOmniPipe");
+                return SelectorStatus::MATCH;
+            } else {
+                selectAlgName = "InsAllReduceSequenceMeshNhrDPU";
+                HCCL_INFO("Using algo InsAllReduceSequenceMeshNhrDPU");
+                return SelectorStatus::MATCH;
+            }
         }
     }
  

@@ -172,8 +172,13 @@ SelectorStatus AlltoAllVAutoSelector::SelectDPUAlgo(
             selectAlgName = "InsAlltoAllVMesh1DDPU";
             return SelectorStatus::MATCH;
         } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
-            selectAlgName = "InsAlltoAllVClosMesh1DDPU";
-            return SelectorStatus::MATCH;
+            if (!topoInfo->level0PcieMix) {
+                selectAlgName = "InsAlltoAllVClosMesh1DDPU";
+                return SelectorStatus::MATCH;
+            } else {
+                selectAlgName = "InsAlltoAllVMesh1DDPU";
+                return SelectorStatus::MATCH;
+            }
         }
     }
 

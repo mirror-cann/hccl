@@ -89,9 +89,18 @@ HcclResult TopoMatchMultilevel::TopoForLayer0(
                 ranks_y.assign(ranks, ranks + rankNum);
             }
         }
-        algHierarchyInfo.infos[0].push_back(ranks_x);
-        algHierarchyInfo.infos[0].push_back(ranks_y);
-        layer0Size = ranks_x.size() * ranks_y.size();
+        if (ranks_x.size() != 0) {
+            algHierarchyInfo.infos[0].push_back(ranks_x);
+            layer0Size = ranks_x.size();
+        }
+        if (ranks_y.size() != 0) {
+            algHierarchyInfo.infos[0].push_back(ranks_y);
+            if (layer0Size == 0) {
+                layer0Size = ranks_y.size();
+            } else {
+                layer0Size *= ranks_y.size();
+            }
+        }
     }
 #endif
     return HcclResult::HCCL_SUCCESS;
@@ -125,6 +134,12 @@ HcclResult TopoMatchMultilevel::TopoForLayer1(
             rankVecLayer1WithSameIdx.push_back(rankId);
             continue;
         }
+
+        if (layer0Size == 0) {
+            HCCL_ERROR("[TopoMatchMultilevel::MeshNHRTopoForLayer1] layer0Size is 0, Invalid topo.");
+            return HcclResult::HCCL_E_PARA;
+        }
+
         if (rankId % layer0Size != myRank % layer0Size) {
             continue;
         }
