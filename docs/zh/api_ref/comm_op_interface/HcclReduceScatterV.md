@@ -65,7 +65,7 @@ HcclResult HcclReduceScatterV(void *sendBuf, const void *sendCounts, const void 
 ## 约束说明
 
 - 所有rank的sendCounts、sendDispls、dataType、op均应相同。
-- 针对Ascend 950PR/Ascend 950DT，仅支持单Server场景，仅支持通信算子展开模式为CCU（Collective Communication Unit，集合通信加速单元）的场景。
+- 针对Ascend 950PR/Ascend 950DT，仅支持单Server场景，仅支持通信算子展开模式为CCU、AICPU的场景。
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，仅支持单Server场景。
 - 针对Atlas A2 训练系列产品/Atlas A2 推理系列产品，仅支持多机对称分布场景，不支持非对称分布（即卡数非对称）的场景。
 - 针对Atlas 300I Duo 推理卡，仅支持单Server场景，单Server中最大支持部署2张Atlas 300I Duo 推理卡（即4个NPU）。

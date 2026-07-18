@@ -363,7 +363,7 @@ rank table文件配置说明如下所示：
 
 | 一级配置项 | 二级配置项 | 三级配置项 | 四级配置项 | 配置说明 |
 | --- | --- | --- | --- | --- |
-| status |  |  |  | 必选，rank table可用标识。<br>  - completed：表示rank table可用。<br>  - initializing：表示rank table不可用。 |
+| status |  |  |  | 可选，rank table可用标识。<br>  - completed：表示rank table可用。<br>  - initializing：表示rank table不可用。 |
 | version |  |  |  | 必选。<br>rank table模板版本信息。<br>固定配置为：2.0。 |
 | rank_count |  |  |  | 必选。<br>参与集合通信的rank数量，即NPU数量，取值范围：[1, 65536]。 |
 | rank_list |  |  |  | 必选。<br>参与集合通信的rank列表。 |
