@@ -23,6 +23,8 @@ constexpr u32 MESH_BW_SCHED = 11;
 constexpr u32 CLOS_BW_SCHED = 10;
 constexpr u32 MESH_BW_MS = 22;
 constexpr u32 CLOS_BW_MS = 10;
+constexpr u32 MESH_BW_AICPU = 11;
+constexpr u32 CLOS_BW_AICPU = 10;
 
 namespace ops_hccl {
 
@@ -209,6 +211,9 @@ HcclResult InsV2AllReduceConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAl
     } else if (param.opExecuteConfig == OpExecuteConfig::CCU_MS) {
         portNum0 = MESH_BW_MS;
         portNum1 = CLOS_BW_MS;
+    } else if (param.opExecuteConfig == OpExecuteConfig::AICPU_TS){
+        portNum0 = MESH_BW_AICPU;
+        portNum1 = CLOS_BW_AICPU;
     }
     const u64 totalCounts = param.DataDes.count;
     const u64 sliceAlignCount = HCCL_MIN_SLICE_ALIGN / dataTypeSize_;
@@ -229,7 +234,7 @@ HcclResult InsV2AllReduceConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAl
     if (temp0ScratchMultiple > 0 || temp1ScratchMultiple > 0) {
         const u64 bufferRatioTerm0 = portNum0 * temp0ScratchMultiple;
         const u64 bufferRatioTerm1 = portNum1 * temp1ScratchMultiple;
-        const double bufferRatio0 = bufferRatioTerm0 / (bufferRatioTerm0 + bufferRatioTerm1);
+        const double bufferRatio0 = static_cast<double>(bufferRatioTerm0) / (bufferRatioTerm0 + bufferRatioTerm1);
         cclMem0.size = cclMemSize * bufferRatio0;
         cclMem1.addr = static_cast<void *>(static_cast<s8 *>(cclMemAddr) + cclMem0.size);
         cclMem1.size = cclMemSize - cclMem0.size;
@@ -242,19 +247,29 @@ HcclResult InsV2AllReduceConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAl
     tempAlgParams0.buffInfo.inputSize = param.inputSize;
     tempAlgParams0.buffInfo.outputSize = param.outputSize;
     tempAlgParams0.buffInfo.hcclBuff = cclMem0;
+    tempAlgParams0.buffInfo.hcclBuffSize = cclMem0.size;
     tempAlgParams0.buffInfo.hcclBuffBaseOff = 0;
     tempAlgParams0.buffInfo.inBuffBaseOff = 0;
     tempAlgParams0.buffInfo.outBuffBaseOff = 0;
+    tempAlgParams0.inputSliceStride = 0;
+    tempAlgParams0.outputSliceStride = 0;
+    tempAlgParams0.inputRepeatStride = 0;
+    tempAlgParams0.outputRepeatStride = 0;
 
     TemplateDataParams tempAlgParams1;
     tempAlgParams1.buffInfo.inputPtr = param.inputPtr;
     tempAlgParams1.buffInfo.outputPtr = param.outputPtr;
     tempAlgParams1.buffInfo.inputSize = param.inputSize;
     tempAlgParams1.buffInfo.outputSize = param.outputSize;
-    tempAlgParams1.buffInfo.hcclBuff = cclMem1;
-    tempAlgParams1.buffInfo.hcclBuffBaseOff = 0;
+    tempAlgParams1.buffInfo.hcclBuff = resCtx.cclMem;
+    tempAlgParams1.buffInfo.hcclBuffSize = cclMem1.size;
+    tempAlgParams1.buffInfo.hcclBuffBaseOff = cclMem0.size;
     tempAlgParams1.buffInfo.inBuffBaseOff = dataOffset;
     tempAlgParams1.buffInfo.outBuffBaseOff = dataOffset;
+    tempAlgParams1.inputSliceStride = 0;
+    tempAlgParams1.outputSliceStride = 0;
+    tempAlgParams1.inputRepeatStride = 0;
+    tempAlgParams1.outputRepeatStride = 0;
 
     TemplateResource tempAlgResource0;
     TemplateResource tempAlgResource1;
@@ -281,12 +296,13 @@ HcclResult InsV2AllReduceConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAl
 
         for (u32 i = 0; i < channelCount; ++i) {
             const auto &channel = channels[i];
-            auto &targetChannels = (i < rankSize_) ? tempAlgResource0.channels : tempAlgResource1.channels;
+            auto &targetChannels = (i < channelCount / 2) ? tempAlgResource0.channels : tempAlgResource1.channels;
             targetChannels[channel.remoteRank].push_back(channel);
         }
-
-        temp0SlaveThreadNum = temp0->GetThreadNum();
-        temp1SlaveThreadNum = temp1->GetThreadNum();
+        CHK_RET(temp0->SetchannelsPerRank(tempAlgResource0.channels));
+        CHK_RET(temp1->SetchannelsPerRank(tempAlgResource1.channels));     
+        temp0SlaveThreadNum = temp0->GetThreadNum() - 1;
+        temp1SlaveThreadNum = temp1->GetThreadNum() - 1;
     }
 
     const u64 temp0ThreadsNum = temp0SlaveThreadNum + 1;

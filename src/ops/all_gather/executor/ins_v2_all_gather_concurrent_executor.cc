@@ -33,6 +33,8 @@ namespace ops_hccl {
 constexpr u32 CLOS_BW = 10;
 constexpr u32 MESH_BW = 11;
 constexpr u32 CLOS_JETTY = 4;
+constexpr u32 MESH_BW_AICPU = 37;
+constexpr u32 CLOS_BW_AICPU = 25;
 
 template <typename AlgTopoMatch, typename InsAlgTemplate0, typename InsAlgTemplate1>
 InsV2AllGatherConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1>::InsV2AllGatherConcurrentExecutor()
@@ -166,6 +168,9 @@ void InsV2AllGatherConcurrentExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTempl
     if (param.engine == CommEngine::COMM_ENGINE_CCU) {
         portNum0 = MESH_BW;
         portNum1 = CLOS_BW;
+    } else if (param.opExecuteConfig == OpExecuteConfig::AICPU_TS) {
+        portNum0 = MESH_BW_AICPU;
+        portNum1 = CLOS_BW_AICPU;
     }
     double splitData = static_cast<double>(portNum0) / (portNum0 + portNum1);
     splitDataSize.push_back(splitData);

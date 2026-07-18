@@ -118,7 +118,7 @@ SelectorStatus AlltoAllVAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayer
             HCCL_ERROR("[Algo][AlltoAllVAutoSelector] CheckMeshNumEqualToClosNum failed."),
             SelectorStatus::NOT_MATCH);
         if ((isMeshNumEqualToClosNum == true) && (topoInfo->userRankSize <= 4)) { // 同一组4P，走并发算法
-            selectAlgName = "InsAlltoAllVMesh1DUBX";
+            selectAlgName = "InsAllToAllVMesh1DConcurrent";
         } else {
             selectAlgName = "InsAlltoAllVMesh1DUBX";
         }
