@@ -156,6 +156,7 @@ HcclResult InsAllReduceParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
                                             interTempRequest1.ccuKernelInfos.begin(),
                                             interTempRequest1.ccuKernelInfos.end());
         resourceRequest.ccuKernelNum.emplace_back(interTempRequest1.ccuKernelNum[0]);
+        resourceRequest.dieSplitRatio = interTempRequest1.dieSplitRatio;
     }
 
     HCCL_DEBUG("[InsAllReduceParallelExecutor][CalcRes] myRank[%u], notifyNumOnMainThread[%u], slaveThreadNum[%u], "
@@ -532,8 +533,9 @@ HcclResult InsAllReduceParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTem
                                               resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0] + resCtx.ccuKernelNum[1] + resCtx.ccuKernelNum[2]);
             interTempAlgRes.ccuKernels.insert(interTempAlgRes.ccuKernels.end(),
                                                 resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0] + resCtx.ccuKernelNum[1] + resCtx.ccuKernelNum[2],
-                                                resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0] + resCtx.ccuKernelNum[1] + resCtx.ccuKernelNum[2] + resCtx.ccuKernelNum[3]);
+                                                 resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0] + resCtx.ccuKernelNum[1] + resCtx.ccuKernelNum[2] + resCtx.ccuKernelNum[3]);
         }
+        interTempAlgRes.dieSplitRatio = resCtx.dieSplitRatio;
     } else {
         intraTempAlgRes.channels = intraLinks_;
         interTempAlgRes.channels = interLinks_;

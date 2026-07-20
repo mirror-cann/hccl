@@ -44,6 +44,7 @@ public:
 
 private:
     uint32_t mySubCommRank_ = 0;
+    double dieSplitRatio_ = 1.0;
     std::map<u32, std::vector<HcclChannelDesc>> rankIdToChannelDesc_;
     HcclResult GetStepInfo(u32 step, NHRStepInfo &stepInfo);
     HcclResult ProcessNHRStepInfo(HcclComm comm, std::vector<NHRStepInfo>& stepInfoVector,

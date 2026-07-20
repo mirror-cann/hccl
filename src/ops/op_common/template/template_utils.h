@@ -338,6 +338,7 @@ struct TemplateResource {
     std::vector<ThreadHandle> threads;
     std::vector<CcuKernelHandle> ccuKernels;
     std::vector<CcuKernelSubmitInfo> submitInfos;
+    double dieSplitRatio = 0.0;
     void *npu2DpuShmemPtr;
     void *dpu2NpuShmemPtr;
     void* aivCommInfoPtr = nullptr;

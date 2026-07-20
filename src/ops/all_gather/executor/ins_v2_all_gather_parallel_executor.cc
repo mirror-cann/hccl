@@ -109,6 +109,7 @@ HcclResult InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
                                             interTempRequest.ccuKernelInfos.begin(),
                                             interTempRequest.ccuKernelInfos.end());
         resourceRequest.ccuKernelNum.emplace_back(interTempRequest.ccuKernelNum[0]);
+        resourceRequest.dieSplitRatio = interTempRequest.dieSplitRatio;
     }
     HCCL_DEBUG("[InsV2AllGatherParallelExecutor][CalcRes] myRank[%u], notifyNumOnMainThread[%u], slaveThreadNum[%u], "
                "channels[%u]",
@@ -442,6 +443,7 @@ HcclResult InsV2AllGatherParallelExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
         interTempAlgRes.ccuKernels.insert(interTempAlgRes.ccuKernels.end(),
                                               resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0],
                                               resCtx.ccuKernels.begin() + resCtx.ccuKernelNum[0] + resCtx.ccuKernelNum[1]);
+        interTempAlgRes.dieSplitRatio = resCtx.dieSplitRatio;
     } else {
         intraTempAlgRes.channels = intraLinkMap_;
         interTempAlgRes.channels = interLinkMap_;

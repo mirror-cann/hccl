@@ -12,11 +12,18 @@
 #define HCCL_CCU_ALG_TEMPLATE_BASE
 
 #include "common_alg_template_base.h"
+#include <array>
+#include <set>
+#include <string>
 
 
 namespace ops_hccl {
 
 constexpr uint32_t CCU_DIE_NUM_MAX_2 = 2;
+constexpr uint32_t MAX_KERNEL_NUM_2DIE = 3;
+constexpr uint32_t KERNEL_FULLMESH = 0;
+constexpr uint32_t KERNEL_CLOS_MAJOR = 1;
+constexpr uint32_t KERNEL_CLOS_MINOR = 2;
 
 class CcuAlgTemplateBase : public CommonAlgTemplateBase {
 public:
@@ -57,6 +64,21 @@ public:
     static HcclResult GetDieInfoFromChannelDescs(HcclComm comm,
         const std::map<u32, std::vector<HcclChannelDesc>> &rankIdToChannelDesc,
         u32 myRankId, uint32_t &dieNum, uint32_t &dieId);
+    static HcclResult CalcDieSplitRatio(HcclComm comm, uint32_t myRank, bool is2Plus6,
+        const std::vector<HcclChannelDesc>& majorChs,
+        const std::vector<HcclChannelDesc>& minorChs, double& ratio);
+    static HcclResult SplitChannelsByDie(HcclComm comm, uint32_t myRank,
+        std::map<u32, std::vector<HcclChannelDesc>>& rankIdToChannelDesc,
+        std::map<uint32_t, std::vector<HcclChannelDesc>>& singleChByDie,
+        std::map<uint32_t, std::vector<HcclChannelDesc>>& multiChByDie,
+        bool& is2Plus6, std::set<u32>* closPeers = nullptr);
+    static HcclResult PartitionChannelsFor2Die(
+        const std::map<uint32_t, std::vector<HcclChannelDesc>>& singleChByDie,
+        const std::map<uint32_t, std::vector<HcclChannelDesc>>& multiChByDie,
+        bool is2Plus6, uint32_t myRank, uint32_t& kernelCount, uint32_t& fullmeshDieId,
+        std::array<std::vector<HcclChannelDesc>, MAX_KERNEL_NUM_2DIE>& kernelChannels,
+        std::array<std::vector<u32>, MAX_KERNEL_NUM_2DIE>& kernelRankGroup,
+        const std::string& tag);
 
 protected:
     OpMode          opMode_             = OpMode::OPBASE;

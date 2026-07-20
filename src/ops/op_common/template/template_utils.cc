@@ -9,8 +9,9 @@
  */
 
 #include "template_utils.h"
-
 #include <limits>
+constexpr u32 DIE_NUM_1 = 1;
+constexpr u32 DIE_NUM_2 = 2;
 namespace ops_hccl {
 
 HcclResult GetAlgRank(const u32 virtRank, const std::vector<u32> &rankIds, u32 &algRank)

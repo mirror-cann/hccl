@@ -63,6 +63,12 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::CalcRes(HcclComm comm, const OpParam& par
 
     CHK_RET(PartitionChannels(comm, channelDescs, rankIdToChannelDesc_));
 
+    double ratio = 1.0;
+    CHK_RET(CalcDieSplitRatio(comm, myRank_, is2Plus6_,
+        kernelChannels_[KERNEL_CLOS_MAJOR], kernelChannels_[KERNEL_CLOS_MINOR], ratio));
+    resourceRequest.dieSplitRatio = ratio;
+    dieSplitRatio_ = ratio;
+
     uint32_t slaveThreadNum = kernelCount_ - 1;
     resourceRequest.notifyNumOnMainThread = slaveThreadNum;
     resourceRequest.slaveThreadNum = slaveThreadNum;
@@ -100,60 +106,12 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::PartitionChannels(HcclComm comm, const st
                                                          std::map<u32, std::vector<HcclChannelDesc>>& rankIdToChannelDesc)
 {
     (void) channelDescs;
-    using DieIdType = uint32_t;
-    const uint32_t dieIdTypeSize = sizeof(DieIdType);
-
     std::map<uint32_t, std::vector<HcclChannelDesc>> singleChByDie;
     std::map<uint32_t, std::vector<HcclChannelDesc>> multiChByDie;
+    CHK_RET(SplitChannelsByDie(comm, myRank_, rankIdToChannelDesc, singleChByDie, multiChByDie, is2Plus6_, &closPeers_));
 
-    for (auto& rankToChannels : rankIdToChannelDesc) {
-        u32 remoteRank = rankToChannels.first;
-        std::vector<HcclChannelDesc>& channelList = rankToChannels.second;
-        bool isMulti = channelList.size() > 1;
-        if (isMulti) {
-            is2Plus6_ = true;
-            closPeers_.insert(remoteRank);
-        }
-        for (const auto& channel : channelList) {
-            DieIdType dieId = 0;
-            EndpointDesc localEndpoint = channel.localEndpoint;
-            CHK_RET(HcclRankGraphGetEndpointInfo(comm, myRank_, &localEndpoint, ENDPOINT_ATTR_DIE_ID,
-                dieIdTypeSize, static_cast<void*>(&dieId)));
-            (isMulti ? multiChByDie : singleChByDie)[dieId].emplace_back(channel);
-        }
-    }
-
-    auto fillKernel = [this](uint32_t kernelIdx, const std::vector<HcclChannelDesc>& channels) {
-        for (const auto& ch : channels) {
-            kernelChannels_[kernelIdx].emplace_back(ch);
-            kernelRankGroup_[kernelIdx].push_back(ch.remoteRank);
-        }
-    };
-
-    if (is2Plus6_) {
-        kernelCount_ = 3;
-        fullmeshDieId_ = singleChByDie.begin()->first;
-        fillKernel(KERNEL_FULLMESH, singleChByDie[fullmeshDieId_]);
-        kernelRankGroup_[KERNEL_FULLMESH].push_back(myRank_);
-        for (auto& pair : multiChByDie) {
-            fillKernel(pair.first == fullmeshDieId_ ? KERNEL_CLOS_MINOR : KERNEL_CLOS_MAJOR, pair.second);
-        }
-    } else {
-        kernelCount_ = 2;
-        auto it0 = singleChByDie.begin();
-        auto it1 = std::next(it0);
-        if (it0->second.size() > it1->second.size()) {
-            std::swap(it0, it1);
-        }
-        fillKernel(KERNEL_FULLMESH, it0->second);
-        kernelRankGroup_[KERNEL_FULLMESH].push_back(myRank_);
-        fillKernel(KERNEL_CLOS_MAJOR, it1->second);
-    }
-
-    HCCL_INFO("[CcuTempAlltoAllVMesh1D2Die][PartitionChannels] Rank[%d], is2Plus6[%d], kernelCount[%u], "
-        "fullmeshRankGroup[%zu], closMajorRankGroup[%zu], closMinorRankGroup[%zu].",
-        myRank_, is2Plus6_, kernelCount_, kernelRankGroup_[KERNEL_FULLMESH].size(),
-        kernelRankGroup_[KERNEL_CLOS_MAJOR].size(), kernelRankGroup_[KERNEL_CLOS_MINOR].size());
+    CHK_RET(PartitionChannelsFor2Die(singleChByDie, multiChByDie, is2Plus6_, myRank_,
+        kernelCount_, fullmeshDieId_, kernelChannels_, kernelRankGroup_, "CcuTempAlltoAllVMesh1D2Die"));
 
     return HcclResult::HCCL_SUCCESS;
 }
@@ -173,6 +131,7 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::SaveCacheCtx(HcclComm comm, const OpParam
         cacheCtx.rankGroup[i] = kernelRankGroup_[i];
     }
     cacheCtx.closPeers = closPeers_;
+    cacheCtx.dieSplitRatio = dieSplitRatio_;
 
     std::vector<char> buf = cacheCtx.Serialize();
 
@@ -237,12 +196,14 @@ void CcuTempAlltoAllVMesh1D2Die::FillRankGroupTaskArgs(uint32_t kernelIdx, const
 
         if (cacheCtx.is2Plus6 && cacheCtx.closPeers.count(peerId) > 0) {
             uint64_t recvLength = localSendRecvInfo_.recvLength[peerId];
-            uint64_t minorSendSize = sendSize * CLOS_RATIO_MINOR / CLOS_RATIO_TOTAL;
-            uint64_t minorRecvSize = recvLength * CLOS_RATIO_MINOR / CLOS_RATIO_TOTAL;
+            uint64_t majorSendSize = static_cast<uint64_t>(sendSize * dieSplitRatio_);
+            uint64_t minorSendSize = sendSize - majorSendSize;
+            uint64_t majorRecvSize = static_cast<uint64_t>(recvLength * dieSplitRatio_);
+            uint64_t minorRecvSize = recvLength - majorRecvSize;
             if (kernelIdx == KERNEL_CLOS_MAJOR) {
                 sendOffset += minorSendSize;
                 recvOffset += minorRecvSize;
-                sendSize = sendSize - minorSendSize;
+                sendSize = majorSendSize;
             } else if (kernelIdx == KERNEL_CLOS_MINOR) {
                 sendSize = minorSendSize;
             }
@@ -293,6 +254,10 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::KernelRun(const OpParam &param, const Tem
 
     Mesh2DieCacheCtx cacheCtx;
     CHK_RET(LoadCacheCtx(param, cacheCtx));
+
+    if (templateResource.dieSplitRatio > 0.0) {
+        dieSplitRatio_ = templateResource.dieSplitRatio;
+    }
 
     uint32_t kernelCount = cacheCtx.kernelCount;
     uint32_t subThreadCount = kernelCount - 1;
@@ -365,6 +330,7 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::FastLaunch(const OpParam &param, const Te
 
     Mesh2DieCacheCtx cacheCtx;
     CHK_RET(LoadCacheCtx(param, cacheCtx));
+    dieSplitRatio_ = cacheCtx.dieSplitRatio;
 
     HcclDataType dataType = param.all2AllVDataDes.sendType;
     uint64_t dataTypeSize = SIZE_TABLE[dataType];
@@ -434,12 +400,14 @@ HcclResult CcuTempAlltoAllVMesh1D2Die::FastLaunch(const OpParam &param, const Te
 
             if (cacheCtx.is2Plus6 && cacheCtx.closPeers.count(peerId) > 0) {
                 uint64_t recvLength = sendRecvInfo.recvLength[peerId];
-                uint64_t minorSendSize = sendSize * CLOS_RATIO_MINOR / CLOS_RATIO_TOTAL;
-                uint64_t minorRecvSize = recvLength * CLOS_RATIO_MINOR / CLOS_RATIO_TOTAL;
+                uint64_t majorSendSize = static_cast<uint64_t>(sendSize * dieSplitRatio_);
+                uint64_t minorSendSize = sendSize - majorSendSize;
+                uint64_t majorRecvSize = static_cast<uint64_t>(recvLength * dieSplitRatio_);
+                uint64_t minorRecvSize = recvLength - majorRecvSize;
                 if (kernelType_[i] == KERNEL_CLOS_MAJOR) {
                     sendOffset += minorSendSize;
                     recvOffset += minorRecvSize;
-                    sendSize = sendSize - minorSendSize;
+                    sendSize = majorSendSize;
                 } else if (kernelType_[i] == KERNEL_CLOS_MINOR) {
                     sendSize = minorSendSize;
                 }

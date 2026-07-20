@@ -356,6 +356,7 @@ struct CcuFastLaunchCtx {
 
 // A5用了cntNotify
 struct AlgResourceRequest {
+    double dieSplitRatio = 0.0;
     u32 notifyNumOnMainThread = 0;
     u32 slaveThreadNum = 0;
     std::vector<u32> notifyNumPerThread;
@@ -428,6 +429,7 @@ struct AlgResourceCtxSerializable {
     std::vector<ThreadHandle> threads;
     ThreadHandle unfoldThread = 0; // 展开流thread
     std::vector<std::vector<ChannelInfo>> channels;
+    double dieSplitRatio = 0.0;
     bool isHcommBatchTransferOnThreadSupported = false;
     bool isHcclThreadAcquireWithConfigSupported = false;
     void* commInfoPtr = nullptr;
@@ -464,6 +466,7 @@ struct AlgResourceCtxSerializable {
 
         binaryStream << ccuKernelNum;
         binaryStream << ccuKernels;
+        binaryStream << dieSplitRatio;
         std::vector<char> seq = topoInfo.Serialize();
         topoInfoSeqSize = seq.size();
         binaryStream << topoInfoSeqSize;
@@ -498,6 +501,7 @@ struct AlgResourceCtxSerializable {
 
         binaryStream >> ccuKernelNum;
         binaryStream >> ccuKernels;
+        binaryStream >> dieSplitRatio;
         binaryStream >> topoInfoSeqSize;
         size_t startPos = data.size() - topoInfoSeqSize;
         std::vector<char> tailData(data.begin() + startPos, data.end());

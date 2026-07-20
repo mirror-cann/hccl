@@ -103,7 +103,7 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::CalcRes(HcclComm comm, const OpParam& p
         return HcclResult::HCCL_E_INTERNAL;
     }
 
-    uint32_t kernelNum = 1;
+    uint32_t kernelNum = dieNum;
     resourceRequest.notifyNumOnMainThread = 1;
     resourceRequest.slaveThreadNum = 1;
     resourceRequest.ccuKernelNum.push_back(kernelNum);
@@ -121,6 +121,17 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::CalcRes(HcclComm comm, const OpParam& p
     if (dieNum > 1) { // 通过端口数划分channel，适配跨框die0连die1的场景，避免建链失败
         CHK_RET(ReverseChannelPerDieIfNeed(comm, myRank_, channelsPerDie));
     }
+
+    double ratio = 1.0;
+    if (dieNum == 2) {
+        uint32_t p0 = 0, p1 = 0;
+        CHK_RET(GetChannelBwCoeff(comm, myRank_, channelsPerDie[0][0], p0));
+        CHK_RET(GetChannelBwCoeff(comm, myRank_, channelsPerDie[1][0], p1));
+        if (p0 + p1 > 0) {
+            ratio = static_cast<double>(p0) / (p0 + p1);
+        }
+    }
+    resourceRequest.dieSplitRatio = ratio;
 
      // 3.构造kernelInfo
     CHK_RET(BuildCcuKernelInfos(param, dieNum, kernelNum, stepInfoVector, rank2ChannelIdx, channelsPerDie,
@@ -156,33 +167,31 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::BuildCcuKernelInfos(const OpParam& para
         kernelArg->axisSize = dieNum;
         kernelInfo.setKernelArg(kernelArg);
         kernelInfo.channels = channelsPerDie[kernelIdx];
+        resourceRequest.channels.push_back(channelsPerDie[kernelIdx]);
         resourceRequest.ccuKernelInfos.push_back(kernelInfo);
     }
     return HcclResult::HCCL_SUCCESS;
 }
 
 HcclResult CcuTempAllGatherNHR1DMem2Mem::SplitDataFor2Dies(const OpParam& param,
-                                                           const TemplateDataParams& templateDataParams,
+                                                           uint64_t sliceSize,
                                                            uint64_t& die0Size, uint64_t& die1Size) const
 {
     constexpr uint64_t MULTIPLIER = 4;
     uint64_t typeSize = DataTypeSizeGet(param.DataDes.dataType);
-    uint64_t dataCount = (templateDataParams.sliceSize / typeSize);
+    uint64_t dataCount = (sliceSize / typeSize);
 
     if (dataCount <= templateRankSize_ * MULTIPLIER) {  // 数据量极小，不划分die
         die0Size = dataCount * typeSize;
         die1Size = 0;
         return HcclResult::HCCL_SUCCESS;
     }
-    u8 die0PortGroupSize = 6;
-    u8 die1PortGroupSize = 2;
 
-    die0Size = (dataCount * die0PortGroupSize / (die0PortGroupSize + die1PortGroupSize)) * typeSize;
-    die1Size = templateDataParams.sliceSize - die0Size;
+    die0Size = static_cast<uint64_t>(dataCount * dieSplitRatio_) * typeSize;
+    die1Size = sliceSize - die0Size;
     HCCL_DEBUG("[CcuTempAllGatherNHR1DMem2Mem::SplitDataFor2Dies] die0Size = %llu, die1Size = %llu", die0Size , die1Size);
     return HcclResult::HCCL_SUCCESS;
 }
-
 HcclResult CcuTempAllGatherNHR1DMem2Mem::PrepareLaunchArgs(const OpParam& param,
     const TemplateDataParams& templateDataParams, u32 kernelNum,
     std::vector<uint64_t>& taskArgs, uint64_t& argSize)
@@ -190,12 +199,13 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::PrepareLaunchArgs(const OpParam& param,
     buffInfo_ = templateDataParams.buffInfo;
     uint64_t die0Size = 0;
     uint64_t die1Size = 0;
+    uint64_t die0LastSize = 0;
+    uint64_t die1LastSize = 0;
     constexpr uint32_t MAX_DIE_NUM_2 = 2;
-    if (kernelNum == MAX_DIE_NUM_2) {
-        SplitDataFor2Dies(param, templateDataParams, die0Size, die1Size);
-    } else {
-        die0Size = templateDataParams.sliceSize;
-    }
+    SplitDataFor2Dies(param, templateDataParams.sliceSize, die0Size, die1Size);
+    uint64_t lastSliceTotal = (templateDataParams.tailSize != 0) ? templateDataParams.tailSize
+                                                                 : templateDataParams.sliceSize;
+    SplitDataFor2Dies(param, lastSliceTotal, die0LastSize, die1LastSize);
 
     uint64_t inputAddr = PointerToAddr(buffInfo_.inputPtr) + buffInfo_.inBuffBaseOff;
     uint64_t outputAddr = PointerToAddr(buffInfo_.outputPtr) + buffInfo_.outBuffBaseOff;
@@ -206,8 +216,6 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::PrepareLaunchArgs(const OpParam& param,
     uint64_t outputSliceStride = templateDataParams.outputSliceStride;
     uint64_t inputRepeatStride = templateDataParams.inputRepeatStride;
     uint64_t outputRepeatStride = templateDataParams.outputRepeatStride;
-    uint64_t die0LastSize = templateDataParams.tailSize / kernelNum;
-    uint64_t die1LastSize = templateDataParams.tailSize - die0LastSize;
     bool inputOutputEqual = (inputAddr + inputSliceStride * mySubCommRank_ == outputAddr + outputSliceStride * mySubCommRank_);
     uint64_t isInputOutputEqual = static_cast<uint64_t>(inputOutputEqual);
     
@@ -239,6 +247,9 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::KernelRun(const OpParam& param,
 
     std::vector<uint64_t> taskArgs;
     uint64_t argSize = 0;
+    if (templateResource.dieSplitRatio > 0.0) {
+        dieSplitRatio_ = templateResource.dieSplitRatio;
+    }
     CHK_RET(PrepareLaunchArgs(param, templateDataParams, kernelNum, taskArgs, argSize));
 
     uint64_t die0Size = taskArgs[3];
@@ -247,7 +258,6 @@ HcclResult CcuTempAllGatherNHR1DMem2Mem::KernelRun(const OpParam& param,
     if (kernelNum > 1) {
         std::vector<ThreadHandle> subThreads(templateResource.threads.begin() + 1, templateResource.threads.end());
         std::vector<u32> notifyIdxMainToSub(1, 0);
-
         CHK_RET(PreSyncInterThreads(templateResource.threads[0], subThreads, notifyIdxMainToSub));
     }
 
