@@ -132,48 +132,65 @@ SelectorStatus ScatterAutoSelector::SelectAicpuAlgo(const TopoInfoWithNetLayerDe
     (void)configAlgMap; 
     HCCL_DEBUG("[ScatterAutoSelector][%s] start, topoInfo levelNum[%u]", __func__, topoInfo->topoLevelNums);
 
-    if (topoInfo->topoLevelNums > 1) {
-        if (topoInfo->topoLevelNums == TOPO_LEVEL_3) {
-            selectAlgName = "InsScatterNHR";
-        } else if (topoInfo->Level1Nhr) {
-            selectAlgName = "InsScatterNHR";
-        } else if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[0] == 1) {
-            selectAlgName = "InsScatterNHR";
-        } else if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
-            selectAlgName = "InsScatterParallelMesh1DNHR";
-        } else if (topoInfo->level0Topo == Level0Shape::CLOS) {
-            HCCL_WARNING("[ScatterAutoSelector] level0Shape[%d] is not supported yet for levelNum > 1.");
-            return SelectorStatus::NOT_MATCH;
+    SelectorStatus ret = (topoInfo->topoLevelNums > 1)
+        ? SelectMultiLevelAicpuAlgo(topoInfo, selectAlgName)
+        : SelectSingleLevelAicpuAlgo(topoInfo, selectAlgName);
+    if (ret == SelectorStatus::MATCH) {
+        HCCL_INFO("[ScatterAutoSelector][%s] Algo match [%s]", __func__, selectAlgName.c_str());
+    }
+    return ret;
+}
+
+SelectorStatus ScatterAutoSelector::SelectMultiLevelAicpuAlgo(const TopoInfoWithNetLayerDetails* topoInfo,
+                                                              std::string& selectAlgName) const
+{
+    if (topoInfo->topoLevelNums == TOPO_LEVEL_3) {
+        if (topoInfo->level0Topo == Level0Shape::MESH_1D &&
+            topoInfo->netLayerDetails.localNetInsSizeOfLayer.at(0) > 1 &&
+            !topoInfo->level2Uboe) {
+            selectAlgName = "AicpuScatterSequenceMesh1DNHRNHR";
         } else {
-            HCCL_WARNING("[ScatterAutoSelector] topo not match for aicpu algo");
-            return SelectorStatus::NOT_MATCH;
+            selectAlgName = "InsScatterNHR";
+        }
+    } else if (topoInfo->Level1Nhr) {
+        selectAlgName = "InsScatterNHR";
+    } else if (topoInfo->netLayerDetails.localNetInsSizeOfLayer[0] == 1) {
+        selectAlgName = "InsScatterNHR";
+    } else if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
+        selectAlgName = "InsScatterParallelMesh1DNHR";
+    } else if (topoInfo->level0Topo == Level0Shape::CLOS) {
+        HCCL_WARNING("[ScatterAutoSelector] level0Shape[%d] is not supported yet for levelNum > 1.");
+        return SelectorStatus::NOT_MATCH;
+    } else {
+        HCCL_WARNING("[ScatterAutoSelector] topo not match for aicpu algo");
+        return SelectorStatus::NOT_MATCH;
+    }
+    return SelectorStatus::MATCH;
+}
+
+SelectorStatus ScatterAutoSelector::SelectSingleLevelAicpuAlgo(const TopoInfoWithNetLayerDetails* topoInfo,
+                                                               std::string& selectAlgName) const
+{
+    if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
+        selectAlgName = "InsScatterMesh1D";
+    } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
+        if (IsLayerAllConnetedWithTopo(topoInfo, 0, CommTopo::COMM_TOPO_1DMESH)) {
+            selectAlgName = "InsScatterMesh1D";
+        } else if (topoInfo->level0PcieMix) {
+            selectAlgName = "InsScatterParallelMesh1DNHRPcie";
+        } else {
+            selectAlgName = "InsScatterParallelMesh1DNHRUBX";
+        }
+    } else if (topoInfo->level0Topo == Level0Shape::CLOS) {
+        if (topoInfo->level0PcieMix) {
+            selectAlgName = "InsScatterNHR";
+        } else {
+            selectAlgName = "InsScatterMesh1D";
         }
     } else {
-        if (topoInfo->level0Topo == Level0Shape::MESH_1D) {
-            selectAlgName = "InsScatterMesh1D";
-        } else if (topoInfo->level0Topo == Level0Shape::MESH_1D_CLOS) {
-            if (IsLayerAllConnetedWithTopo(topoInfo, 0, CommTopo::COMM_TOPO_1DMESH)) {
-                // MESH_1D 即可链接所有卡， 使用 MESH_1D 算法
-                selectAlgName = "InsScatterMesh1D";
-            } else if (topoInfo->level0PcieMix) {
-                selectAlgName = "InsScatterParallelMesh1DNHRPcie";
-            } else {
-                selectAlgName = "InsScatterParallelMesh1DNHRUBX";
-            }
-        } else if (topoInfo->level0Topo == Level0Shape::CLOS) {
-            if (topoInfo->level0PcieMix) {
-                selectAlgName = "InsScatterNHR";
-            } else {
-                selectAlgName = "InsScatterMesh1D";
-            }
-        } 
-        else {
-            HCCL_WARNING("[ScatterAutoSelector] topo not match for aicpu algo");
-            return SelectorStatus::NOT_MATCH;
-        }
+        HCCL_WARNING("[ScatterAutoSelector] topo not match for aicpu algo");
+        return SelectorStatus::NOT_MATCH;
     }
-
-    HCCL_INFO("[ScatterAutoSelector][%s] Algo match [%s]", __func__, selectAlgName.c_str());
     return SelectorStatus::MATCH;
 }
 
