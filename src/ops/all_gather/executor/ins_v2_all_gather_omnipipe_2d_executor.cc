@@ -14,7 +14,7 @@
 #if CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #include "ccu_temp_all_gather_omnipipe_mesh1d_mem2mem.h"
 #include "ccu_temp_all_gather_omnipipe_nhr1d_mem2mem.h"
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif
 
 namespace ops_hccl {
@@ -381,6 +381,6 @@ HcclResult InsV2AllGatherOmniPipe2DExecutor<AlgTopoMatch, CcuAlgTempLevel0, CcuA
 REGISTER_EXECUTOR_BY_TWO_TEMPS(HcclCMDType::HCCL_CMD_ALLGATHER, CcuAllGatherOmniPipe2D,
     InsV2AllGatherOmniPipe2DExecutor, TopoMatchUBX,
     CcuTempAllGatherOmniPipeMesh1DMem2Mem, CcuTempAllGatherOmniPipeNHR1DMem2Mem);
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif
 }

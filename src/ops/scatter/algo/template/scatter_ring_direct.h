@@ -46,4 +46,4 @@ private:
 };
 }
 
-#endif /* SCATTER_RING_DIRECT_CUSTOM_H */
+#endif // SCATTER_RING_DIRECT_CUSTOM_H

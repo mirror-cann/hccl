@@ -13,7 +13,7 @@
 #include "template_utils.h"
 #if CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #include "hccl_sym_win.h"
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 namespace ops_hccl {
 InsTempAllGatherMesh1D::InsTempAllGatherMesh1D(const OpParam &param, const u32 rankId,
                                                const std::vector<std::vector<u32>> &subCommRanks)

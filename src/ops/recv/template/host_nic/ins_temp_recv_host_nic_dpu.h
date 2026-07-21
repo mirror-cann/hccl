@@ -51,4 +51,4 @@ private:
 };
 
 }  // namespace Hccl
-#endif /* INS_TEMP_RECV_HOST_NIC_DPU */
+#endif // INS_TEMP_RECV_HOST_NIC_DPU

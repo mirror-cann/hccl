@@ -34,7 +34,7 @@ typedef enum {
 
 typedef HcclOpExpansionMode HcclConfigTypeOpExpansionMode;
 
-#endif /* CANN_VERSION_NUM < CANN_VERSION(9, 1, 0, 1) */
+#endif // CANN_VERSION_NUM < CANN_VERSION(9, 1, 0, 1)
 
 #ifdef __cplusplus
 extern "C" {

@@ -17,7 +17,7 @@
 #include "ccu_temp_all_gather_omnipipe_mesh1d_mem2mem.h"
 #include "ccu_temp_all_gather_omnipipe_nhr1d_mem2mem.h"
 #include "ccu_temp_reduce_scatter_omnipipe_mesh1d.h"
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif
 
 namespace ops_hccl {
@@ -510,12 +510,12 @@ REGISTER_EXEC_V2_MULTI(HcclCMDType::HCCL_CMD_ALLREDUCE, CcuV2AllReduceOmniPipe2D
                                 InsV2AllReduceOmniPipe2dExecutor, TopoMatchUBX, 
                                 CcuTempReduceScatterOmniPipeMesh1DMem2Mem, CcuTempReduceScatterOmniPipeNHR1DMem2Mem, 
                                 CcuTempAllGatherOmniPipeMesh1DMem2Mem, CcuTempAllGatherOmniPipeNHR1DMem2Mem);
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #if CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 REGISTER_EXEC_V2_MULTI(HcclCMDType::HCCL_CMD_ALLREDUCE, CcuV2AllReduceOmniPipe2DMs,
                                 InsV2AllReduceOmniPipe2dExecutor, TopoMatchUBX, 
                                 CcuTempReduceScatterOmniPipeMesh1D, CcuTempReduceScatterOmniPipeNHR1DMem2Mem, 
                                 CcuTempAllGatherOmniPipeMesh1DMem2Mem, CcuTempAllGatherOmniPipeNHR1DMem2Mem);
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif 
 }

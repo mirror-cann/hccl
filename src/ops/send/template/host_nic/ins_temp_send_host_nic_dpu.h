@@ -49,4 +49,4 @@ private:
 };
 
 }  // namespace Hccl
-#endif  /* INS_TEMP_SEND_DPU */
+#endif // INS_TEMP_SEND_DPU

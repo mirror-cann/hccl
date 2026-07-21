@@ -35,4 +35,4 @@ private:
 };
 }
 
-#endif /* SCATTER_RING_CUSTOM_H */
+#endif // SCATTER_RING_CUSTOM_H

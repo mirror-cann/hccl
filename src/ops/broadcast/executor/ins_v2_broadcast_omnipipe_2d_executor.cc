@@ -16,7 +16,7 @@
 #include "ccu_temp_scatter_omnipipe_nhr1d_mem2mem.h"
 #include "ccu_temp_all_gather_omnipipe_mesh1d_mem2mem.h"
 #include "ccu_temp_all_gather_omnipipe_nhr1d_mem2mem.h"
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif
 
 namespace ops_hccl {
@@ -644,6 +644,6 @@ HcclResult InsV2BroadcastOmniPipe2dExecutor<AlgTopoMatch, CcuScatterAlgTemplateX
 REGISTER_EXEC_V2_MULTI(HcclCMDType::HCCL_CMD_BROADCAST, CcuBroadcastOmniPipe2D, InsV2BroadcastOmniPipe2dExecutor,
     TopoMatchUBX, CcuTempScatterOmniPipeMesh1DMem2Mem, CcuTempScatterOmniPipeNHR1DMem2Mem,
     CcuTempAllGatherOmniPipeMesh1DMem2Mem, CcuTempAllGatherOmniPipeNHR1DMem2Mem);
-#endif /* CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM >= CANN_VERSION(9, 0, 0)
 #endif
 } // namespace ops_hccl

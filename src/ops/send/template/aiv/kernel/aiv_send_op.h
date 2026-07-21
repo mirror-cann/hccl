@@ -23,4 +23,4 @@ EXPORT_AIV_META_INFO(aiv_send_##type)
 
 // 定义各算子各数据类型Kernel入口
 AIV_COPY_DATA_TYPE_DEF(AIV_SEND_KERNEL_BATCH_DEF);
-#endif  /* AIV_SEND_OP_H */
+#endif // AIV_SEND_OP_H

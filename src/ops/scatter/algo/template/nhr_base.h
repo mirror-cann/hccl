@@ -50,4 +50,4 @@ private:
 };
 }  // hccl
 
-#endif  /* NHR_CUSTOM_BASE_H */
+#endif // NHR_CUSTOM_BASE_H

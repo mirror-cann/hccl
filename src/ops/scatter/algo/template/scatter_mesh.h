@@ -36,4 +36,4 @@ private:
 };
 }
 
-#endif /* * SCATTER_MESH_CUSTOM_H */
+#endif // SCATTER_MESH_CUSTOM_H

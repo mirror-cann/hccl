@@ -43,7 +43,7 @@ typedef struct {
 
 #define COMM_ADDR_TYPE_EID ((CommAddrType)3)
 #define COMM_ADDR_EID_LEN 36
-#endif /* CANN_VERSION_NUM < CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM < CANN_VERSION(9, 0, 0)
 
 #if CANN_VERSION_NUM < CANN_VERSION(9, 1, 0)
 #define COMM_PROTOCOL_UBOE    ((CommProtocol)7)

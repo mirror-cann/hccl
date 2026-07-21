@@ -25,4 +25,4 @@ EXPORT_AIV_META_INFO(aiv_broadcast_##type)
 // 定义各算子各数据类型Kernel入口
 AIV_COPY_DATA_TYPE_DEF(AIV_BROADCAST_KERNEL_BATCH_DEF);
 
-#endif  /* AIV_BROADCAST_OP_H */
+#endif // AIV_BROADCAST_OP_H

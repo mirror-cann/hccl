@@ -41,7 +41,7 @@ struct HcclDfxOpInfo {
     uint32_t cpuWaitAicpuNotifyId;
     int8_t reserve[128];
 };
-#endif /* CANN_VERSION_NUM < CANN_VERSION(9, 1, 0) */
+#endif // CANN_VERSION_NUM < CANN_VERSION(9, 1, 0)
 
 #ifdef __cplusplus
 extern "C" {

@@ -797,4 +797,4 @@ __aicore__ inline void AivCommBase::Reduce64(__gm__ T *outputGM, __gm__ T *input
     func(fp8_e8m0_t); \
     func(hifloat8_t)
 
-#endif  /* AIV_COMMUNICATION_BASE_V2_H */
+#endif // AIV_COMMUNICATION_BASE_V2_H

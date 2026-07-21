@@ -45,4 +45,4 @@ private:
 };
 }
 
-#endif /* SCATTER_NB_CUSTOM_H */
+#endif // SCATTER_NB_CUSTOM_H

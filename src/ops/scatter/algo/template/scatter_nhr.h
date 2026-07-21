@@ -43,4 +43,4 @@ private:
     void* engineCtx_ = nullptr;
 };
 }
-#endif /* SCATTER_NHR_CUSTOM_H */
+#endif // SCATTER_NHR_CUSTOM_H

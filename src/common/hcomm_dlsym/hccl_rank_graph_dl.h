@@ -29,7 +29,7 @@ typedef uint32_t EndpointAttrLocation;
 
 #define COMM_TOPO_A2AXSERVER ((CommTopo)4)
 #define COMM_TOPO_CUSTOM     ((CommTopo)5)
-#endif /* CANN_VERSION_NUM < CANN_VERSION(9, 0, 0) */
+#endif // CANN_VERSION_NUM < CANN_VERSION(9, 0, 0)
 
 #ifdef __cplusplus
 extern "C" {
