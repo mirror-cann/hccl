@@ -91,7 +91,7 @@ HcclResult ConvertToHcclDfxOpInfo(OpParam *param, HcclDfxOpInfoCompat *hcclDfxOp
     hcclDfxOpInfo->engine = param->engine;
     hcclDfxOpInfo->cpuTsThread = param->opThread;
     s32 sRet = strncpy_s(hcclDfxOpInfo->algTag, ALG_TAG_LENGTH, param->algTag, ALG_TAG_LENGTH);
-    CHK_PRT_RET(sRet != EOK, HCCL_ERROR("%s call strncpy_s failed, param.algTag %s,  return %d.", __func__, param->algTag, sRet), HCCL_E_MEMORY);
+    CHK_PRT_RET(sRet != EOK, HCCL_ERROR("%s call strncpy_s failed, param.algTag %s, return %d.", __func__, param->algTag, sRet), HCCL_E_MEMORY);
     hcclDfxOpInfo->cpuWaitAicpuNotifyIdx = param->aicpuRecordCpuIdx;
     hcclDfxOpInfo->inputMemAddr = reinterpret_cast<uint64_t>(param->inputPtr);
     hcclDfxOpInfo->inputMemSize = param->inputSize;

@@ -199,7 +199,7 @@ namespace ops_hccl
         for (auto rankId : subCommRanks[0]) {
             if (rankId != myRank) {
                 sendRank = rankId;
-                HCCL_INFO("[InsTempBatchSendRecvDpu] [DPUKernelRun] my rank is [%d],  send rank is [%u].", myRank, sendRank);
+                HCCL_INFO("[InsTempBatchSendRecvDpu] [DPUKernelRun] my rank is [%d], send rank is [%u].", myRank, sendRank);
             }
         }
         auto channelIter = channels.find(sendRank);

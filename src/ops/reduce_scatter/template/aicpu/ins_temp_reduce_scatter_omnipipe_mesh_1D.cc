@@ -197,7 +197,7 @@ HcclResult InsTempReduceScatterOmniPipeMesh1D::PostReduce(const TemplateDataPara
                 auto dstSlice = DataSlice(cclBuffAddr, dstCurrent,
                                           tempAlgParams.stepSliceInfo.stepSliceSize[rankIdx][repeatIdx],
                                           tempAlgParams.stepSliceInfo.stepCount[rankIdx][repeatIdx]);
-                HCCL_DEBUG("srcSlice=[%s],  dstSlice=[%s], tmpRank=[%u], rankIdx=[%u], repeatIdx=[%u]",
+                HCCL_DEBUG("srcSlice=[%s], dstSlice=[%s], tmpRank=[%u], rankIdx=[%u], repeatIdx=[%u]",
                            srcSlice.Describe().c_str(), dstSlice.Describe().c_str(), tmpRank, rankIdx, repeatIdx);
                 CHK_RET(static_cast<HcclResult>(LocalReduce(threads[0], srcSlice, dstSlice, dataType_, reduceOp_)));
             }
