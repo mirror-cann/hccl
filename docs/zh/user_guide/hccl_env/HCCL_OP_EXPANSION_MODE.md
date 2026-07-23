@@ -46,6 +46,8 @@
 
     针对单机通信场景的AllReduce、ReduceScatter、Reduce算子，当数据量超过一定值时，为防止性能下降，系统会自动切换为AI_CPU模式（该阈值并非固定，会根据算子运行模式及网络规模等因素有所调整）。
 
+    此模式下，ReduceScatterV、AllGatherV算子仅支持单Server场景。
+
     当CCU资源不足时，系统会自动切换为AI_CPU模式。
 
 - **针对Atlas A3 训练系列产品/Atlas A3 推理系列产品**：支持的配置如下，若设置了不支持的环境变量，使用默认值。
