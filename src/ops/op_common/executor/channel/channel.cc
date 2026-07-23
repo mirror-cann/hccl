@@ -738,7 +738,8 @@ HcclResult GetTopoTypeByLink(HcclComm comm, uint32_t netLayer, CommLink &link, C
 *   获取link对应的channel。对于2个rank之间，存在多条link的场景，会优先获取指定TopoType的1条channel。
 *   如果多条link都没有指定的TopoType，则返回第一条link对应的channel。
 */
-HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vector<HcclChannelDesc> &channels, CommTopo priorityTopo)
+HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vector<HcclChannelDesc> &channels,
+    CommTopo priorityTopo, u32 topoLevelNums)
 {
 #ifndef AICPU_COMPILE
     uint32_t *netLayers;
@@ -752,37 +753,39 @@ HcclResult ProcessLinksForChannel(HcclComm comm, u32 myRank, u32 rank, std::vect
         HCCL_INFO("[CalcChannelRequestWithPriorTopo] netLayer=%u, linkListSize=%u", netLayer, listSize);
 
         if (listSize == 0) {
-            HCCL_WARNING("[CalcChannelRequestWithPriorTopo]There is no link between rank[%u] and rank[%u].", myRank, rank);
+            HCCL_WARNING("[CalcChannelRequestWithPriorTopo]There is no link between rank[%u] and rank[%u] in layer[%u].",
+                            myRank, rank, netLayer);
+            // 多层拓扑: 跳过当前层继续查找下一层; 单层拓扑: 直接退出
+            if (topoLevelNums > 1) {
+                continue;
+            }
             break;
         }
 
         uint32_t priorityLink = 0;
         CommTopo topoType;
-        for (u32 idx = 0; idx < listSize; idx++) {
-            CHK_RET(GetTopoTypeByLink(comm, netLayer, linkList[idx], topoType));
-            if (topoType == priorityTopo) {
-                priorityLink = idx;
-                HCCL_INFO("[CalcChannelRequestWithPriorTopo] Found link[%u] with priority topotype[%u].", idx, topoType);
-                break;
+        if (netLayer == 0) {
+            HCCL_INFO("[CalcChannelRequestWithPriorTopo] netLayerNum > 1 && netLayer == 0, select the link according to priorityTopo.");
+            for (u32 idx = 0; idx < listSize; idx++) {
+                CHK_RET(GetTopoTypeByLink(comm, netLayer, linkList[idx], topoType));
+                if (topoType == priorityTopo) {
+                    priorityLink = idx;
+                    HCCL_INFO("[CalcChannelRequestWithPriorTopo] Found link[%u] with priority topotype[%u].", idx, topoType);
+                    break;
+                }
             }
         }
-        HcclChannelDesc channelDesc;
-        HcclChannelDescInit(&channelDesc, 1);
-        channelDesc.remoteRank = rank;
-        CommLink link = linkList[priorityLink];
-        channelDesc.localEndpoint.protocol = link.srcEndpointDesc.protocol;
-        channelDesc.localEndpoint.commAddr = link.srcEndpointDesc.commAddr;
-        channelDesc.localEndpoint.loc = link.srcEndpointDesc.loc;
-        channelDesc.remoteEndpoint.protocol = link.dstEndpointDesc.protocol;
-        channelDesc.remoteEndpoint.commAddr = link.dstEndpointDesc.commAddr;
-        channelDesc.remoteEndpoint.loc = link.dstEndpointDesc.loc;
-        CHK_RET(GetTopoTypeByLink(comm, netLayer, linkList[priorityLink], topoType));
+
+        CHK_RET(CreateChannelFromLink(comm, myRank, rank, netLayer, priorityLink,
+            linkList[priorityLink], "CalcChannelRequestWithPriorTopo", channels));
+
+        if (netLayer == 0) {
+            CHK_RET(GetTopoTypeByLink(comm, netLayer, linkList[priorityLink], topoType));
         HCCL_INFO("[CalcChannelRequestWithPriorTopo]Add channel request between %u and %u with protocol %u "
                   "and topoType %u. And Priority topoType is %u.",
-                  myRank, channelDesc.remoteRank, channelDesc.remoteEndpoint.protocol, topoType, priorityTopo);
-        channelDesc.channelProtocol = link.srcEndpointDesc.protocol;
-        channelDesc.notifyNum = NORMAL_NOTIFY_NUM;
-        channels.push_back(channelDesc);
+                  myRank, rank, linkList[priorityLink].dstEndpointDesc.protocol, topoType, priorityTopo);
+        }
+        
         if (listSize > 0) {
             break;
         }
@@ -853,15 +856,16 @@ HcclResult CalcChannelRequestMesh1DWithPriorityTopo(HcclComm comm, const OpParam
 #ifndef AICPU_COMPILE
     (void) param;
     channels.clear();
-    auto it = std::find(subcommInfo[COMM_LEVEL0].begin(), subcommInfo[COMM_LEVEL0].end(), topoInfo->userRank);
+    u32 myRank = topoInfo->userRank;
+    auto it = std::find(subcommInfo[COMM_LEVEL0].begin(), subcommInfo[COMM_LEVEL0].end(), myRank);
     CHK_PRT_RET((it == subcommInfo[COMM_LEVEL0].end()),
-                HCCL_ERROR("[CollAlgFactory] [channel] Rank [%d] is not in commInfo.", topoInfo->userRank),
+                HCCL_ERROR("[CollAlgFactory] [channel] Rank [%d] is not in commInfo.", myRank),
                 HcclResult::HCCL_E_PARA);
 
-    u32 myRank = topoInfo->userRank;
+    u32 topoLevelNums = static_cast<const TopoInfoWithNetLayerDetails*>(topoInfo)->topoLevelNums;
     for (u32 rank : subcommInfo[COMM_LEVEL0]) {
         if (rank != myRank) {
-            CHK_RET(ProcessLinksForChannel(comm, myRank, rank, channels, priorityTopo));
+            CHK_RET(ProcessLinksForChannel(comm, myRank, rank, channels, priorityTopo, topoLevelNums));
         }
     }
     HCCL_INFO("[%s] success.", __func__);
@@ -880,6 +884,7 @@ HcclResult CalcChannelRequestNHRWithPriorityTopo(HcclComm comm, const OpParam& p
                 HCCL_ERROR("[CollAlgFactory] [channel] Rank [%d] is not in commInfo.", topoInfo->userRank),
                 HcclResult::HCCL_E_PARA);
 
+    u32 topoLevelNums = static_cast<const TopoInfoWithNetLayerDetails*>(topoInfo)->topoLevelNums;
     std::set<u32> connectRanks;
     u32 localRank = std::distance(subcommInfo[0].begin(), it);
     u32 localRankSize = subcommInfo[0].size();
@@ -888,7 +893,8 @@ HcclResult CalcChannelRequestNHRWithPriorityTopo(HcclComm comm, const OpParam& p
 
     for (u32 rank : connectRanks) {
         if (rank != localRank) {
-            CHK_RET(ProcessLinksForChannel(comm, myRank, subcommInfo[0][rank], channels, priorityTopo));
+            CHK_RET(ProcessLinksForChannel(comm, myRank, subcommInfo[0][rank], channels, priorityTopo,
+                topoLevelNums));
         }
     }
     HCCL_INFO("[%s] success.", __func__);
@@ -928,9 +934,6 @@ HcclResult CalcChannelRequestNhrMultiJetty(HcclComm comm, const OpParam& param, 
         std::vector<uint32_t> netLayersVector(netLayers, netLayers + netLayerNum);
 
         for (auto netLayer : netLayersVector) {
-            if (netLayerNum > 1 && netLayer == 0) {
-                continue; // 跨框场景，nhr算法只取layer1的链路
-            }
             CommLink *linkList = nullptr;
             u32 listSize;
             CHK_RET(HcclRankGraphGetLinks(comm, netLayer, myRank, subcommInfo[0][rankIdx], &linkList, &listSize));

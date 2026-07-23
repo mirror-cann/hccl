@@ -11,6 +11,7 @@
 #include "topo_match_ubx.h"
 
 namespace ops_hccl {
+constexpr u64 NATLAYER_ROCE = 3;
 TopoMatchUBX::TopoMatchUBX()
     : TopoMatchBase()
 {
@@ -27,6 +28,7 @@ HcclResult TopoMatchUBX::TopoForLayer0(const HcclComm comm, uint32_t &layer0Size
     uint32_t *topoInsts;
     uint32_t topoInstNum = 0;
     CHK_RET(HcclRankGraphGetTopoInstsByLayer(comm, 0, &topoInsts, &topoInstNum));
+    HCCL_INFO("[CollAlgFactory] [TopoMatchUBX] layer0 topoInstNum [%d].", topoInstNum);
     if (topoInstNum == NET_INST_NUM_1) { // mesh1d
         HCCL_INFO("[CollAlgFactory] [TopoMatchUBX] layer0 topoInstNum [%d], Mesh 1D.", topoInstNum);
         uint32_t* ranks;
@@ -72,29 +74,29 @@ HcclResult TopoMatchUBX::TopoForLayer0(const HcclComm comm, uint32_t &layer0Size
     return HcclResult::HCCL_SUCCESS;
 }
 
-HcclResult TopoMatchUBX::TopoForLayer1(const HcclComm comm, uint32_t layer0Size, const uint32_t myRank,
+HcclResult TopoMatchUBX::TopoForLayer3(const HcclComm comm, uint32_t layer0Size, const uint32_t myRank,
                                                   AlgHierarchyInfoForAllLevel& algHierarchyInfo) const
 {
-    HCCL_DEBUG("[TopoMatchUBX::MeshNHRTopoForLayer1] layer0Size [%d]", layer0Size);
+    HCCL_DEBUG("[TopoMatchUBX::MeshNHRTopoForLayer3] layer0Size [%d]", layer0Size);
 #ifndef AICPU_COMPILE
-    // 1. 查出layer 1的所有ranks
+    // 1. 查出layer 3的所有ranks
     uint32_t *topoInsts;
     uint32_t topoInstNum = 0;
-    CHK_RET(HcclRankGraphGetTopoInstsByLayer(comm, 1, &topoInsts, &topoInstNum));
+    CHK_RET(HcclRankGraphGetTopoInstsByLayer(comm, NATLAYER_ROCE, &topoInsts, &topoInstNum));
     CHK_PRT_RET(
         (topoInstNum != NET_INST_NUM_1),
-        HCCL_ERROR("[TopoMatchUBX::MeshNHRTopoForLayer1] layer1 topoInstNum [%d], Invalid topo.", topoInstNum),
+        HCCL_ERROR("[TopoMatchUBX::MeshNHRTopoForLayer3] layer3 topoInstNum [%d], Invalid topo.", topoInstNum),
         HcclResult::HCCL_E_PARA);
     uint32_t* ranks;
     uint32_t rankNum;
-    CHK_RET(HcclRankGraphGetRanksByTopoInst(comm, 1, topoInsts[0], &ranks, &rankNum));
-    HCCL_DEBUG("[TopoMatchUBX::MeshNHRTopoForLayer1] Rank [%d], all [%u] ranks in layer1", myRank, rankNum);
-    // 2. 取出同序号卡，作为layer1的ranks
-    std::vector<uint32_t> rankVecLayer1WithSameIdx;
+    CHK_RET(HcclRankGraphGetRanksByTopoInst(comm, NATLAYER_ROCE, topoInsts[0], &ranks, &rankNum));
+    HCCL_DEBUG("[TopoMatchUBX::MeshNHRTopoForLayer3] Rank [%d], all [%u] ranks in layer3", myRank, rankNum);
+    // 2. 取出同序号卡，作为layer3的ranks
+    std::vector<uint32_t> rankVecLayer3WithSameIdx;
     for (uint32_t i = 0; i < rankNum; i++) {
         uint32_t rankId = ranks[i];
         if (myRank == rankId) {
-            rankVecLayer1WithSameIdx.push_back(rankId);
+            rankVecLayer3WithSameIdx.push_back(rankId);
             continue;
         }
         if (rankId % layer0Size != myRank % layer0Size) {
@@ -102,13 +104,13 @@ HcclResult TopoMatchUBX::TopoForLayer1(const HcclComm comm, uint32_t layer0Size,
         }
         CommLink *links;
         uint32_t linkNum = 0;
-        HcclRankGraphGetLinks(comm, 1, myRank, rankId, &links, &linkNum);
+        HcclRankGraphGetLinks(comm, NATLAYER_ROCE, myRank, rankId, &links, &linkNum);
         if (linkNum == 0) {
             continue;
         }
-        rankVecLayer1WithSameIdx.push_back(rankId);
+        rankVecLayer3WithSameIdx.push_back(rankId);
     }
-    algHierarchyInfo.infos[1].push_back({rankVecLayer1WithSameIdx});
+    algHierarchyInfo.infos[1].push_back({rankVecLayer3WithSameIdx});
 #endif
     return HcclResult::HCCL_SUCCESS;
 }
@@ -168,9 +170,9 @@ HcclResult TopoMatchUBX::MatchTopo(const HcclComm comm, TopoInfoWithNetLayerDeta
     uint32_t layer0Size = 0;
     HCCL_INFO("[CollAlgFactory] [TopoMatchUBX] TopoForLayer0.");
     CHK_RET(TopoForLayer0(comm, layer0Size, myRank, algHierarchyInfo));
-    // 4. 计算layer1的topo
+    // 4. 计算layer3的topo
     if (layerNum >= COMM_LAYER_SIZE_2) {
-        CHK_RET(TopoForLayer1(comm, layer0Size, myRank, algHierarchyInfo));
+        CHK_RET(TopoForLayer3(comm, layer0Size, myRank, algHierarchyInfo));
     }
 #endif
     return HcclResult::HCCL_SUCCESS;

@@ -11,6 +11,7 @@
 #include "topo_match_ubx_1d.h"
 
 namespace ops_hccl {
+constexpr u64 NATLAYER_THREE = 3;
 TopoMatchUBX1d::TopoMatchUBX1d()
     : TopoMatchUBX()
 {
@@ -59,49 +60,49 @@ HcclResult TopoMatchUBX1d::MatchTopo(const HcclComm comm, TopoInfoWithNetLayerDe
     algHierarchyInfo.infos.resize(COMM_LAYER_SIZE_2);
     uint32_t layer0Size = 0;
     CHK_RET(TopoMatchUBX::TopoForLayer0(comm, layer0Size, myRank, algHierarchyInfo));
-    // 4. 计算layer1的topo
+    // 4. 计算layer3的topo
     if (layerNum >= COMM_LAYER_SIZE_2) {
-        CHK_RET(TopoForLayer1(comm, layer0Size, myRank, algHierarchyInfo));
+        CHK_RET(TopoForLayer3(comm, layer0Size, myRank, algHierarchyInfo));
     }
 #endif
     return HcclResult::HCCL_SUCCESS;
 }
 
-HcclResult TopoMatchUBX1d::TopoForLayer1(const HcclComm comm, uint32_t layer0Size, const uint32_t myRank,
+HcclResult TopoMatchUBX1d::TopoForLayer3(const HcclComm comm, uint32_t layer0Size, const uint32_t myRank,
                                          AlgHierarchyInfoForAllLevel& algHierarchyInfo) const
 {
-    HCCL_DEBUG("[TopoMatchUBX1d::MeshTopoForLayer1] layer0Size [%d]", layer0Size);
+    HCCL_DEBUG("[TopoMatchUBX1d::MeshTopoForLayer3] layer0Size [%d]", layer0Size);
 #ifndef AICPU_COMPILE
-    // 1. 查出layer 1的所有ranks
+    // 1. 查出layer 3的所有ranks
     uint32_t *topoInsts;
     uint32_t topoInstNum = 0;
-    CHK_RET(HcclRankGraphGetTopoInstsByLayer(comm, 1, &topoInsts, &topoInstNum));
+    CHK_RET(HcclRankGraphGetTopoInstsByLayer(comm, NATLAYER_THREE, &topoInsts, &topoInstNum));
     CHK_PRT_RET(
         (topoInstNum != NET_INST_NUM_1),
-        HCCL_ERROR("[TopoMatchUBX1d::MeshTopoForLayer1] layer1 topoInstNum [%d], Invalid topo.", topoInstNum),
+        HCCL_ERROR("[TopoMatchUBX1d::MeshTopoForLayer3] layer3 topoInstNum [%d], Invalid topo.", topoInstNum),
         HcclResult::HCCL_E_PARA);
     uint32_t* ranks;
     uint32_t rankNum;
-    CHK_RET(HcclRankGraphGetRanksByTopoInst(comm, 1, topoInsts[0], &ranks, &rankNum));
-    HCCL_DEBUG("[TopoMatchUBX1d::MeshTopoForLayer1] Rank [%d], all [%u] ranks in layer1", myRank, rankNum);
-    // 2. 取出每张卡，作为layer1的ranks
-    std::vector<uint32_t> rankVecLayer1;
+    CHK_RET(HcclRankGraphGetRanksByTopoInst(comm, NATLAYER_THREE, topoInsts[0], &ranks, &rankNum));
+    HCCL_DEBUG("[TopoMatchUBX1d::MeshTopoForLayer3] Rank [%d], all [%u] ranks in layer3", myRank, rankNum);
+    // 2. 取出每张卡，作为layer3的ranks
+    std::vector<uint32_t> rankVecLayer3;
     for (uint32_t i = 0; i < rankNum; i++) {
         uint32_t rankId = ranks[i];
         if (myRank == rankId) {
-            rankVecLayer1.push_back(rankId);
+            rankVecLayer3.push_back(rankId);
             continue;
         }
- 
+
         CommLink *links;
         uint32_t linkNum = 0;
-        HcclRankGraphGetLinks(comm, 1, myRank, rankId, &links, &linkNum);
+        HcclRankGraphGetLinks(comm, NATLAYER_THREE, myRank, rankId, &links, &linkNum);
         if (linkNum == 0) {
             continue;
         }
-        rankVecLayer1.push_back(rankId);
+        rankVecLayer3.push_back(rankId);
     }
-    algHierarchyInfo.infos[1].push_back({rankVecLayer1});
+    algHierarchyInfo.infos[1].push_back({rankVecLayer3});
 #endif
     return HcclResult::HCCL_SUCCESS;
 }

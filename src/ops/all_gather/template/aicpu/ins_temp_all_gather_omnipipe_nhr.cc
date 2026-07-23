@@ -232,12 +232,12 @@ HcclResult InsTempAllGatherOmniPipeNHR::RunAllGatherNHR(const std::vector<Thread
                         HCCL_ERROR("[InsTempAllGatherOmniPipeNHR] sendrecv failed (step=%u)", step),
                         HcclResult::HCCL_E_INTERNAL);
             }else {
-                CHK_PRT_RET(SendRecvBatchWrite(sendRecvInfo, threads[channelIdx]),
+                CHK_PRT_RET(SendRecvWrite(sendRecvInfo, threads[channelIdx]),
                         HCCL_ERROR("[InsTempAllGatherOmniPipeNHR] sendrecv failed (step=%u)", step),
                         HcclResult::HCCL_E_INTERNAL);
             }
         }else {
-            CHK_PRT_RET(SendRecvBatchRead(sendRecvInfo, threads[channelIdx]),
+            CHK_PRT_RET(SendRecvRead(sendRecvInfo, threads[channelIdx]),
                     HCCL_ERROR("[InsTempAllGatherOmniPipeNHR] sendrecv failed (step=%u)", step),
                     HcclResult::HCCL_E_INTERNAL);
         }

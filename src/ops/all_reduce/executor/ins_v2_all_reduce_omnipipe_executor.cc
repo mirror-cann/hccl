@@ -353,6 +353,7 @@ HcclResult InsV2AllReduceOmniPipeExecutor<
     scratchParam.dataTypeSize = dataTypeSize_;
     scratchParam.opMode = param.opMode;
     scratchParam.engine = param.engine;
+    scratchParam.needSetStepNum = omniNeedSetStepNum_;
     return HCCL_SUCCESS;
 }
 
@@ -566,6 +567,7 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
                                                         : OmniNeedSetStepNum::OMNIPIPE_DEFAULT;
         if (!algHierarchyInfo_.infos[1].empty()) {
             subCommRanks2 = algHierarchyInfo_.infos[1];
+            omniNeedSetStepNum_ = (subCommRanks2[0].size() > 1) ? OmniNeedSetStepNum::OMNIPIPE_UBX_32P : omniNeedSetStepNum_;
         } else {
             subCommRanks2.emplace_back(std::vector<u32>{myRank_});
         }
@@ -661,10 +663,10 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
 
     double bw_ag_l0 = BW_OMNI_DEFAULT;
     double bw_ag_l1 = BW_OMNI_DEFAULT;
-    double bw_ag_l2 = BW_OMNI_DEFAULT;
+    double bw_ag_l2 = BW_OMNI_UBX_ROCE;
     double bw_rs_l0 = BW_OMNI_DEFAULT;
     double bw_rs_l1 = BW_OMNI_DEFAULT;
-    double bw_rs_l2 = BW_OMNI_DEFAULT;
+    double bw_rs_l2 = BW_OMNI_UBX_ROCE;
 
     if (resCtx.topoInfo.level0PcieMix) {
         if (rankSizeLevel1_ == RANK_SIZE_LEVEL1_2) {
@@ -777,8 +779,6 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
                 GenTemplateAlgParamsByDimData(tempAlgParamMap[OMNIPIPE_RS_LEVEL2],
                                               OmniPipeSliceInfoRS.dataSliceLevel2[stepZ]);
                 CHK_RET(PreSyncInterThreads(controlThread_, tempMainThreadsLevel2RS_, ntfIdxCtrlToTempLevel2RS_));
-                CHK_RET(tempMap[OMNIPIPE_RS_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_RS_LEVEL2],
-                                                               tempResMap[OMNIPIPE_RS_LEVEL2]));
             }
 
             for (int stepXY = 0; stepXY < intraPodStepNum; stepXY++) {
@@ -804,6 +804,8 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
             }
             if (rankSizeLevel2_ > 1) {
                 // Z后同步
+                CHK_RET(tempMap[OMNIPIPE_RS_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_RS_LEVEL2],
+                                                               tempResMap[OMNIPIPE_RS_LEVEL2]));
                 CHK_RET(PostSyncInterThreads(controlThread_, tempMainThreadsLevel2RS_, ntfIdxTempToCtrlLevel2RS_));
                 HCCL_INFO("PostSyncInterThreads z success.");
             }
@@ -819,8 +821,6 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
                 CHK_RET(PreSyncInterThreads(controlThread_, tempMainThreadsLevel2AG_, ntfIdxCtrlToTempLevel2AG_));
                 CHK_RET(GenTemplateAlgParamsByDimData(tempAlgParamMap[OMNIPIPE_AG_LEVEL2],
                                                       OmniPipeSliceInfoAG.dataSliceLevel2[stepZ]));
-                CHK_RET(tempMap[OMNIPIPE_AG_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_AG_LEVEL2],
-                                                               tempResMap[OMNIPIPE_AG_LEVEL2]));
             }
 
             for (int stepXY = 0; stepXY < intraPodStepNum; stepXY++) {
@@ -847,6 +847,8 @@ HcclResult InsV2AllReduceOmniPipeExecutor<AlgTopoMatch, InsRsAlgTemplateX, InsRs
             }
             // Z后同步
             if (rankSizeLevel2_ > 1) {
+                CHK_RET(tempMap[OMNIPIPE_AG_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_AG_LEVEL2],
+                                                               tempResMap[OMNIPIPE_AG_LEVEL2]));
                 CHK_RET(PostSyncInterThreads(controlThread_, tempMainThreadsLevel2AG_, ntfIdxTempToCtrlLevel2AG_));
             }
         }

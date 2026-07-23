@@ -22,12 +22,14 @@ constexpr u64 HCCL_MIN_SLICE_ALIGN_OMNIPIPE=512;
 constexpr u64 HCCL_MIN_SLICE_ALIGN_OMNIPIPE_CCU = 128;
 constexpr u64 MAX_STEP_NUM = 5;
 constexpr u64 OMNIPIPE_UBX_16P_MAX_STEP_NUM = 5;
+constexpr u64 UBX_ROCE_MAX_STEP_NUM = 2;
 
 constexpr double BW_OMNI_DEFAULT = 50;
 constexpr double BW_OMNI_PCIE_EIGHT_AG_CLOS = 20;
 constexpr double BW_OMNI_PCIE_EIGHT_RS_CLOS = 29;
 constexpr double BW_OMNI_PCIE_SIXTEEN_RS_CLOS = 35;
 constexpr double BW_OMNI_PCIE_SIXTEEN_AG_CLOS = 35;
+constexpr double BW_OMNI_UBX_ROCE = 25;
 
 constexpr double BW_OMNI_UBX_AG_CLOS = 191;
 constexpr double BW_OMNI_UBX_RS_CLOS = 225;
@@ -48,7 +50,8 @@ enum OmniPipeLevel{
 
 enum OmniNeedSetStepNum{
     OMNIPIPE_DEFAULT = 0,
-    OMNIPIPE_UBX_16P = 1
+    OMNIPIPE_UBX_16P = 1,
+    OMNIPIPE_UBX_32P = 2
 };
 
 struct OmniPipeSliceInfo {

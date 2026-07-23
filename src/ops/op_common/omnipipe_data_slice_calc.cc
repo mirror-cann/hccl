@@ -48,6 +48,8 @@ int SetMaxStepNumOmni(OmniNeedSetStepNum needSetStepNum)
     int maxStepNum = MAX_STEP_NUM;
     if (needSetStepNum == OmniNeedSetStepNum::OMNIPIPE_UBX_16P) {
         maxStepNum = OMNIPIPE_UBX_16P_MAX_STEP_NUM;
+    } else if (needSetStepNum == OmniNeedSetStepNum::OMNIPIPE_UBX_32P) {
+        maxStepNum = UBX_ROCE_MAX_STEP_NUM;
     }
     return maxStepNum;
 }
@@ -907,6 +909,7 @@ OmniPipeSliceInfo CalcAGOmniPipeSliceInfo(OmniPipeSliceParam &omniPipeSliceParam
     // 公共拓扑参数
     HCCL_INFO("[CalcAGOmniPipeSliceInfo] Run start");
     int maxStepNum = SetMaxStepNumOmni(omniPipeSliceParam.needSetStepNum);
+    HCCL_INFO("[CalcAGOmniPipeSliceInfo] maxStepNum=[%u]",maxStepNum);
     u64 processedDataEachRank = 0;  // 预留偏移参数，现在填0
     std::vector<u64> levelRankSize = omniPipeSliceParam.levelRankSize;
     std::vector<u64> dataSize = omniPipeSliceParam.dataWholeSize;

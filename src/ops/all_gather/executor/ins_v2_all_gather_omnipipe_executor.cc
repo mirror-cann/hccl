@@ -82,6 +82,8 @@ HcclResult InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgT
         omniUbxLastStepRead_ = true;
         if (!algHierarchyInfo_.infos[1].empty()){
             subCommRanks2 = algHierarchyInfo_.infos[1];
+            omniUbxLastStepRead_ = (subCommRanks2[0].size() > 1) ? false : omniUbxLastStepRead_;
+            omniNeedSetStepNum_ = (subCommRanks2[0].size() > 1) ? OmniNeedSetStepNum::OMNIPIPE_UBX_32P : omniNeedSetStepNum_;
         } else {
             subCommRanks2.emplace_back(std::vector<u32>{myRank_});
         }
@@ -310,7 +312,7 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
     //带宽赋值
     double bw_ag_l0 = BW_OMNI_DEFAULT;
     double bw_ag_l1 = BW_OMNI_DEFAULT;
-    double bw_ag_l2 = BW_OMNI_DEFAULT;
+    double bw_ag_l2 = BW_OMNI_UBX_ROCE;
 
     if (resCtx.topoInfo.level0PcieMix) {//PCIE
         if (rankSizeLevel_[OMNIPIPE_LEVEL1] == RANK_LEVEL_2) {
@@ -363,6 +365,7 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
     omniPipeSliceParam.opMode = opMode_;
     omniPipeSliceParam.engine = CommEngine::COMM_ENGINE_AICPU_TS;
     omniPipeSliceParam.dataWholeSize = dataWholeSize;
+    omniPipeSliceParam.needSetStepNum = omniNeedSetStepNum_;
 
     OmniPipeSliceInfo alignSliceInfo = CalcAGOmniPipeSliceInfo(omniPipeSliceParam);
 
@@ -410,6 +413,8 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
         tempResMap[temp.first].channels = remoteRankToChannelInfo_[temp.first];
         tempResMap[temp.first].threads = levelThreads_[temp.first];
         tempAlgParamMap[temp.first].buffInfo.hcclBuff = resCtx.cclMem;
+        tempResMap[temp.first].npu2DpuShmemPtr= resCtx.npu2DpuShmemPtr;
+        tempResMap[temp.first].dpu2NpuShmemPtr= resCtx.dpu2NpuShmemPtr;
     }
     HCCL_DEBUG("loopTimes[%d]", loopTimes);
     for (u64 loop = 0; loop < loopTimes; loop++) {
@@ -439,8 +444,6 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
                 CHK_RET(GenTemplateAlgParamsByDimData(tempAlgParamMap[OMNIPIPE_LEVEL2],
                                                       omniPipeSliceInfo.dataSliceLevel2[i]));
                 CHK_RET(PreSyncInterThreads(controlThread_, tempMainThreadsZ_, ntfIdxCtrlToTempZ_));
-                CHK_RET(tempMap[OMNIPIPE_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_LEVEL2],
-                                                             tempResMap[OMNIPIPE_LEVEL2]));
             }
             for (int j = 0; j < level0StepCount; j++) {
                 CHK_RET(PreSyncInterThreads(controlThread_, tempMainThreadsXY_, ntfIdxCtrlToTempXY_));
@@ -480,6 +483,8 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
                 CHK_RET(PostSyncInterThreads(controlThread_, tempMainThreadsXY_, ntfIdxTempToCtrlXY_));
             }
             if (rankSizeLevel_[OMNIPIPE_LEVEL2] > 1) {
+                CHK_RET(tempMap[OMNIPIPE_LEVEL2]->KernelRun(param, tempAlgParamMap[OMNIPIPE_LEVEL2],
+                                                             tempResMap[OMNIPIPE_LEVEL2]));
                 CHK_RET(PostSyncInterThreads(controlThread_, tempMainThreadsZ_, ntfIdxTempToCtrlZ_));
             }
         }
@@ -488,6 +493,7 @@ InsV2AllGatherOmniPipeExecutor<AlgTopoMatch, InsAlgTemplate0, InsAlgTemplate1, I
             CHK_RET(UbxLocalCopy(param, omniPipeSliceInfo, omniPipeSliceLocalcopyInfo, 
                         tempAlgParamMap, processedDataCount, level0StepCount));
         }else {
+            HCCL_INFO("ccl->out_localcopy");
             for (u32 rank = 0; rank < rankSize_; rank++) {
                 DataSlice dst(param.outputPtr, (rank * dataCount_ + processedDataCount) * dataTypeSize_,
                                 currDataCount * dataTypeSize_, currDataCount);
