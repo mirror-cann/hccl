@@ -47,6 +47,8 @@
     调度模式指使用CCU作为调度器，向UB引擎调度UB WQE任务。调度模式下不使用CcuBuffer，直接在两个rank间进行片上内存到片上内存的数据传输。
 
     针对单机通信场景的AllReduce、ReduceScatter、Reduce算子，当数据量超过一定值时，为防止性能下降，系统会自动切换为AI_CPU模式（该阈值并非固定，会根据算子运行模式及网络规模等因素有所调整）。
+    
+    此模式下，ReduceScatterV、AllGatherV算子仅支持单Server场景。
 
     当CCU资源不足时，系统会自动切换为AI_CPU模式。
   <!-- end id2 -->

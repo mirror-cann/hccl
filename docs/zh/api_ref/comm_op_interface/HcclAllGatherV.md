@@ -70,9 +70,6 @@ HcclResult HcclAllGatherV(void *sendBuf, uint64_t sendCount, void *recvBuf, cons
 ## 约束说明
 
 - 所有rank的recvCounts、recvDispls、dataType均应相同。
-<!-- npu="950" id14 -->
-- 针对Ascend 950PR/Ascend 950DT，仅支持单Server场景，仅支持通信算子展开模式为CCU、AICPU的场景。
-<!-- end id14 -->
 <!-- npu="A3" id15 -->
 - 针对Atlas A3 训练系列产品/Atlas A3 推理系列产品，仅支持单Server场景。
 <!-- end id15 -->
