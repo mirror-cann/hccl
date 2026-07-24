@@ -15,6 +15,8 @@
 
 namespace ops_hccl {
 
+constexpr uint32_t REDUCE_LOOP_COUNT = 16;
+
 CcuTempReduceMesh1DTwoShotMem2Mem::CcuTempReduceMesh1DTwoShotMem2Mem(const OpParam& param,
                                        const u32 rankId,
                                        const std::vector<std::vector<u32>> &subCommRanks)
@@ -156,7 +158,7 @@ HcclResult CcuTempReduceMesh1DTwoShotMem2Mem::KernelRun(const OpParam& param,
 
     LoopGroupConfig config{};
     config.msInterleave = CCU_MS_INTERLEAVE;
-    config.loopCount    = 16;
+    config.loopCount    = REDUCE_LOOP_COUNT;
     config.memSlice     = CCU_MS_SIZE;
     auto goSize = (mySubCommRank_ == (templateRankSize_ - 1))
                   ? CalGoSize(lastSliceSize, config)
