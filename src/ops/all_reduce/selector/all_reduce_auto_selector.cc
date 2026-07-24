@@ -184,13 +184,14 @@ SelectorStatus AllReduceAutoSelector::SelectCcuScheduleAlgo(const TopoInfoWithNe
             } else if (topoInfo->is2DieFullMesh) {
                 HCCL_DEBUG("[AllReduceAutoSelector] 2DieFullMesh is not supported yet for ccu schedule mode.");
                 return SelectorStatus::NOT_MATCH;
-            } else if (dataSize <= 16 * 1024 * 1024 && topoInfo->userRankSize >= ccuSize) {
+            } else if (dataSize <= 16 * 1024 * 1024 && topoInfo->userRankSize >= ccuSize && !Is8BitDataType(opParam.DataDes.dataType)) {
                 selectAlgName = "CcuAllReduceSequenceMesh1D";
                 return SelectorStatus::MATCH;
-            } else if (dataSize <= AR_FLATTEN_MAX_DATA_SIZE && topoInfo->userRankSize <= ccuSize && (!IsInputOutputOverlap(opParam))) {
+            } else if (dataSize <= AR_FLATTEN_MAX_DATA_SIZE && topoInfo->userRankSize <= ccuSize
+                && (!IsInputOutputOverlap(opParam)) && !Is8BitDataType(opParam.DataDes.dataType)) {
                 selectAlgName = "CcuAllReduceMesh1DMem2Mem";
                 return SelectorStatus::MATCH;
-            } else if (dataSize <= CCU_PARALLEL_MAX_DATA_SIZE && topoInfo->userRankSize < ccuSize) {
+            } else if (dataSize <= CCU_PARALLEL_MAX_DATA_SIZE && topoInfo->userRankSize < ccuSize && !Is8BitDataType(opParam.DataDes.dataType)) {
                 selectAlgName = "CcuAllReduceSequenceMesh1D";
                 return SelectorStatus::MATCH;
             } else if(IsSmallDataCCU(dataSize, topoInfo->userRankSize)){//64M以下跑ccu
