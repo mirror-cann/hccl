@@ -17,7 +17,7 @@
 
 - [系统约束与限制](constraints.md)
 - [API参考](api_ref.md)
-  - [HCCL头文件与库文件说明](../api_ref/header_and_lib.md)
+  - [HCCL头文件与库文件说明](../api_ref/hccl_header_and_lib.md)
   - [HCOMM头文件与库文件说明](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/header_and_lib.md)
   - [通信域管理接口（C语言）<a name="sub_menu"></a>](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_c/README.md)
   - [通信域管理接口（Python语言）<a name="sub_menu"></a>](https://gitcode.com/cann/hcomm/blob/9.1.0/docs/zh/api_ref/comm_mgr_python/README.md)
