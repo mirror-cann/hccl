@@ -18,6 +18,8 @@
 
 namespace ops_hccl {
 
+constexpr uint32_t LOOP_GROUP_NUM = 2;
+
 struct CcuKernelArgReduceMesh1DTwoShotMem2Mem: CcuKernelArgBase {
     uint64_t                                rankSize;
     uint32_t                                rankId;
@@ -58,7 +60,7 @@ struct ReduceMesh1DTwoShotMem2MemContext: CcuKernelCtxBase {
 
     ccu::Variable sliceSize;
     std::vector<ccu::LocalAddr> scratchMem;
-    std::array<std::vector<ccu::LocalAddr>, 2> loopScratch;
+    std::array<std::vector<ccu::LocalAddr>, LOOP_GROUP_NUM> loopScratch;
     ccu::LocalAddr loopSrc[2];
     ccu::LocalAddr loopDst[2];
     ccu::Variable  loopLen[2];
