@@ -2062,6 +2062,8 @@ HcclResult SetCommEngine(OpParam &param)
 
 HcclResult SingleRankProc(HcclComm comm, OpParam &param)
 {
+    uint64_t beginTime = HcommGetProfilingSysCycleTime();
+    HCCL_INFO("[SingleRankProc]Start to execute HcclExecOp. HcommGetProfilingSysCycleTime[%llu]", beginTime);
     if (param.commOpExpansionMode == HcclOpExpansionMode::HCCL_OP_EXPANSION_AIV_ONLY) {
         HCCL_ERROR("[SingleRankProc] opType[%d] currently do not select aiv mode, aiv only not support, "
             "please ensure rankNum is greater than one", static_cast<int>(param.opType));
@@ -2112,6 +2114,7 @@ HcclResult SingleRankProc(HcclComm comm, OpParam &param)
         CHK_RET(HcclDfxRegOpInfoByCommId(param.commName, reinterpret_cast<void*>(&hcclDfxOpInfo)));
         CHK_RET(static_cast<HcclResult>(HcommLocalCopyOnThread(cpuTsThread, param.outputPtr, param.inputPtr, len)));
     }
+    CHK_RET(HcclProfilingReportOp(comm, beginTime));
     return HcclResult::HCCL_SUCCESS;
 }
 
