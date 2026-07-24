@@ -725,6 +725,7 @@ static HcclResult GetUnfoldStream(HcclComm comm, OpParam &param, ThreadHandle un
         if (ret == HCCL_E_NOT_SUPPORT) {
             resolvedStream = param.stream;
         } else if (ret != HCCL_SUCCESS) {
+            resolvedStream = param.stream;
             return ret;
         } else {
             resolvedStream = unfoldStream;
