@@ -108,9 +108,6 @@ HcclResult SetServerModuleInfo(HcclComm comm, TopoInfo* topoInfo, const std::uno
         }
         HCCL_INFO("module[%u] contains [%d]devices", i, moduleMap[i].size());
     }
-
-    HCCL_RUN_INFO("different module contains different numbers of cards:[%d]",
-        topoInfo->multiModuleDiffDeviceNumMode);
     return HCCL_SUCCESS;
 }
 
