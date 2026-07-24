@@ -102,13 +102,13 @@ HcclResult InsTempAllGatherNHR::KernelRun(const OpParam &param, const TemplateDa
 {
     HCCL_INFO("[InsTempAllGatherNHR] Run start");
     if (tempAlgParams.sliceSize == 0 && tempAlgParams.tailSize == 0) {
-        HCCL_INFO("[InsTempAllGatherNHR] Rank [%d], get slicesize zero.", myRank_);
+        HCCL_INFO("[InsTempAllGatherNHR] Rank [%u], get slicesize zero.", myRank_);
         return HCCL_SUCCESS;
     }
     threadNum_ = GetThreadNum();
     if (templateResource.threads.size() < threadNum_)
     {
-        HCCL_ERROR("[InsTempAllGatherNHR] Rank [%d], thread num[%u] is not as expected[%u].", myRank_, templateResource.threads.size(), threadNum_);
+        HCCL_ERROR("[InsTempAllGatherNHR] Rank [%u], thread num[%zu] is not as expected[%u].", myRank_, templateResource.threads.size(), threadNum_);
         return HcclResult::HCCL_E_INTERNAL;
     }
     tempAlgParams_ = tempAlgParams;
@@ -261,7 +261,7 @@ HcclResult InsTempAllGatherNHR::RunLastStepWriteThenRead(const std::vector<Threa
 
     const u32 postCopyThreadIdx = channelsPerRank_ + channelIdx;
     CHK_PRT_RET(postCopyThreadIdx >= threads.size(),
-        HCCL_ERROR("[InsTempAllGatherNHR] post copy thread index[%u] is out of range[%u].",
+        HCCL_ERROR("[InsTempAllGatherNHR] post copy thread index[%u] is out of range[%zu].",
             postCopyThreadIdx, threads.size()),
         HcclResult::HCCL_E_INTERNAL);
     constexpr u32 POST_COPY_NOTIFY_IDX = 1;
@@ -288,7 +288,7 @@ HcclResult InsTempAllGatherNHR::RunStepNHR(const std::vector<ThreadHandle> &thre
     u32 toRankKey = GetRankFromMap(stepInfo.toRank);
     CHK_PRT_RET(channels.count(fromRankKey) == 0 || channelIdx >= channels.at(fromRankKey).size() ||
                 channels.count(toRankKey) == 0 || channelIdx >= channels.at(toRankKey).size(),
-        HCCL_ERROR("[InsTempAllGatherNHR] rank[%u] invalid channel access, fromRankKey[%u] toRankKey[%u] channelIdx[%u] "
+        HCCL_ERROR("[InsTempAllGatherNHR][%s] rank[%u] invalid channel access, fromRankKey[%u] toRankKey[%u] channelIdx[%u] "
                    "channels.size[%zu] fromChannelSize[%zu] toChannelSize[%zu]",
             __func__, myRank_, fromRankKey, toRankKey, channelIdx, channels.size(),
             channels.count(fromRankKey) ? channels.at(fromRankKey).size() : 0,
@@ -296,7 +296,7 @@ HcclResult InsTempAllGatherNHR::RunStepNHR(const std::vector<ThreadHandle> &thre
         HCCL_E_INTERNAL);
     const ChannelInfo &channelRecv = channels.at(fromRankKey)[channelIdx];
     const ChannelInfo &channelSend = channels.at(toRankKey)[channelIdx];
-    HCCL_DEBUG("[InsTempAllGatherNHR] rank[%d] rankSize[%u] recvFrom[%u] sendTo[%u] step[%u] nSteps[%u] nSlices[%u]",
+    HCCL_DEBUG("[InsTempAllGatherNHR] rank[%u] rankSize[%u] recvFrom[%u] sendTo[%u] step[%u] nSteps[%u] nSlices[%u]",
         myRank_, templateRankSize_, stepInfo.fromRank, stepInfo.toRank, step, nSteps, stepInfo.nSlices);
 
     const bool readLastStepToOutput = readLastStepToOutput_ && step == nSteps - 1 && stepInfo.nSlices > 1;
