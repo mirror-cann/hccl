@@ -940,11 +940,14 @@ HcclResult HcommThreadJoin(ThreadHandle thread, uint32_t timeout)
     return HCCL_SUCCESS;
 }
 
-int32_t HcommWriteReduceWithNotifyOnThread(ThreadHandle thread, ChannelHandle channel, void* dst, const void* src,
+int32_t HcommWriteReduceWithNotifyOnThread(ThreadHandle thread, ChannelHandle channel, void *dst, const void *src,
     uint64_t count, HcommDataType dataType, HcommReduceOp reduceOp, uint32_t remoteNotifyIdx)
 {
-    HCCL_ERROR("[%s] not support.", __func__);
-    return -1;
+    int32_t ret = HcommWriteReduceOnThread(thread, channel, dst, src, count, dataType, reduceOp);
+    if (ret != HCCL_SUCCESS) {
+        return ret;
+    }
+    return HcommChannelNotifyRecordOnThread(thread, channel, remoteNotifyIdx);
 }
 
 int32_t HcommWriteNbi(ChannelHandle channel, void* dst, const void* src, uint64_t len)
